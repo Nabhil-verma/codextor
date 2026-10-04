@@ -71,7 +71,7 @@ export default function Lesson() {
       <div className="min-h-screen">
         <Nav />
         <main className="mx-auto max-w-3xl px-4 py-24 text-center">
-          <h1 className="font-display text-3xl font-semibold text-ink-950">
+          <h1 className="font-display text-4xl font-bold tracking-tighter text-ink-950">
             Lesson not found
           </h1>
           <Link to="/learn" className="btn-primary mt-8">
@@ -120,7 +120,7 @@ export default function Lesson() {
     <div className="min-h-screen">
       <Nav />
       <PageFade>
-      <main className="mx-auto max-w-3xl px-4 py-8 sm:py-12">
+      <main className={"mx-auto px-4 py-8 sm:py-12 " + (lesson.starter ? "max-w-7xl" : "max-w-3xl")}>
         <motion.p
           className="font-mono text-xs text-ink-600"
           initial={{ opacity: 0, y: -8 }}
@@ -133,10 +133,10 @@ export default function Lesson() {
           / {track.title}
         </motion.p>
         <motion.h1
-          className="mt-3 font-display text-4xl font-semibold tracking-tight text-ink-950"
+          className="mt-4 max-w-3xl font-display text-4xl font-bold tracking-tighter text-ink-950 sm:text-5xl"
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.6, delay: 0.08, ease: [0.25, 1, 0.5, 1] }}
         >
           {lesson.title}
         </motion.h1>
@@ -178,29 +178,60 @@ export default function Lesson() {
           )}
         </motion.p>
 
-        {/* 1. Read */}
-        <Reveal className="mt-12">
-          <section>
-            <h2 className="eyebrow mb-4">{step("Read")} · Read</h2>
-            <LessonBody lesson={lesson} />
-          </section>
-        </Reveal>
-
-        {/* 2. Run — code playground or visual sandbox */}
-        {lesson.starter && (
-          <Reveal className="mt-14">
+        {/*
+          * 1 + 2 + 2.5 — Read · Run · Ask the Tutor.
+          * Code lessons become a two-pane workspace from xl up: the lesson text
+          * scrolls on the left while the editor, console and Socratic tutor stay
+          * in reach on the right. Below xl it is the same order as before.
+          */}
+        {lesson.starter ? (
+          <div className="xl:grid xl:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] xl:items-start xl:gap-14">
+            <div className="min-w-0">
+              <Reveal className="mt-12">
+                <section>
+                  <h2 className="eyebrow mb-4">{step("Read")} · Read</h2>
+                  <LessonBody lesson={lesson} />
+                </section>
+              </Reveal>
+            </div>
+            <div className="no-scrollbar min-w-0 xl:sticky xl:top-20 xl:max-h-[calc(100vh-6rem)] xl:overflow-y-auto xl:pb-2 xl:pt-12">
+              <Reveal className="mt-14 xl:mt-0">
+                <section>
+                  <h2 className="eyebrow mb-4">{step("Run")} · Run</h2>
+                  <Playground
+                    starter={lesson.starter}
+                    check={lesson.check}
+                    lang={lesson.lang}
+                    pythonPrelude={lesson.pythonPrelude}
+                    onPass={() => setExerciseDone(true)}
+                  />
+                </section>
+              </Reveal>
+              <Reveal className="mt-10">
+                <section>
+                  <h2 className="eyebrow mb-4">Ask the Tutor</h2>
+                  <SocraticTutor
+                    code={lesson.starter}
+                    checkExpr={lesson.check?.expr}
+                    checkHint={lesson.check?.hint}
+                    topic={lesson.title}
+                  />
+                </section>
+              </Reveal>
+            </div>
+          </div>
+        ) : (
+          <Reveal className="mt-12">
             <section>
-              <h2 className="eyebrow mb-4">{step("Run")} · Run</h2>
-              <Playground
-                starter={lesson.starter}
-                check={lesson.check}
-                lang={lesson.lang}
-                pythonPrelude={lesson.pythonPrelude}
-                onPass={() => setExerciseDone(true)}
-              />
+              <h2 className="eyebrow mb-4">{step("Read")} · Read</h2>
+              <LessonBody lesson={lesson} />
             </section>
           </Reveal>
         )}
+
+        {/* Everything after the workspace reads best in a narrow column. */}
+        <div className="mx-auto max-w-3xl">
+
         {lesson.sandbox && (
           <Reveal className="mt-14">
             <section>
@@ -301,20 +332,6 @@ export default function Lesson() {
           </Reveal>
         )}
 
-        {/* 2.5 AI Tutor — guided help (optional, BYOK) */}
-        {lesson.starter && (
-          <Reveal className="mt-14">
-            <section>
-              <h2 className="eyebrow mb-4">Ask the Tutor</h2>
-              <SocraticTutor
-                code={lesson.starter}
-                checkExpr={lesson.check?.expr}
-                checkHint={lesson.check?.hint}
-                topic={lesson.title}
-              />
-            </section>
-          </Reveal>
-        )}
 
         {/* 2.6 Predict — mental execution practice */}
         {lesson.predict && lesson.predict.length > 0 && (
@@ -329,7 +346,7 @@ export default function Lesson() {
               <div
                 role="tablist"
                 aria-label="Quiz mode"
-                className="relative flex rounded-full border border-paper-200/70 bg-paper-50/60 p-1"
+                className="relative flex rounded-full border border-white/10 bg-white/[0.03] p-1"
               >
                 {[
                   { id: false, label: "Standard" },
@@ -342,17 +359,17 @@ export default function Lesson() {
                     aria-selected={rapid === m.id}
                     onClick={() => setRapid(m.id)}
                     className={
-                      "relative rounded-full px-3.5 py-1.5 text-xs font-semibold transition " +
+                      "relative rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors duration-300 " +
                       (rapid === m.id
-                        ? "text-paper-50"
-                        : "text-ink-600 hover:text-ink-950")
+                        ? "text-ink-950"
+                        : "text-ink-500 hover:text-ink-950")
                     }
                   >
                     {rapid === m.id && (
                       <motion.span
                         layoutId="quiz-mode"
-                        className="absolute inset-0 rounded-full bg-ink-950"
-                        transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                        className="absolute inset-0 rounded-full border border-white/10 bg-white/[0.09] shadow-[0_0_20px_-6px_rgba(0,229,255,0.45)]"
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
                       />
                     )}
                     <span className="relative z-10">{m.label}</span>
@@ -387,7 +404,7 @@ export default function Lesson() {
         {/* Prev / next */}
         {/* On phones the two actions stack — full-width, thumb-sized buttons
             with the primary action on top — and go back to a row from sm up. */}
-        <nav className="mt-16 flex flex-col-reverse gap-3 border-t border-paper-200 pt-8 sm:flex-row sm:items-center sm:justify-between">
+        <nav className="mx-auto mt-20 flex max-w-3xl flex-col-reverse gap-3 border-t border-white/[0.07] pt-8 sm:flex-row sm:items-center sm:justify-between">
           {prev ? (
             <Link
               to={"/learn/" + track.id + "/" + prev.id}
@@ -420,6 +437,7 @@ export default function Lesson() {
             exercise passed — finish the quiz with 100% to complete the lesson
           </motion.p>
         )}
+        </div>
       </main>
       </PageFade>
     </div>

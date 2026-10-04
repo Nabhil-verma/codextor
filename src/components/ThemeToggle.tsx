@@ -12,7 +12,7 @@ export default function ThemeToggle({ className = "" }: { className?: string }) 
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
       title={dark ? "Light mode" : "Night mode"}
       className={
-        "flex h-8 w-8 items-center justify-center rounded-full border border-paper-200/70 text-ink-600 transition hover:border-gold-400 hover:text-gold-600 hover:shadow-glow " +
+        "flex h-8 w-8 items-center justify-center rounded-full border border-paper-200/70 text-ink-600 transition-all duration-300 ease-snap hover:scale-105 hover:border-gold-400/50 hover:text-gold-600 hover:shadow-glow active:scale-95 " +
         className
       }
     >

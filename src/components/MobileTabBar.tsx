@@ -65,7 +65,7 @@ export default function MobileTabBar() {
   return (
     <motion.nav
       aria-label="Mobile navigation"
-      className="glass fixed inset-x-0 bottom-0 z-40 border-t border-paper-200/60 pb-[env(safe-area-inset-bottom)] print:hidden md:hidden"
+      className="glass fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.07] pb-[env(safe-area-inset-bottom)] print:hidden md:hidden"
       initial={{ y: 96, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
@@ -84,7 +84,7 @@ export default function MobileTabBar() {
                 {active && (
                   <motion.span
                     layoutId="mobile-tab-pill"
-                    className="absolute inset-x-2 inset-y-1 rounded-2xl bg-gold-400/15"
+                    className="absolute inset-x-2 inset-y-1 rounded-2xl border border-gold-400/20 bg-gold-400/10 shadow-[0_0_20px_-6px_rgba(0,229,255,0.4)]"
                     transition={{ type: "spring", stiffness: 380, damping: 32 }}
                     aria-hidden
                   />

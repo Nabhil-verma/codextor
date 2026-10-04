@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { ArrowUpRight, Hammer, Swords, Trophy } from "lucide-react";
 import Nav from "../components/Nav";
 import { tracks, lessonKey, totalLessonCount } from "../data";
 import { scoreFor, useProgressState } from "../lib/progress";
@@ -14,7 +15,14 @@ import {
   totalXp,
 } from "../lib/gamification";
 import { useAccount } from "../AccountProvider";
-import { Reveal, Tilt, PageFade } from "../components/motion";
+import { Reveal, PageFade } from "../components/motion";
+import {
+  CyberBadge,
+  MinimalGlassCard,
+  NeonPulseButton,
+  PrecisionProgressBar,
+  PrecisionRing,
+} from "../components/ui";
 import SkillTree from "../components/SkillTree";
 import MicroPractice from "../components/MicroPractice";
 import AscensionPanel from "../components/gamification/AscensionPanel";
@@ -23,7 +31,6 @@ import { useClanRole } from "../lib/guildState";
 import { MILESTONES, milestonesClaimed } from "../lib/milestones";
 import { useClaims } from "../lib/milestoneStore";
 
-const EASE = [0.22, 1, 0.36, 1] as const;
 
 export default function Learn() {
   const progress = useProgressState();
@@ -41,7 +48,8 @@ export default function Learn() {
   const pct = Math.round((doneCount / totalLessonCount) * 100);
   const today = todayKey();
   const streak = computeStreak(progress, today, previousDayKeys());
-  const level = levelFor(totalXp(progress));
+  const xp = totalXp(progress);
+  const level = levelFor(xp);
   const badges = computeBadges(progress, streak, {
     level: level.level,
     clanRole,
@@ -50,19 +58,30 @@ export default function Learn() {
   const doneToday = lessonsToday(progress, today);
   const days = activeDays(progress);
 
+  // The first lesson (in curriculum order) that isn't finished yet.
+  let upNext: { trackId: string; trackTitle: string; lessonId: string; title: string; minutes: number } | null = null;
+  outer: for (const t of tracks) {
+    for (const l of t.lessons) {
+      if (scoreFor(progress, lessonKey(t.id, l.id)) < 1) {
+        upNext = { trackId: t.id, trackTitle: t.title, lessonId: l.id, title: l.title, minutes: l.minutes };
+        break outer;
+      }
+    }
+  }
+
   return (
     <div className="min-h-screen">
       <Nav />
       <PageFade>
-        <main className="mx-auto max-w-4xl px-4 py-10 sm:py-16">
+        <main className="mx-auto max-w-5xl px-4 py-14 sm:py-20">
           <Reveal>
-            <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex flex-wrap items-end justify-between gap-6">
               <div>
                 <p className="eyebrow">The curriculum</p>
-                <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight text-ink-950">
+                <h1 className="mt-4 font-display text-5xl font-bold tracking-tighter text-ink-950 sm:text-6xl">
                   All lessons
                 </h1>
-                <p className="mt-3 max-w-lg text-ink-600">
+                <p className="mt-4 max-w-lg text-lg leading-relaxed text-ink-600">
                   Work through the tracks in order, or jump to whatever looks useful.
                 </p>
               </div>
@@ -74,7 +93,7 @@ export default function Learn() {
                       void resetEverything();
                     }
                   }}
-                  className="rounded-full border border-paper-300 px-4 py-1.5 font-mono text-xs text-ink-600 transition hover:border-gold-400 hover:text-gold-600"
+                  className="rounded-full border border-paper-300/70 px-4 py-1.5 font-mono text-[0.7rem] uppercase tracking-widest text-ink-500 transition-all duration-300 ease-snap hover:border-rose-400/50 hover:text-rose-300 active:scale-95"
                 >
                   reset progress
                 </button>
@@ -82,63 +101,43 @@ export default function Learn() {
             </div>
           </Reveal>
 
-          <Reveal delay={0.1}>
-            <div className="mt-8">
-              <div className="flex items-center justify-between font-mono text-xs text-ink-600">
-                <span>
-                  <span className="text-gold-600">{doneCount}</span> of {totalLessonCount}{" "}
-                  lessons complete
-                </span>
-                <span>{pct}%</span>
-              </div>
-              <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-paper-200">
-                <motion.div
-                  className="h-full rounded-full bg-gradient-to-r from-gold-500 to-gold-300"
-                  initial={{ width: 0 }}
-                  animate={{ width: pct + "%" }}
-                  transition={{ duration: 1, ease: EASE, delay: 0.2 }}
-                />
-              </div>
-            </div>
-          </Reveal>
-
-          {/* Engagement panel — XP, level, streak, badges */}
-          <div className="mt-8 grid gap-4 sm:grid-cols-3" style={{ perspective: "1000px" }}>
-            <Reveal delay={0.05}>
-              <Tilt max={7} className="h-full">
-                <div className="glass glass-edge h-full rounded-2xl border border-paper-200/60 p-6">
-                  <p className="eyebrow">Level {level.level}</p>
-                  <p className="mt-1 font-display text-2xl font-semibold text-ink-950">
-                    {totalXp(progress).toLocaleString()} XP
-                  </p>
-                  <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-paper-200">
-                    <motion.div
-                      className="h-full rounded-full bg-gradient-to-r from-gold-500 to-gold-300"
-                      initial={{ width: 0 }}
-                      animate={{ width: level.pct + "%" }}
-                      transition={{ duration: 1, ease: EASE, delay: 0.3 }}
-                    />
+          {/* ── Player stats: one quiet surface, three floating readouts ── */}
+          <Reveal delay={0.08} className="mt-14">
+            <MinimalGlassCard padded={false} neonEdge className="overflow-hidden">
+              <div className="grid divide-white/[0.06] md:grid-cols-3 md:divide-x">
+                {/* Level + XP */}
+                <div className="flex items-center gap-6 p-8">
+                  <PrecisionRing value={level.pct} size={72} stroke={2} label={`Level ${level.level} progress`}>
+                    <span className="font-mono text-lg font-bold text-ink-950">{level.level}</span>
+                  </PrecisionRing>
+                  <div className="min-w-0 flex-1">
+                    <p className="eyebrow">Level {level.level}</p>
+                    <p className="mt-2 font-mono text-3xl font-bold tracking-tighter text-ink-950">
+                      {xp.toLocaleString()}
+                      <span className="ml-1.5 text-sm font-medium text-gold-400">XP</span>
+                    </p>
+                    <p className="mt-1.5 font-mono text-[0.68rem] uppercase tracking-widest text-ink-500">
+                      {level.toNext} XP to level {level.level + 1}
+                    </p>
                   </div>
-                  <p className="mt-1.5 font-mono text-[11px] text-ink-600">
-                    {level.toNext} XP to level {level.level + 1}
-                  </p>
                 </div>
-              </Tilt>
-            </Reveal>
 
-            <Reveal delay={0.15}>
-              <Tilt max={7} className="h-full">
-                <div className="glass glass-edge h-full rounded-2xl border border-paper-200/60 p-6">
+                {/* Streak */}
+                <div className="border-t border-white/[0.06] p-8 md:border-t-0">
                   <p className="eyebrow">Daily streak</p>
-                  <p className="mt-1 font-display text-2xl font-semibold text-ink-950">
-                    {streak.current} day{streak.current === 1 ? "" : "s"}
-                    {streak.current === 0 && days.length > 0 && (
-                      <span className="ml-2 font-mono text-xs font-normal text-ink-600">
-                        (best: {streak.longest})
+                  <div className="mt-2 flex items-center gap-3">
+                    <p className="font-mono text-3xl font-bold tracking-tighter text-ink-950">
+                      <span aria-hidden className="mr-1.5">🔥</span>
+                      {streak.current}
+                      <span className="ml-1.5 text-sm font-medium text-amber-300">
+                        day{streak.current === 1 ? "" : "s"}
                       </span>
+                    </p>
+                    {streak.current === 0 && days.length > 0 && (
+                      <CyberBadge tone="neutral">best {streak.longest}</CyberBadge>
                     )}
-                  </p>
-                  <p className="mt-1.5 font-mono text-[11px] text-ink-600">
+                  </div>
+                  <p className="mt-1.5 font-mono text-[0.68rem] uppercase tracking-widest text-ink-500">
                     {doneToday > 0
                       ? doneToday + " lesson" + (doneToday === 1 ? "" : "s") + " today — keep it alive"
                       : days.length > 0
@@ -147,17 +146,15 @@ export default function Learn() {
                   </p>
                   {days.length > 0 && <ActivityStrip days={days} today={today} />}
                 </div>
-              </Tilt>
-            </Reveal>
 
-            <Reveal delay={0.25}>
-              <Tilt max={7} className="h-full">
-                <div className="glass glass-edge h-full rounded-2xl border border-paper-200/60 p-6">
+                {/* Badges */}
+                <div className="border-t border-white/[0.06] p-8 md:border-t-0">
                   <p className="eyebrow">Badges</p>
-                  <p className="mt-1 font-display text-2xl font-semibold text-ink-950">
-                    {earnedCount}/{badges.length}
+                  <p className="mt-2 font-mono text-3xl font-bold tracking-tighter text-ink-950">
+                    {earnedCount}
+                    <span className="text-lg text-ink-500">/{badges.length}</span>
                   </p>
-                  <div className="mt-3 flex flex-wrap gap-1.5">
+                  <div className="mt-4 flex flex-wrap gap-1.5">
                     {badges.map((b, i) => (
                       <motion.span
                         key={b.id}
@@ -165,17 +162,17 @@ export default function Learn() {
                         className={
                           "flex h-8 w-8 items-center justify-center rounded-full border text-sm transition " +
                           (b.earned
-                            ? "border-gold-400 bg-gold-400/15 text-gold-600 shadow-glow"
-                            : "border-paper-200 text-paper-300")
+                            ? "border-gold-400/50 bg-gold-400/10 text-gold-600 shadow-glow"
+                            : "border-paper-200 text-paper-300 grayscale")
                         }
                         initial={{ scale: 0, rotate: -30 }}
                         whileInView={{ scale: 1, rotate: 0 }}
                         viewport={{ once: true }}
                         transition={{
                           type: "spring",
-                          stiffness: 320,
-                          damping: 18,
-                          delay: 0.3 + i * 0.06,
+                          stiffness: 400,
+                          damping: 24,
+                          delay: 0.25 + i * 0.05,
                         }}
                         whileHover={b.earned ? { scale: 1.2, rotate: 8 } : undefined}
                       >
@@ -184,106 +181,123 @@ export default function Learn() {
                     ))}
                   </div>
                 </div>
-              </Tilt>
+              </div>
+
+              <div className="border-t border-white/[0.06] px-8 py-6">
+                <PrecisionProgressBar
+                  value={pct}
+                  label={`${doneCount} of ${totalLessonCount} lessons complete`}
+                  showLabel
+                  readout={pct + "%"}
+                />
+              </div>
+            </MinimalGlassCard>
+          </Reveal>
+
+          {/* ── Up next: one frictionless action ── */}
+          {upNext && (
+            <Reveal delay={0.12} className="mt-6">
+              <div className="dark-canvas neon-border glass-edge-dark noise-overlay relative overflow-hidden rounded-3xl p-8 sm:p-10">
+                <div className="relative z-10 flex flex-wrap items-center justify-between gap-8">
+                  <div className="min-w-0">
+                    <CyberBadge tone="cyan" dot pulse>
+                      {doneCount === 0 ? "start here" : "up next"}
+                    </CyberBadge>
+                    <h2 className="mt-5 font-display text-3xl font-bold tracking-tighter text-paper-50 sm:text-4xl">
+                      {upNext.title}
+                    </h2>
+                    <p className="mt-3 font-mono text-[0.7rem] uppercase tracking-[0.22em] text-paper-300/70">
+                      {upNext.trackTitle} · {upNext.minutes} min
+                    </p>
+                  </div>
+                  <NeonPulseButton
+                    to={`/learn/${upNext.trackId}/${upNext.lessonId}`}
+                    size="lg"
+                  >
+                    {doneCount === 0 ? "Start lesson" : "Continue quest"}
+                  </NeonPulseButton>
+                </div>
+              </div>
             </Reveal>
-          </div>
+          )}
 
           {/* Ascension + daily quests — the game layer */}
-          <Reveal className="mt-14">
-            <h2 className="eyebrow mb-4">ascension</h2>
+          <Reveal className="mt-20">
+            <h2 className="eyebrow mb-5">ascension</h2>
             <AscensionPanel />
           </Reveal>
 
-          <Reveal className="mt-14">
-            <h2 className="eyebrow mb-4">quests</h2>
+          <Reveal className="mt-20">
+            <h2 className="eyebrow mb-5">quests</h2>
             <QuestBoard />
           </Reveal>
 
           {/* Compete & ship — leaderboard, guild hall, project board */}
-          <Reveal className="mt-6">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <Tilt max={6} className="h-full">
+          <Reveal className="mt-8">
+            <div className="grid gap-4 md:grid-cols-3">
+              {[
+                {
+                  to: "/leaderboard",
+                  Icon: Trophy,
+                  title: "Global leaderboard",
+                  sub: "weekly · monthly · all-time standings",
+                },
+                {
+                  to: "/clans",
+                  Icon: Swords,
+                  title: "Guild hall",
+                  sub:
+                    clanRole === "none"
+                      ? "pool your XP with a study group"
+                      : clanRole === "owner"
+                        ? "you founded a guild — lead the board"
+                        : "your guild is pooling XP",
+                },
+                {
+                  to: "/projects",
+                  Icon: Hammer,
+                  title: "Project board",
+                  sub: `${shipped} of ${MILESTONES.length} milestones shipped · build something you can show`,
+                },
+              ].map(({ to, Icon, title, sub }) => (
                 <Link
-                  to="/leaderboard"
-                  className="glass glass-edge group flex h-full items-center gap-4 rounded-2xl border border-paper-200/60 p-5 transition hover:border-gold-400/60"
+                  key={to}
+                  to={to}
+                  className="glass glass-edge group flex h-full flex-col gap-6 rounded-3xl border border-paper-200/70 p-7 transition-all duration-500 ease-snap hover:-translate-y-1 hover:border-cyan-400/30 hover:shadow-[0_0_40px_-12px_rgba(0,229,255,0.25)]"
                 >
-                  <span className="text-2xl" aria-hidden>
-                    🏆
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block font-display text-lg font-semibold text-ink-950">
-                      Global leaderboard
+                  <span className="flex items-center justify-between">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-ink-800">
+                      <Icon className="h-[1.1rem] w-[1.1rem]" aria-hidden />
                     </span>
-                    <span className="block font-mono text-[11px] text-ink-600">
-                      weekly · monthly · all-time standings
-                    </span>
+                    <ArrowUpRight
+                      className="h-5 w-5 text-ink-400 transition-all duration-300 ease-snap group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-gold-400"
+                      aria-hidden
+                    />
                   </span>
-                  <span className="font-mono text-gold-600 transition group-hover:translate-x-1">
-                    →
+                  <span>
+                    <span className="block font-display text-xl font-bold tracking-tighter text-ink-950">
+                      {title}
+                    </span>
+                    <span className="mt-1.5 block font-mono text-[0.68rem] uppercase leading-relaxed tracking-widest text-ink-500">
+                      {sub}
+                    </span>
                   </span>
                 </Link>
-              </Tilt>
-              <Tilt max={6} className="h-full">
-                <Link
-                  to="/clans"
-                  className="glass glass-edge group flex h-full items-center gap-4 rounded-2xl border border-paper-200/60 p-5 transition hover:border-gold-400/60"
-                >
-                  <span className="text-2xl" aria-hidden>
-                    ⚔
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block font-display text-lg font-semibold text-ink-950">
-                      Guild hall
-                    </span>
-                    <span className="block font-mono text-[11px] text-ink-600">
-                      {clanRole === "none"
-                        ? "pool your XP with a study group"
-                        : clanRole === "owner"
-                          ? "you founded a guild — lead the board"
-                          : "your guild is pooling XP"}
-                    </span>
-                  </span>
-                  <span className="font-mono text-gold-600 transition group-hover:translate-x-1">
-                    →
-                  </span>
-                </Link>
-              </Tilt>
-              <Tilt max={6} className="h-full">
-                <Link
-                  to="/projects"
-                  className="glass glass-edge group flex h-full items-center gap-4 rounded-2xl border border-paper-200/60 p-5 transition hover:border-gold-400/60"
-                >
-                  <span className="text-2xl" aria-hidden>
-                    🛠
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block font-display text-lg font-semibold text-ink-950">
-                      Project board
-                    </span>
-                    <span className="block font-mono text-[11px] text-ink-600">
-                      {shipped} of {MILESTONES.length} milestones shipped · build
-                      something you can show
-                    </span>
-                  </span>
-                  <span className="font-mono text-gold-600 transition group-hover:translate-x-1">
-                    →
-                  </span>
-                </Link>
-              </Tilt>
+              ))}
             </div>
           </Reveal>
 
           {/* Visual Skill Tree */}
-          <Reveal className="mt-14">
-            <h2 className="eyebrow mb-4">skill tree</h2>
-            <div className="glass glass-edge rounded-2xl border border-ink-200/60 p-6">
+          <Reveal className="mt-20">
+            <h2 className="eyebrow mb-5">skill tree</h2>
+            <MinimalGlassCard padded="lg">
               <SkillTree />
-            </div>
+            </MinimalGlassCard>
           </Reveal>
 
           {/* Mobile Micro-Practice */}
-          <Reveal className="mt-14">
-            <h2 className="eyebrow mb-4">quick practice</h2>
+          <Reveal className="mt-20">
+            <h2 className="eyebrow mb-5">quick practice</h2>
             <MicroPractice />
           </Reveal>
 
@@ -292,17 +306,18 @@ export default function Learn() {
            * on the track (Tier 2), not a demotion: optional tracks are fully
            * playable and still count for XP, ranks and certificates.
            */}
-          <div className="mt-14 space-y-12">
+          <div className="mt-24 space-y-20">
             {[...tracks.filter((t) => !t.optional), ...tracks.filter((t) => t.optional)].map((track, ti) => {
               const trackDone = track.lessons.filter((l) => scoreFor(progress, lessonKey(track.id, l.id)) >= 1).length;
+              const trackPct = Math.round((trackDone / track.lessons.length) * 100);
               const firstOptional = track.optional && ti > 0 && !tracks[ti - 1]?.optional;
               return (
               <Reveal key={track.id}>
                 <section>
                   {firstOptional && (
-                    <div className="mb-6 rounded-2xl border border-dashed border-paper-300 bg-paper-50/60 px-5 py-4">
+                    <div className="mb-10 rounded-3xl border border-dashed border-paper-300/60 bg-white/[0.02] px-7 py-6">
                       <p className="eyebrow">optional tracks</p>
-                      <p className="mt-1 text-sm leading-relaxed text-ink-600">
+                      <p className="mt-2 text-sm leading-relaxed text-ink-600">
                         Framework-specific or lower-priority-for-screening
                         material. Fully playable, still counts for XP and
                         certificates — take these when your target stack or the
@@ -310,25 +325,36 @@ export default function Learn() {
                       </p>
                     </div>
                   )}
-                  <div className="mb-5 flex items-baseline gap-4 border-b border-paper-200 pb-4">
-                    <span className="font-display text-2xl gradient-text">
-                      {String(ti + 1).padStart(2, "0")}
-                    </span>
-                    <div>
-                      <h2 className="font-display text-2xl font-semibold text-ink-950">
+                  <div className="mb-6 flex items-center gap-6 border-b border-white/[0.06] pb-7">
+                    <PrecisionRing
+                      value={trackPct}
+                      size={52}
+                      stroke={2}
+                      tone={trackPct === 100 ? "emerald" : "cyan"}
+                      label={`${track.title} progress`}
+                    >
+                      <span className="font-mono text-xs font-bold text-ink-800">
+                        {String(ti + 1).padStart(2, "0")}
+                      </span>
+                    </PrecisionRing>
+                    <div className="min-w-0 flex-1">
+                      <h2 className="font-display text-3xl font-bold tracking-tighter text-ink-950">
                         {track.title}
                         {track.optional && (
-                          <span className="ml-3 align-middle rounded-full border border-paper-300 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-ink-500">
-                            optional
+                          <span className="ml-3 align-middle">
+                            <CyberBadge tone="neutral">optional</CyberBadge>
                           </span>
                         )}
                       </h2>
-                      <p className="text-sm text-ink-600">
+                      <p className="mt-1.5 text-sm text-ink-600">
                         {track.optional && track.optionalWhy
                           ? track.optionalWhy
                           : track.blurb}
                       </p>
                     </div>
+                    <span className="hidden font-mono text-[0.7rem] uppercase tracking-widest text-ink-500 sm:block">
+                      {trackDone}/{track.lessons.length}
+                    </span>
                   </div>
                   <ol className="space-y-1">
                     {track.lessons.map((lesson, i) => {
@@ -342,29 +368,29 @@ export default function Learn() {
                           initial={{ opacity: 0, x: -18 }}
                           whileInView={{ opacity: 1, x: 0 }}
                           viewport={{ once: true, margin: "-40px" }}
-                          transition={{ duration: 0.4, delay: Math.min(i * 0.04, 0.3), ease: EASE }}
+                          transition={{ type: "spring", stiffness: 400, damping: 30, delay: Math.min(i * 0.04, 0.3) }}
                         >
                           <Link
                             to={"/learn/" + track.id + "/" + lesson.id}
-                            className="group flex items-center gap-4 rounded-xl px-4 py-4 transition hover:bg-paper-100"
+                            className="group flex items-center gap-5 rounded-2xl border border-transparent px-4 py-4 transition-all duration-300 ease-snap hover:border-white/[0.07] hover:bg-white/[0.04]"
                           >
                             <span
                               className={
-                                "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border font-mono text-xs font-bold transition " +
+                                "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border font-mono text-xs font-bold transition-all duration-300 " +
                                 (done
-                                  ? "border-gold-400 bg-gold-400 text-ink-950 shadow-glow"
+                                  ? "border-emerald-400/60 bg-emerald-400/15 text-emerald-300 shadow-emerald"
                                   : started
-                                    ? "border-gold-400/60 text-gold-600"
-                                    : "border-paper-300 text-ink-600")
+                                    ? "border-gold-400/50 text-gold-400"
+                                    : "border-paper-300 text-ink-500")
                               }
                             >
                               {done ? "✓" : String(i + 1).padStart(2, "0")}
                             </span>
                             <span className="min-w-0 flex-1">
-                              <span className="block font-display text-lg font-medium text-ink-950 group-hover:text-gold-600">
+                              <span className="block font-display text-lg font-semibold tracking-tight text-ink-950 transition-colors group-hover:text-gold-400">
                                 {lesson.title}
                               </span>
-                              <span className="block font-mono text-xs text-ink-600">
+                              <span className="mt-0.5 block font-mono text-[0.68rem] uppercase tracking-widest text-ink-500">
                                 {lesson.minutes} min ·{" "}
                                 {lesson.starter
                                   ? "interactive"
@@ -377,7 +403,7 @@ export default function Learn() {
                                 {lesson.quiz.length} quiz questions
                               </span>
                             </span>
-                            <span className="font-mono text-sm text-ink-600 opacity-0 transition group-hover:translate-x-1 group-hover:opacity-100">
+                            <span className="font-mono text-sm text-gold-400 opacity-0 transition-all duration-300 ease-snap group-hover:translate-x-1 group-hover:opacity-100">
                               →
                             </span>
                           </Link>
@@ -391,12 +417,12 @@ export default function Learn() {
                     <motion.div
                       initial={{ opacity: 0, scale: 0.96 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.5, ease: EASE }}
-                      className="mt-4 rounded-2xl border border-gold-400/50 bg-gold-400/10 px-5 py-4"
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      className="mt-5 rounded-2xl border border-emerald-400/30 bg-emerald-400/[0.06] px-6 py-5 shadow-emerald"
                     >
-                      <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex flex-wrap items-center justify-between gap-4">
                         <p className="text-sm text-ink-800">
-                          <span className="mr-2 text-gold-600">✦</span>
+                          <span className="mr-2 text-emerald-300">✦</span>
                           <strong className="font-display font-semibold text-ink-950">
                             Track complete.
                           </strong>{" "}
@@ -441,7 +467,7 @@ function ActivityStrip({ days, today }: { days: string[]; today: string }) {
           title={c.key}
           className={
             "h-3 w-3 rounded-[3px] " +
-            (c.on ? "bg-gold-400" : "bg-paper-200")
+            (c.on ? "bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.55)]" : "bg-white/[0.06]")
           }
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}

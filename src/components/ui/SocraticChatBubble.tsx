@@ -1,74 +1,90 @@
 import type { ReactNode } from "react";
-import { motion } from "framer-motion";
-import { cn } from "../../lib/cn";
+import { motion, useReducedMotion } from "framer-motion";
+import { Sparkles } from "lucide-react";
 
 export interface SocraticChatBubbleProps {
-  role: "user" | "socratic";
+  role: "ai" | "user";
   children: ReactNode;
-  /** Short follow-up prompts shown as chips under a tutor message. */
-  hints?: string[];
-  onHint?: (hint: string) => void;
-  className?: string;
+  /** Show the floating "analyzing…" indicator instead of a message. */
+  analyzing?: boolean;
+  /** Tappable hint chips under an AI message. */
+  chips?: string[];
+  onChip?: (chip: string) => void;
+  /** Slide in on mount (live chats). Off for static mockups. */
+  animate?: boolean;
 }
 
-export function SocraticChatBubble({ role, children, hints, onHint, className }: SocraticChatBubbleProps) {
-  const isUser = role === "user";
-
+/** Three-dot "thinking" indicator. */
+function Dots() {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className={cn("flex flex-col gap-2", isUser ? "items-end" : "items-start", className)}
-    >
-      {!isUser && (
-        <span className="font-mono text-[0.65rem] uppercase tracking-widest text-cyan-300/70">Socratic AI</span>
-      )}
-      <div
-        className={cn(
-          "max-w-[88%] text-sm leading-relaxed",
-          isUser
-            ? "rounded-2xl rounded-br-md bg-white/[0.06] px-4 py-3 text-zinc-100"
-            : "border-l border-cyan-400/30 py-1 pl-4 text-zinc-300",
-        )}
-      >
-        {children}
-      </div>
-      {!isUser && hints && hints.length > 0 && (
-        <div className="flex flex-wrap gap-2 pl-4">
-          {hints.map((hint) => (
-            <button
-              key={hint}
-              type="button"
-              onClick={() => onHint?.(hint)}
-              className="rounded-full border border-cyan-400/20 bg-cyan-400/[0.04] px-3 py-1.5 text-xs text-cyan-200 outline-none transition-all duration-300 hover:border-cyan-400/40 hover:bg-cyan-400/[0.09] hover:shadow-[0_0_20px_rgba(0,229,255,0.15)] focus-visible:ring-2 focus-visible:ring-cyan-500 active:scale-[0.97]"
-            >
-              {hint}
-            </button>
-          ))}
-        </div>
-      )}
-    </motion.div>
+    <span className="inline-flex items-center gap-1" aria-hidden>
+      {[0, 1, 2].map((i) => (
+        <motion.span
+          key={i}
+          className="h-1 w-1 rounded-full bg-violet-300"
+          animate={{ opacity: [0.25, 1, 0.25], y: [0, -2, 0] }}
+          transition={{ duration: 1.1, repeat: Infinity, delay: i * 0.16 }}
+        />
+      ))}
+    </span>
   );
 }
 
-export interface SocraticStatusProps {
-  label?: string;
-}
+/**
+ * One message in the Socratic tutor. AI turns sit left behind a violet halo,
+ * learner turns sit right in a quiet glass pill. No avatars, no tails —
+ * the alignment carries the speaker.
+ */
+export default function SocraticChatBubble({
+  role,
+  children,
+  analyzing = false,
+  chips,
+  onChip,
+  animate = true,
+}: SocraticChatBubbleProps) {
+  const reduce = useReducedMotion();
+  const ai = role === "ai";
 
-export function SocraticStatus({ label = "Socratic AI is analyzing" }: SocraticStatusProps) {
   return (
-    <div role="status" className="flex items-center gap-3 pl-4 font-mono text-[0.7rem] uppercase tracking-widest text-zinc-500">
-      <span aria-hidden className="flex gap-1">
-        {[0, 1, 2].map((i) => (
-          <span
-            key={i}
-            className="h-1 w-1 animate-pulse rounded-full bg-cyan-400 motion-reduce:animate-none"
-            style={{ animationDelay: `${i * 160}ms` }}
-          />
-        ))}
-      </span>
-      {label}
-    </div>
+    <motion.div
+      initial={animate && !reduce ? { opacity: 0, y: 10, scale: 0.98 } : false}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+      className={"flex " + (ai ? "justify-start" : "justify-end")}
+    >
+      <div className={"max-w-[88%] " + (ai ? "" : "text-right")}>
+        {ai && (
+          <p className="mb-1.5 flex items-center gap-1.5 font-mono text-[0.62rem] uppercase tracking-[0.22em] text-violet-300/80">
+            <Sparkles className="h-3 w-3" aria-hidden />
+            {analyzing ? "Socratic AI is analyzing" : "Socratic AI"}
+          </p>
+        )}
+        <div
+          className={
+            "rounded-2xl px-4 py-3 text-sm leading-relaxed " +
+            (ai
+              ? "border border-violet-400/20 bg-violet-500/[0.07] text-ink-800 shadow-[0_0_30px_-10px_rgba(139,92,246,0.35)]"
+              : "border border-white/10 bg-white/[0.05] text-ink-900")
+          }
+        >
+          {analyzing ? <Dots /> : children}
+        </div>
+        {ai && !analyzing && chips && chips.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {chips.map((chip) => (
+              <button
+                key={chip}
+                type="button"
+                onClick={() => onChip?.(chip)}
+                className="rounded-full border border-cyan-400/20 bg-cyan-400/[0.05] px-3 py-1 text-xs text-cyan-200 transition-all duration-300 ease-snap hover:scale-[1.03] hover:border-cyan-400/50 hover:bg-cyan-400/10 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-cyan-400"
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </motion.div>
   );
 }

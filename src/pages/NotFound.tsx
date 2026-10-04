@@ -1,54 +1,65 @@
-import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import Nav from "../components/Nav";
-import { Orb } from "../components/motion";
+import { CyberBadge, NeonPulseButton } from "../components/ui";
+
+const EASE = [0.25, 1, 0.5, 1] as const;
 
 export default function NotFound() {
   return (
     <div className="min-h-screen">
       <Nav />
-      <main className="relative mx-auto max-w-3xl overflow-hidden px-4 py-28 text-center">
-        {/* Ambient orbs */}
+      <main className="relative mx-auto max-w-3xl overflow-hidden px-4 py-32 text-center sm:py-44">
         <div className="pointer-events-none absolute inset-0" aria-hidden>
-          <Orb className="left-[20%] top-[10%] bg-gold-400/10" size={220} duration={13} />
-          <Orb className="right-[15%] bottom-[5%] bg-paper-200/40" size={160} duration={10} delay={1} />
+          <div className="absolute left-1/2 top-[10%] h-[22rem] w-[22rem] -translate-x-1/2 rounded-full bg-rose-500/15 blur-[130px]" />
+          <div className="absolute right-[12%] bottom-[8%] h-[16rem] w-[16rem] rounded-full bg-violet-600/15 blur-[120px]" />
         </div>
 
-        <div className="relative z-10" style={{ perspective: "900px" }}>
+        <div className="relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: EASE }}
+            className="flex justify-center"
+          >
+            <CyberBadge tone="rose" dot pulse>
+              error 404
+            </CyberBadge>
+          </motion.div>
           <motion.p
-            className="gradient-text font-display text-7xl font-semibold"
-            initial={{ opacity: 0, scale: 0.7, rotateX: 60 }}
-            animate={{ opacity: 1, scale: 1, rotateX: 0 }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            style={{ transformPerspective: 900 }}
+            className="gradient-text mt-8 font-mono text-[8rem] font-bold leading-none tracking-tighter sm:text-[11rem]"
+            initial={{ opacity: 0, scale: 0.9, filter: "blur(16px)" }}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            transition={{ duration: 0.8, ease: EASE }}
+            aria-hidden
           >
             404
           </motion.p>
           <motion.h1
-            className="mt-6 font-display text-3xl font-semibold text-ink-950"
+            className="mt-6 font-display text-3xl font-bold tracking-tighter text-ink-950 sm:text-4xl"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.6, delay: 0.15, ease: EASE }}
           >
             SyntaxError: page not found
           </motion.h1>
           <motion.p
-            className="mx-auto mt-3 max-w-md text-ink-600"
+            className="mx-auto mt-4 max-w-md text-ink-600"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, delay: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.6, delay: 0.28, ease: EASE }}
           >
             Unexpected token at line 1, column 1. The page you're looking for
             doesn't exist.
           </motion.p>
           <motion.div
+            className="mt-12 flex justify-center"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.6, delay: 0.4, ease: EASE }}
           >
-            <Link to="/" className="btn-primary mt-10">
+            <NeonPulseButton to="/" size="lg">
               Back to safety
-            </Link>
+            </NeonPulseButton>
           </motion.div>
         </div>
       </main>

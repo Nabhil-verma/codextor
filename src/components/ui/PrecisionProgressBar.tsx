@@ -1,71 +1,71 @@
 import type { ReactNode } from "react";
-import { motion, useReducedMotion } from "framer-motion";
-import { cn } from "../../lib/cn";
-import type { Tone } from "../../types";
+import { motion } from "framer-motion";
 
-const fill: Record<Tone, string> = {
-  cyan: "bg-gradient-to-r from-cyan-400 to-cyan-200 shadow-[0_0_16px_rgba(0,229,255,0.45)]",
-  violet: "bg-gradient-to-r from-violet-500 to-fuchsia-400 shadow-[0_0_16px_rgba(139,92,246,0.45)]",
-  emerald: "bg-gradient-to-r from-emerald-500 to-emerald-300 shadow-[0_0_16px_rgba(16,185,129,0.45)]",
-  amber: "bg-gradient-to-r from-amber-500 to-amber-300 shadow-[0_0_16px_rgba(245,158,11,0.45)]",
-  rose: "bg-gradient-to-r from-rose-500 to-rose-300 shadow-[0_0_16px_rgba(251,113,133,0.45)]",
+export type ProgressTone = "cyan" | "emerald" | "amber" | "violet";
+
+const BAR: Record<ProgressTone, string> = {
+  cyan: "from-cyan-500 to-cyan-300 shadow-[0_0_14px_rgba(0,229,255,0.5)]",
+  emerald: "from-emerald-500 to-emerald-300 shadow-[0_0_14px_rgba(16,185,129,0.5)]",
+  amber: "from-amber-500 to-amber-300 shadow-[0_0_14px_rgba(245,158,11,0.5)]",
+  violet: "from-violet-500 to-fuchsia-400 shadow-[0_0_14px_rgba(139,92,246,0.5)]",
 };
 
-const stroke: Record<Tone, string> = {
+const RING: Record<ProgressTone, string> = {
   cyan: "#00E5FF",
-  violet: "#A855F7",
   emerald: "#10B981",
   amber: "#F59E0B",
-  rose: "#FB7185",
+  violet: "#A855F7",
 };
 
-const clampPct = (value: number, max: number): number =>
-  max <= 0 ? 0 : Math.min(100, Math.max(0, (value / max) * 100));
+const clamp = (n: number) => Math.min(100, Math.max(0, Number.isFinite(n) ? n : 0));
 
 export interface PrecisionProgressBarProps {
+  /** 0–100. */
   value: number;
-  max?: number;
-  tone?: Tone;
-  label?: string;
-  /** Right-aligned readout above the bar, e.g. "680 / 1000 XP". */
-  valueLabel?: string;
-  thickness?: "xs" | "sm";
+  tone?: ProgressTone;
+  /** Accessible name; also shown as the left label when `showLabel`. */
+  label: string;
+  showLabel?: boolean;
+  /** Right-hand readout, e.g. `42%`. Defaults to the rounded value. */
+  readout?: ReactNode;
   className?: string;
+  /** Entrance delay in seconds. */
+  delay?: number;
 }
 
+/** Hair-thin animated meter. Fills once, when it scrolls into view. */
 export function PrecisionProgressBar({
   value,
-  max = 100,
   tone = "cyan",
   label,
-  valueLabel,
-  thickness = "sm",
-  className,
+  showLabel = false,
+  readout,
+  className = "",
+  delay = 0.15,
 }: PrecisionProgressBarProps) {
-  const reduce = useReducedMotion();
-  const pct = clampPct(value, max);
-
+  const v = clamp(value);
   return (
-    <div className={cn("w-full", className)}>
-      {(label || valueLabel) && (
-        <div className="mb-2 flex items-baseline justify-between font-mono text-[0.7rem] uppercase tracking-widest text-zinc-500">
+    <div className={className}>
+      {showLabel && (
+        <div className="mb-2 flex items-center justify-between font-mono text-[0.7rem] uppercase tracking-widest text-ink-500">
           <span>{label}</span>
-          <span className="tabular-nums text-zinc-300">{valueLabel}</span>
+          <span className="text-ink-700">{readout ?? Math.round(v) + "%"}</span>
         </div>
       )}
       <div
         role="progressbar"
-        aria-label={label ?? "Progress"}
+        aria-label={label}
         aria-valuemin={0}
-        aria-valuemax={max}
-        aria-valuenow={Math.round(value)}
-        className={cn("overflow-hidden rounded-full bg-white/[0.06]", thickness === "xs" ? "h-0.5" : "h-1.5")}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(v)}
+        className="h-1 w-full overflow-hidden rounded-full bg-white/[0.06]"
       >
         <motion.div
-          className={cn("h-full rounded-full", fill[tone])}
-          initial={reduce ? false : { width: 0 }}
-          animate={{ width: `${pct}%` }}
-          transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 120, damping: 26 }}
+          className={"h-full rounded-full bg-gradient-to-r " + BAR[tone]}
+          initial={{ width: 0 }}
+          whileInView={{ width: v + "%" }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.1, ease: [0.25, 1, 0.5, 1], delay }}
         />
       </div>
     </div>
@@ -73,70 +73,66 @@ export function PrecisionProgressBar({
 }
 
 export interface PrecisionRingProps {
-  /** 0 to 100 */
   value: number;
+  tone?: ProgressTone;
+  /** Outer diameter in px. */
   size?: number;
-  strokeWidth?: number;
-  tone?: Tone;
-  label?: string;
+  /** Stroke width in px — keep it thin. */
+  stroke?: number;
+  label: string;
   children?: ReactNode;
 }
 
+/** Ultra-thin circular indicator with centred content. */
 export function PrecisionRing({
   value,
-  size = 72,
-  strokeWidth = 2,
   tone = "cyan",
+  size = 56,
+  stroke = 2,
   label,
   children,
 }: PrecisionRingProps) {
-  const reduce = useReducedMotion();
-  const pct = clampPct(value, 100);
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const target = circumference * (1 - pct / 100);
-
+  const v = clamp(value);
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
   return (
     <div
       role="progressbar"
-      aria-label={label ?? "Progress"}
+      aria-label={label}
       aria-valuemin={0}
       aria-valuemax={100}
-      aria-valuenow={Math.round(pct)}
-      className="relative grid place-items-center"
+      aria-valuenow={Math.round(v)}
+      className="relative shrink-0"
       style={{ width: size, height: size }}
     >
-      <svg
-        aria-hidden
-        width={size}
-        height={size}
-        viewBox={`0 0 ${size} ${size}`}
-        className="-rotate-90"
-        style={{ filter: `drop-shadow(0 0 4px ${stroke[tone]}66)` }}
-      >
+      <svg width={size} height={size} className="-rotate-90" aria-hidden>
         <circle
           cx={size / 2}
           cy={size / 2}
-          r={radius}
+          r={r}
           fill="none"
-          stroke="rgba(255,255,255,0.08)"
-          strokeWidth={strokeWidth}
+          stroke="rgba(255,255,255,0.07)"
+          strokeWidth={stroke}
         />
         <motion.circle
           cx={size / 2}
           cy={size / 2}
-          r={radius}
+          r={r}
           fill="none"
-          stroke={stroke[tone]}
-          strokeWidth={strokeWidth}
+          stroke={RING[tone]}
+          strokeWidth={stroke}
           strokeLinecap="round"
-          strokeDasharray={circumference}
-          initial={{ strokeDashoffset: reduce ? target : circumference }}
-          animate={{ strokeDashoffset: target }}
-          transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 90, damping: 24 }}
+          strokeDasharray={c}
+          initial={{ strokeDashoffset: c }}
+          whileInView={{ strokeDashoffset: c * (1 - v / 100) }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.2, ease: [0.25, 1, 0.5, 1], delay: 0.2 }}
+          style={{ filter: "drop-shadow(0 0 4px " + RING[tone] + "88)" }}
         />
       </svg>
-      <div className="absolute inset-0 grid place-items-center">{children}</div>
+      <div className="absolute inset-0 flex items-center justify-center">
+        {children}
+      </div>
     </div>
   );
 }

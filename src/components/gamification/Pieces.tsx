@@ -59,12 +59,12 @@ export function RankFrame({
     <div className={"relative shrink-0 " + className}>
       <div
         className={
-          "rounded-full bg-gradient-to-br p-[2px] shadow-glow " + tier.frame
+          "rounded-full bg-gradient-to-br p-[2px] shadow-[0_0_22px_-4px_rgba(0,229,255,0.35)] " + tier.frame
         }
       >
         <div
           className={
-            "flex items-center justify-center rounded-full bg-ink-950 font-display font-bold tracking-tight text-paper-50 " +
+            "flex items-center justify-center rounded-full bg-[#06060a] font-display font-bold tracking-tight text-[#fafafc] " +
             AVATAR_SIZES[size]
           }
         >
@@ -73,7 +73,7 @@ export function RankFrame({
       </div>
       <span
         title={`Level ${level}${titleText ? " · " + titleText : ""}`}
-        className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full border border-gold-400/60 bg-ink-950 px-1.5 py-[1px] font-mono text-[9px] font-bold text-gold-300"
+        className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full border border-cyan-400/50 bg-[#06060a] px-1.5 py-[1px] font-mono text-[9px] font-bold text-cyan-300"
       >
         {level}
       </span>
@@ -89,7 +89,7 @@ export function StreakFlame({
   days: number;
   className?: string;
 }) {
-  const hot = days >= 7 ? "text-orange-500" : days >= 3 ? "text-orange-400" : "text-ink-500";
+  const hot = days >= 7 ? "text-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.55)]" : days >= 3 ? "text-amber-300" : "text-ink-500";
   return (
     <motion.span
       className={"inline-flex items-center gap-1 font-mono text-xs font-bold " + hot + " " + className}
@@ -107,11 +107,11 @@ export function StreakFlame({
 export function RankMedal({ rank }: { rank: number }) {
   const medal =
     rank === 1
-      ? "from-gold-300 to-gold-500 text-ink-950"
+      ? "from-amber-200 to-amber-500 text-[#1a1203] shadow-[0_0_16px_rgba(245,158,11,0.45)]"
       : rank === 2
-        ? "from-paper-300 to-ink-300 text-ink-950"
+        ? "from-zinc-100 to-zinc-400 text-[#111116] shadow-[0_0_14px_rgba(212,212,216,0.3)]"
         : rank === 3
-          ? "from-orange-300 to-orange-500 text-ink-950"
+          ? "from-orange-300 to-orange-600 text-[#1f0d03] shadow-[0_0_14px_rgba(234,88,12,0.35)]"
           : "from-paper-100 to-paper-200 text-ink-600";
   return (
     <span
@@ -138,7 +138,7 @@ export function TitleTag({
   return (
     <span
       className={
-        "rounded-full border border-paper-200 bg-paper-100 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest " +
+        "rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest " +
         tier.accent
       }
     >
@@ -199,8 +199,8 @@ export function PanelFallback({
   onRetry?: () => void;
 }) {
   return (
-    <div className="glass glass-edge rounded-2xl border border-paper-200/60 p-8 text-center">
-      <p className="font-mono text-xs uppercase tracking-[0.2em] text-gold-600">
+    <div className="glass glass-edge rounded-3xl border border-paper-200/70 p-8 text-center">
+      <p className="font-mono text-xs uppercase tracking-[0.22em] text-gold-600">
         {title}
       </p>
       <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-ink-600">{message}</p>

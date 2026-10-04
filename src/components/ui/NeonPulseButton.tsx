@@ -1,70 +1,110 @@
-import type { ReactNode } from "react";
-import { motion, type HTMLMotionProps } from "framer-motion";
-import { cn } from "../../lib/cn";
+import type {
+  AnchorHTMLAttributes,
+  ButtonHTMLAttributes,
+  ReactNode,
+} from "react";
+import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 
-type Variant = "primary" | "secondary" | "ghost" | "quest";
-type Size = "sm" | "md" | "lg";
+export type ButtonVariant = "neon" | "glass" | "ghost";
+export type ButtonSize = "sm" | "md" | "lg";
 
-const base =
-  "group relative inline-flex select-none items-center justify-center gap-2 rounded-full font-medium tracking-tight outline-none " +
-  "transition-[box-shadow,background-color,border-color,color] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] " +
-  "focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#030305] " +
-  "disabled:pointer-events-none disabled:opacity-40";
-
-const variants: Record<Variant, string> = {
-  primary:
-    "bg-[#00E5FF] text-[#031014] shadow-[0_0_30px_rgba(0,229,255,0.25)] hover:shadow-[0_0_44px_rgba(0,229,255,0.4)]",
-  secondary:
-    "border border-white/10 bg-white/[0.03] text-zinc-100 backdrop-blur-xl hover:border-white/20 hover:bg-white/[0.06]",
-  ghost: "text-zinc-400 hover:bg-white/[0.04] hover:text-white",
-  quest:
-    "bg-emerald-400 text-[#021410] shadow-[0_0_24px_rgba(16,185,129,0.3)] hover:shadow-[0_0_36px_rgba(16,185,129,0.45)]",
-};
-
-const sizes: Record<Size, string> = {
-  sm: "h-9 px-4 text-sm",
-  md: "h-11 px-6 text-sm",
-  lg: "h-14 px-8 text-base",
-};
-
-export interface NeonPulseButtonProps extends Omit<HTMLMotionProps<"button">, "children"> {
+interface BaseProps {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  /** Trailing icon. Defaults to an arrow; pass `false` for none. */
+  trailingIcon?: ReactNode | false;
+  className?: string;
   children: ReactNode;
-  variant?: Variant;
-  size?: Size;
-  /** Rendered after the label; nudges right on hover. */
-  icon?: ReactNode;
-  /** Shows a soft pulse instead of a spinner and disables the button. */
-  loading?: boolean;
 }
 
-export function NeonPulseButton({
-  children,
-  variant = "primary",
-  size = "md",
-  icon,
-  loading = false,
-  disabled,
-  className,
-  ...rest
-}: NeonPulseButtonProps) {
+type LinkProps = BaseProps & {
+  /** Router destination — renders a <Link>. */
+  to: string;
+} & Omit<AnchorHTMLAttributes<HTMLAnchorElement>, keyof BaseProps | "href">;
+
+type ActionProps = BaseProps & {
+  to?: undefined;
+} & Omit<ButtonHTMLAttributes<HTMLButtonElement>, keyof BaseProps>;
+
+export type NeonPulseButtonProps = LinkProps | ActionProps;
+
+const VARIANT: Record<ButtonVariant, string> = {
+  neon:
+    "bg-gold-400 text-[#030305] shadow-[0_0_30px_rgba(0,229,255,0.2)] hover:bg-gold-300 hover:shadow-[0_0_44px_rgba(0,229,255,0.38)]",
+  glass:
+    "border border-white/10 bg-white/[0.04] text-ink-900 backdrop-blur-xl hover:border-gold-400/40 hover:bg-white/[0.07] hover:shadow-[0_0_30px_rgba(0,240,255,0.15)]",
+  ghost: "text-ink-700 hover:bg-white/[0.05] hover:text-ink-950",
+};
+
+const SIZE: Record<ButtonSize, string> = {
+  sm: "px-4 py-1.5 text-sm gap-1.5",
+  md: "px-6 py-2.5 text-sm gap-2",
+  lg: "px-8 py-3.5 text-base gap-2.5",
+};
+
+/**
+ * Primary call-to-action. Scales up on hover, presses down on click, and the
+ * trailing arrow slides — every state answers the pointer immediately.
+ */
+export default function NeonPulseButton(props: NeonPulseButtonProps) {
+  const {
+    variant = "neon",
+    size = "md",
+    trailingIcon,
+    className = "",
+    children,
+  } = props;
+
+  const classes =
+    "group inline-flex items-center justify-center rounded-full font-semibold tracking-tight " +
+    "transition-all duration-300 ease-snap hover:scale-[1.02] active:scale-[0.97] " +
+    "focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#030305] " +
+    "disabled:pointer-events-none disabled:opacity-50 " +
+    VARIANT[variant] +
+    " " +
+    SIZE[size] +
+    (className ? " " + className : "");
+
+  const icon =
+    trailingIcon === false ? null : (
+      <span className="transition-transform duration-300 ease-snap group-hover:translate-x-1" aria-hidden>
+        {trailingIcon ?? <ArrowRight className="h-4 w-4" />}
+      </span>
+    );
+
+  if (props.to !== undefined) {
+    const {
+      to,
+      variant: _v,
+      size: _s,
+      trailingIcon: _t,
+      className: _c,
+      children: _ch,
+      ...anchor
+    } = props;
+    return (
+      <Link to={to} className={classes} {...anchor}>
+        {children}
+        {icon}
+      </Link>
+    );
+  }
+
+  const {
+    to: _to,
+    variant: _v,
+    size: _s,
+    trailingIcon: _t,
+    className: _c,
+    children: _ch,
+    type,
+    ...button
+  } = props;
   return (
-    <motion.button
-      type="button"
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.97 }}
-      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      {...rest}
-      disabled={disabled || loading}
-      aria-busy={loading || undefined}
-      className={cn(base, variants[variant], sizes[size], className)}
-    >
-      {loading && <span aria-hidden className="h-2 w-2 animate-pulse rounded-full bg-current" />}
-      <span>{children}</span>
-      {icon && (
-        <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-1">
-          {icon}
-        </span>
-      )}
-    </motion.button>
+    <button type={type ?? "button"} className={classes} {...button}>
+      {children}
+      {icon}
+    </button>
   );
 }

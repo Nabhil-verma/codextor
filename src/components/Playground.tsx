@@ -140,7 +140,7 @@ export default function Playground({
               onClick={() => void run()}
               disabled={running}
               title="Cmd/Ctrl+Enter"
-              className="rounded-full bg-gold-400 px-4 py-1 font-mono text-xs font-bold text-ink-950 transition hover:bg-gold-300 disabled:opacity-50"
+              className="rounded-full bg-gold-400 px-4 py-1 font-mono text-xs font-bold text-[#030305] shadow-[0_0_20px_rgba(0,229,255,0.25)] transition-all duration-300 ease-snap hover:scale-[1.04] hover:bg-gold-300 hover:shadow-neon active:scale-[0.96] disabled:opacity-50"
             >
               {running ? "running…" : "▶ Run"}
             </button>
@@ -173,13 +173,13 @@ export default function Playground({
       )}
 
       {result?.typeErrors && result.typeErrors.length > 0 && (
-        <div className="code-window shadow-lift border border-red-400/40">
-          <div className="border-b border-ink-800 px-4 py-2.5 font-mono text-xs text-red-400">
+        <div className="code-window shadow-lift border border-rose-400/40">
+          <div className="border-b border-ink-800 px-4 py-2.5 font-mono text-xs text-rose-300">
             type errors · {result.typeErrors.length}
           </div>
           <div className="max-h-48 overflow-auto p-4 font-mono text-[12px] leading-relaxed">
             {result.typeErrors.map((d, i) => (
-              <p key={i} className="whitespace-pre-wrap text-red-400">
+              <p key={i} className="whitespace-pre-wrap text-rose-300">
                 ✗ TS{d.code} · line {d.line}, col {d.col} — {d.message}
               </p>
             ))}
@@ -201,7 +201,7 @@ export default function Playground({
             </div>
           ))}
           {result?.error && (
-            <div className="mt-2 whitespace-pre-wrap text-red-400">✗ {result.error}</div>
+            <div className="mt-2 whitespace-pre-wrap text-rose-300">✗ {result.error}</div>
           )}
           {result && !result.error && result.logs.length === 0 && (
             <p className="text-ink-600">
@@ -214,7 +214,7 @@ export default function Playground({
       </div>
 
       {result && lang === "ts" && (result.typeErrors?.length ?? 0) === 0 && (
-        <p className="-mt-2 font-mono text-xs text-green-600">
+        <p className="-mt-2 font-mono text-xs text-emerald-300">
           ✓ type check passed
         </p>
       )}
@@ -222,15 +222,15 @@ export default function Playground({
       {check && (
         <div
           className={
-            "rounded-2xl border px-5 py-4 text-sm " +
+            "rounded-2xl border px-5 py-4 text-sm transition-all duration-500 ease-snap " +
             (passed
-              ? "border-gold-400/60 bg-gold-400/10 text-ink-800"
-              : "border-paper-200 bg-paper-50 text-ink-600")
+              ? "border-emerald-400/40 bg-emerald-400/[0.07] text-ink-800 shadow-emerald"
+              : "border-white/10 bg-white/[0.03] text-ink-600")
           }
         >
           {passed ? (
             <span>
-              <span className="mr-2 text-gold-600">✓</span>
+              <span className="mr-2 text-emerald-300">✓</span>
               <strong className="font-semibold text-ink-950">Exercise passed.</strong>{" "}
               Elegant work.
             </span>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Trophy } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
@@ -14,6 +15,7 @@ import {
 } from "../../lib/gamification";
 import { useProgressState } from "../../lib/progress";
 import { useAccount } from "../../AccountProvider";
+import { Skeleton } from "../ui";
 import {
   PanelBoundary,
   PanelFallback,
@@ -41,20 +43,15 @@ export default function LeaderboardPanel({ limit = 20 }: { limit?: number }) {
   const [bracket, setBracket] = useState<Bracket>("week");
 
   return (
-    <div className="glass glass-edge relative overflow-hidden rounded-2xl border border-paper-200/60">
+    <div className="glass glass-edge relative overflow-hidden rounded-3xl border border-paper-200/70">
       {/* Header + bracket switcher */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-paper-200/60 px-5 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.06] px-6 py-5">
         <div className="flex items-center gap-2.5">
-          <motion.span
-            className="text-lg"
-            animate={{ rotate: [0, -12, 12, 0] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-            aria-hidden
-          >
-            🏆
-          </motion.span>
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-amber-400/25 bg-amber-400/[0.07] text-amber-300" aria-hidden>
+            <Trophy className="h-4 w-4" />
+          </span>
           <div>
-            <p className="font-display text-lg font-semibold text-ink-950">
+            <p className="font-display text-lg font-bold tracking-tighter text-ink-950">
               Global leaderboard
             </p>
             <p className="font-mono text-[10px] uppercase tracking-widest text-ink-500">
@@ -66,7 +63,7 @@ export default function LeaderboardPanel({ limit = 20 }: { limit?: number }) {
         <div
           role="tablist"
           aria-label="Leaderboard bracket"
-          className="relative flex rounded-full border border-paper-200/70 bg-paper-50/60 p-1"
+          className="relative flex rounded-full border border-white/10 bg-white/[0.03] p-1"
         >
           {BRACKETS.map((b) => (
             <button
@@ -75,14 +72,14 @@ export default function LeaderboardPanel({ limit = 20 }: { limit?: number }) {
               aria-selected={bracket === b.id}
               onClick={() => setBracket(b.id)}
               className={
-                "relative rounded-full px-3.5 py-1.5 text-xs font-semibold transition " +
-                (bracket === b.id ? "text-paper-50" : "text-ink-600 hover:text-ink-950")
+                "relative rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors duration-300 " +
+                (bracket === b.id ? "text-ink-950" : "text-ink-500 hover:text-ink-950")
               }
             >
               {bracket === b.id && (
                 <motion.span
                   layoutId="board-bracket"
-                  className="absolute inset-0 rounded-full bg-ink-950"
+                  className="absolute inset-0 rounded-full border border-white/10 bg-white/[0.09] shadow-[0_0_20px_-6px_rgba(0,229,255,0.45)]"
                   transition={{ type: "spring", stiffness: 380, damping: 32 }}
                 />
               )}
@@ -104,13 +101,9 @@ function Board({ bracket, limit }: { bracket: Bracket; limit: number }) {
 
   if (data === undefined) {
     return (
-      <div className="space-y-2 p-5">
+      <div className="space-y-2 p-5" role="status" aria-label="Loading standings">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            className="h-14 animate-pulse rounded-xl bg-paper-100/70"
-            style={{ animationDelay: i * 80 + "ms" }}
-          />
+          <Skeleton key={i} className="h-14" />
         ))}
       </div>
     );
@@ -156,7 +149,7 @@ function Board({ bracket, limit }: { bracket: Bracket; limit: number }) {
 
       {/* Your standing — pinned when you're outside the visible top N */}
       {me && !meOnBoard && (
-        <div className="mt-2 border-t border-dashed border-paper-200 pt-2">
+        <div className="mt-2 border-t border-dashed border-white/10 pt-2">
           <BoardRow row={me} bracket={bracket} pinned />
         </div>
       )}
@@ -193,23 +186,23 @@ function BoardRow({
   return (
     <div
       className={
-        "relative flex items-center gap-3 rounded-xl border px-3 py-2.5 transition sm:gap-4 sm:px-4 " +
+        "relative flex items-center gap-3 rounded-2xl border px-3 py-3 transition-all duration-300 ease-snap sm:gap-4 sm:px-4 " +
         (row.isMe
-          ? "border-gold-400/70 bg-gradient-to-r from-gold-400/15 to-transparent shadow-glow ring-1 ring-gold-400/40"
-          : "border-transparent hover:border-paper-200 hover:bg-paper-50/70")
+          ? "border-gold-400/40 bg-gradient-to-r from-gold-400/10 to-transparent shadow-glow"
+          : "border-transparent hover:border-white/[0.07] hover:bg-white/[0.04]")
       }
     >
       {/* Ascension aura — only for the learner themselves */}
       {row.isMe && (
         <motion.span
           aria-hidden
-          className="pointer-events-none absolute inset-0 rounded-xl"
+          className="pointer-events-none absolute inset-0 rounded-2xl"
           initial={{ opacity: 0 }}
           animate={{ opacity: [0.35, 0.6, 0.35] }}
           transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
           style={{
             background:
-              "radial-gradient(120px circle at 12% 50%, rgba(212,175,55,0.22), transparent 70%)",
+              "radial-gradient(140px circle at 12% 50%, rgba(0,229,255,0.2), transparent 70%)",
           }}
         />
       )}
@@ -235,7 +228,7 @@ function BoardRow({
             {row.name}
           </span>
           {row.isMe && (
-            <span className="rounded-full bg-ink-950 px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest text-gold-300">
+            <span className="rounded-full bg-gold-400 px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest text-[#030305]">
               you
             </span>
           )}
@@ -257,7 +250,7 @@ function BoardRow({
         <StreakFlame days={row.streak} className="hidden sm:inline-flex" />
         <div className="text-right">
           <p className="font-mono text-sm font-bold text-ink-950">
-            <span className="text-gold-500" aria-hidden>
+            <span className="text-gold-400" aria-hidden>
               ✦
             </span>{" "}
             {row.xp.toLocaleString()}
