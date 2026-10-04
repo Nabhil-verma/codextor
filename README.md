@@ -1,6 +1,6 @@
 # Codexter
 
-> **A 100% free, interactive code teacher.** Seventeen tracks, 99 hands-on lessons —
+> **A 100% free, interactive code teacher.** Seventeen tracks, 103 hands-on lessons —
 > you write and run real code from minute one, in the browser, with easy signup.
 
 **Live:** [nnghedico.freebuff.app](https://nnghedico.freebuff.app)
@@ -16,7 +16,7 @@ actually does.
 - [Why this exists](#why-this-exists)
 - [Feature overview](#feature-overview)
 - [The curriculum](#the-curriculum)
-- [Nine ways to practise](#nine-ways-to-practise)
+- [Twelve ways to practise](#twelve-ways-to-practise)
 - [The XP economy](#the-xp-economy)
 - [Progression: levels, ascension, titles, badges](#progression-levels-ascension-titles-badges)
 - [Guilds](#guilds)
@@ -63,13 +63,14 @@ A few consequences worth calling out, because they're unusual for a learning app
 
 ## Feature overview
 
-- **17 curriculum tracks, 99 lessons** — Web foundations, React, Tailwind UI
+- **17 curriculum tracks, 103 lessons** — Web foundations, React, Tailwind UI
   engineering, advanced React state, API integration, TypeScript for real
   projects, backend/Node, DSA, Python, Git & testing, DevOps/Linux/Docker, web
   security (OWASP), system design, web performance & accessibility,
-  debugging/testing practice, and **working with coding agents** (the V2.1
-  judgment track: specs, codebase archaeology, instruction files, plan
-  approval, permissions, multi-file diff review, and an agent-loop capstone)
+  debugging/testing practice (including production incident review), and
+  **working with coding agents** (the V2.1 judgment track: specs, codebase
+  archaeology, instruction files, plan approval, permissions, multi-file diff
+  review, and an agent-loop capstone)
 - **Live sandbox runner** — every lesson has an editor + console with
   self-checking exercises, "predict the output" challenges, and an
   infinite-loop guard
@@ -142,9 +143,9 @@ A few consequences worth calling out, because they're unusual for a learning app
 | VIII | Data Structures & Algorithms | `dsa` | 8 | Arrays through graph traversal, all runnable in-page |
 | IX | Python & Data Fundamentals | `python` | 4 | Python syntax and data thinking, shown alongside the JS you know |
 | X | Git, GitHub & Workflows | `git` | 4 | Commits, branches, merges, conflicts — with a guided terminal simulator |
-| XI | Testing & Debugging | `testing` | 4 | What to test, boundary conditions, reading a failure properly |
+| XI | Testing & Debugging | `testing` | 7 | What to test, boundary conditions, reading a failure — then production traces, structured logs, and incident timelines |
 | XII | DevOps, Linux CLI & Cloud | `devops` | 6 | Paths, permissions, containers, and deployment vocabulary |
-| XIII | Web Security & OWASP | `security` | 5 | XSS, CSRF, injection, auth flaws, and how each one is exploited |
+| XIII | Web Security & OWASP | `security` | 6 | XSS, CSRF, injection, auth flaws, how each one is exploited, and where the AI data boundary is |
 | XIV | System Design & Architecture | `architecture` | 6 | Caching, LRU, rate limiting, queues, and scaling vocabulary |
 | XV | Web Performance & Accessibility | `performance` | 6 | Core Web Vitals and a11y as *measured* numbers |
 | XVI | Working with Coding Agents | `agents` | 9 | Specs, archaeology, context, instruction files, plan approval, permissions, verification, capstone |
@@ -159,7 +160,7 @@ own section of the Learn page: framework-specific or lower-priority for
 generalist screening, but fully playable and still counted for XP, ranks and
 certificates.
 
-## Nine ways to practise
+## Twelve ways to practise
 
 A lesson is not one thing. Depending on what it's teaching, the page mounts a
 different interaction:
@@ -175,6 +176,9 @@ different interaction:
 | **Git simulator** | `gitSim` | A guided terminal with objectives checked against real branch/conflict state |
 | **Predict the output** | `predict` | Commit to an answer, then run it and find out |
 | **Drag-to-order** | `sort` | Reconstruct a sequence — box model layers, middleware pipeline, exception blocks |
+| **Multi-file review** | `diff` | A pull-request diff: click the file, the line, and the category of the planted defect — partial credit per rung |
+| **Repo trace** | `repo` | A read-only codebase or log snapshot: locate a function, select the real callers, or reconstruct an incident |
+| **Written deliverable** | `rubric` | Free text graded by weighted criteria — machine checks over your text plus self-attested judgment calls |
 
 Plus **rapid-fire**: the same questions again as a timed gauntlet, where speed
 feeds a combo counter — but only a 100% run completes the lesson, so it can't be
@@ -286,6 +290,12 @@ Total: **1,750 XP**. Every milestone's proof is an executable exercise solved by
 an independent reference solution in the test suite — so a "solution" that
 doesn't actually work can't ship.
 
+Since the V2.1 Wave 3 redesign, each claim also carries a **judgment
+artifact**: the agent task you delegated, a note on what the agent got wrong
+(classified with the shared bug taxonomy), and a proof test that fails on the
+agent's draft and passes on your fix — graded by a dual-run ProofRunner and
+exported from your profile as a shareable Markdown judgment card.
+
 ## How the sandbox actually works
 
 Worth a section, because this is the part most learning apps fake.
@@ -368,7 +378,7 @@ src/
 ├── data/
 │   ├── index.ts              # the track registry + findTrack/findLesson
 │   ├── types.ts              # Lesson, Check, DebugChallenge, PreviewSpec, …
-│   └── track-*.ts            # 17 tracks, 99 lessons of content
+│   └── track-*.ts            # 17 tracks, 103 lessons of content
 ├── lib/
 │   ├── localStore.ts         # the shared localStorage store + pub/sub primitive
 │   ├── progress.ts           # progress store on top of it, v1→v2 migration
@@ -387,7 +397,7 @@ src/
 │   └── clan/                 # guild feed + quest panel
 └── pages/                    # Landing, Learn, Lesson, Playground, Certificate,
                              # Projects, Portfolio, Leaderboard, Clans, Auth
-tests/                        # 26 suites, 257 tests
+tests/                        # 32 suites, 319 tests
 ```
 
 ## Accounts, progress & cloud sync
@@ -450,7 +460,7 @@ you run the code to find out.
 npm test        # or: bun x vitest run
 ```
 
-**257 tests across 26 files.** The content tests are the interesting ones,
+**319 tests across 32 files.** The content tests are the interesting ones,
 because content is where bugs hide:
 
 - Every broken debug program fails its own check, every reference fix passes it,
@@ -469,6 +479,12 @@ because content is where bugs hide:
   the output
 - Two-device claim-log merging is commutative and idempotent, and a full claim
   log with no progress renders as *not* earned
+- The artifact loop: claim-merges give ties to the artifact-bearing claim,
+  pre-patch claims resubmit without downgrading, and every milestone's note
+  rubric is satisfiable by its exemplar across all ten taxonomy categories
+- The incident labs: every single-answer select carries exactly one correct
+  option, every log-dump answer is reachable, and the deploy review plants its
+  defect inside the diff it blames
 - The first cohort's bug list, pinned: real Convex errors render as explanations
   while the rest of the page keeps working, an assembly answer only verifies in
   *runnable* order, and the theme toggle flips `.dark` and remembers it
@@ -559,7 +575,7 @@ unaffected.
   five new tracks (coding agents, building with LLMs, SQL, professional
   workflow, and an interview-prep capstone), the grader verification, and the
   auditable diff against the 15 tracks it was written against (the app now
-  ships 16 — the agents track is the first V2 track to land)
+  ships 17 — agents and professional workflow are the V2 tracks to land so far)
 - **[CURRICULUM-V2-PATCH.md](./CURRICULUM-V2-PATCH.md)** — the V2.1 patch:
   executed Python via Pyodide, multi-file diff review with partial credit,
   codebase archaeology, operating-agent lessons (instruction files, plans,
@@ -569,7 +585,9 @@ unaffected.
 - **[CURRICULUM-V2-PILOT-PROPOSAL.md](./CURRICULUM-V2-PILOT-PROPOSAL.md)** —
   the pilot's status report and execution record: the seed-order reconciliation,
   the three Wave 0 deliverables (partial-credit recording, the diff/click
-  grader, Track XVI end-to-end), the exit gates, and what remains closed
+  grader, Track XVI end-to-end), the exit gates, and the Wave 1–3 records
+  (executed Python, production debugging, data boundaries, the artifact loop)
+  with Fix 7's Next.js track still gated
 
 ## License
 

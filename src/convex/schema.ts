@@ -10,19 +10,22 @@ export default defineSchema({
     userId: v.id("users"),
     data: v.any(),
     /**
-     * Milestone claims: `{ [milestoneId]: { at: "YYYY-MM-DD", deliverables: number[] } }`.
-     * Optional, so rows written before the project layer existed keep working
-     * without a migration. Separate from `data` because that map is a numeric
-     * score map — claims are dated attestations and merge by a different rule.
+     * Milestone claims: `{ [milestoneId]: { at: "YYYY-MM-DD", deliverables:
+     * number[], artifacts?: { task, note, noteCategory, proof } } }` — the
+     * artifact set was added by Fix 8 (Wave 3). Optional, so rows written
+     * before the project layer existed keep working without a migration.
+     * Separate from `data` because that map is a numeric score map — claims
+     * are dated attestations and merge by a different rule.
      */
     claims: v.optional(v.any()),
     /**
-     * Attempt log: `{ [key]: { first, best, attempts, at } }` where `key` is
-     * `${track}/${lesson}` and `at` is the epoch ms of the last attempt.
-     * Optional, so rows written before the pilot's telemetry existed keep
-     * working without a migration. Aggregated client-side (first / best /
-     * count) rather than storing every attempt, because the gates need the
-     * summary and the row must stay bounded.
+     * Attempt log: `{ [key]: { first, best, attempts, at, firstAt } }` where
+     * `key` is `${track}/${lesson}`, `at` is the epoch ms of the last attempt
+     * and `firstAt` of the first (the only clock that may decide whose `first`
+     * wins in a merge). Optional, so rows written before the pilot's telemetry
+     * existed keep working without a migration. Aggregated client-side (first /
+     * best / count) rather than storing every attempt, because the gates need
+     * the summary and the row must stay bounded.
      */
     attempts: v.optional(v.any()),
     updatedAt: v.optional(v.number()),

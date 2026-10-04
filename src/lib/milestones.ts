@@ -7,7 +7,8 @@
 /* ------------------------------------------------------------------ */
 
 import { findLesson, lessonKey } from "../data";
-import type { Check, PreviewSpec } from "../data/types";
+import type { Check, PreviewSpec, RubricExercise } from "../data/types";
+import { taxonomyEntry, type TaxonomyCode } from "../data/bug-taxonomy";
 import { scoreFor, type Progress } from "./progress";
 
 /** The functional proof attached to a milestone, where one is possible. */
@@ -37,10 +38,41 @@ export type Milestone = {
   xp: number;
   badge: MilestoneBadge;
   proof?: MilestoneProof;
+  /** Fix 8 (Wave 3): the agent-loop brief the claim's artifact must satisfy. */
+  artifact: MilestoneArtifactSpec;
 };
 
-/** One claimed milestone: when, and which deliverables were ticked off. */
-export type Claim = { at: string; deliverables: number[] };
+/** The agent-loop brief attached to a milestone (Fix 8, §8.1). */
+export type MilestoneArtifactSpec = {
+  /** What to delegate to the agent. */
+  task: string;
+  /** What the written note must name about the agent's failure. */
+  noteMust: string;
+  /** What the proof test is expected to catch. */
+  testCatches: string;
+};
+
+/**
+ * The portfolio artifact a claim carries (Fix 8, §8.2): the note on what the
+ * agent got wrong, the taxonomy category, and the dual-run proof test that
+ * demonstrated it. Additive and optional — pre-patch claims stay valid.
+ */
+export type MilestoneArtifacts = {
+  task: string;
+  note: string;
+  noteCategory: TaxonomyCode;
+  proof: { buggy: string; test: string; fixed: string };
+};
+
+/**
+ * One claimed milestone: when, which deliverables were ticked off, and — since
+ * Fix 8 — the artifact (note + proof test) that turns the claim into evidence.
+ */
+export type Claim = {
+  at: string;
+  deliverables: number[];
+  artifacts?: MilestoneArtifacts;
+};
 export type Claims = Record<string, Claim>;
 
 /* ═══════════════════════════════════════════════════════════════
@@ -72,6 +104,11 @@ export const MILESTONES: Milestone[] = [
       "Descriptive alt text on every image and discernible text on every link",
       "Opens in a browser with an empty console",
     ],
+    artifact: {
+      task: "Convert the shell to semantic landmarks and add a skip link",
+      noteMust: "the missed heading level or focus trap the agent introduced",
+      testCatches: "a DOM assertion (heading order, skip-link target exists)",
+    },
     xp: 150,
     badge: {
       id: "ms-shell",
@@ -119,6 +156,11 @@ export const MILESTONES: Milestone[] = [
       "Dark mode is readable — AA contrast on body copy in both themes",
       "Spacing comes from the scale, with no one-off pixel values",
     ],
+    artifact: {
+      task: "Apply the token system to the card grid, responsive from 320px",
+      noteMust: "the breakpoint or dark-mode regression the agent left",
+      testCatches: "a selector assertion (sm/md classes, dark variant present)",
+    },
     xp: 250,
     badge: {
       id: "ms-style",
@@ -179,6 +221,11 @@ export const MILESTONES: Milestone[] = [
       "Every immutable update goes through a copied data structure",
       "No React warnings or key errors in the console",
     ],
+    artifact: {
+      task: "Add immutable add/toggle/remove plus a controlled input",
+      noteMust: "the mutation, stale closure, or key bug the agent wrote",
+      testCatches: "the unit test that fails on the agent's draft (a mutation incident)",
+    },
     xp: 300,
     badge: {
       id: "ms-interactive",
@@ -249,6 +296,11 @@ console.log("after remove:", removed.length, removed.map((t) => t.text).join(","
       "In-flight requests aborted on unmount",
       "Failures show human copy with a retry, never a raw error string",
     ],
+    artifact: {
+      task: "Fetch content and handle loading/error/empty/ready, aborting on unmount",
+      noteMust: "the unawaited value, missing res.ok check, or abort gap",
+      testCatches: "the test that reproduces the stale-or-error path",
+    },
     xp: 300,
     badge: {
       id: "ms-data",
@@ -313,6 +365,11 @@ console.log("refetch failed, cached:", viewState({ loading: false, error: "boom"
       "Components unsubscribe on unmount — no leaked listeners",
       "A refresh leaves the UI exactly as the visitor left it",
     ],
+    artifact: {
+      task: "Add a store with getState/setState/subscribe, persisted to localStorage",
+      noteMust: "the needless notify, overwritten persist, or lost unsubscribe",
+      testCatches: "the test that fails when setState over-notifies",
+    },
     xp: 350,
     badge: {
       id: "ms-persist",
@@ -389,6 +446,11 @@ console.log("final count:", store.getState().count);`,
       "Deployed at a live URL that loads without errors",
       "That URL is on your CV, your GitHub profile and your LinkedIn",
     ],
+    artifact: {
+      task: "Generate the README and a changelog from the commit history",
+      noteMust: "the fabricated claim or dropped evidence in the agent's text",
+      testCatches: "a truthfulness test (claims map to commits or scripts that exist)",
+    },
     xp: 400,
     badge: {
       id: "ms-ship",
@@ -463,6 +525,10 @@ type MilestoneStatus = {
   claimedAt: string | null;
   /** Deliverables ticked off so far (0 when unclaimed). */
   deliverablesDone: number;
+  /** The claim carries the Fix 8 artifacts (note + proof test). */
+  hasArtifacts: boolean;
+  /** Claimed before the artifact loop existed — offers the resubmission path. */
+  legacyClaim: boolean;
 };
 
 /**
@@ -497,6 +563,8 @@ export function milestoneStatus(
     earned: Boolean(claim) && unlocked,
     claimedAt: claim?.at ?? null,
     deliverablesDone: claim ? claim.deliverables.length : 0,
+    hasArtifacts: Boolean(claim?.artifacts),
+    legacyClaim: Boolean(claim) && !claim?.artifacts,
   };
 }
 
@@ -509,22 +577,36 @@ export function allMilestoneStatus(
 }
 
 /**
- * Union of two claim logs. "Best claim wins" per milestone: the one with more
- * ticked deliverables, ties going to the earlier date. Commutative and
- * associative, so a local claim and a cloud pull converge on the same log no
- * matter which order they arrive in — and re-merging is always idempotent.
+ * Union of two claim logs — a deterministic total order per milestone:
+ *   1. the claim with more ticked deliverables wins;
+ *   2. ties go to the claim carrying artifacts (Fix 8's resubmission rule);
+ *   3. if both (or neither) carry artifacts, the earlier date wins.
+ * Commutative and associative, so a local claim and a cloud pull converge on
+ * the same log no matter which order they arrive in — and re-merging is
+ * idempotent. This is an *evidence* rule, not a freshness rule: an artifact
+ * edited after the first synced submission loses to the earlier artifact on
+ * the next merge, by design — the first proof is the record.
  */
 export function mergeClaims(a: Claims, b: Claims): Claims {
   const out: Claims = { ...a };
   for (const [id, claim] of Object.entries(b)) {
     const mine = out[id];
-    if (!mine || claim.deliverables.length > mine.deliverables.length) {
+    if (!mine) {
       out[id] = claim;
-    } else if (
-      claim.deliverables.length === mine.deliverables.length &&
-      claim.at < mine.at
-    ) {
+      continue;
+    }
+    const claimTicks = claim.deliverables.length;
+    const mineTicks = mine.deliverables.length;
+    if (claimTicks > mineTicks) {
       out[id] = claim;
+    } else if (claimTicks === mineTicks) {
+      const claimHasArtifacts = Boolean(claim.artifacts);
+      const mineHasArtifacts = Boolean(mine.artifacts);
+      if (claimHasArtifacts !== mineHasArtifacts) {
+        if (claimHasArtifacts) out[id] = claim;
+      } else if (claim.at < mine.at) {
+        out[id] = claim;
+      }
     }
   }
   return out;
@@ -552,4 +634,121 @@ export function milestoneBadges(
   claims: Claims
 ): (MilestoneBadge & { earned: boolean })[] {
   return MILESTONES.map((m) => ({ ...m.badge, earned: Boolean(claims[m.id]) }));
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Fix 8 (Wave 3) — the artifact loop.
+
+   Each claim can now carry a note (what the agent got wrong) and a
+   proof test (the test that demonstrated it — failing on the agent's
+   draft, passing on the learner's fix). The note is graded by the
+   rubric grader; the proof by `ProofRunner`'s dual run. Old claims
+   without artifacts stay valid and get a resubmission path.
+   ═══════════════════════════════════════════════════════════════ */
+
+/**
+ * One keyword per taxonomy code for the note's auto-check. The rubric asks the
+ * learner to *name the category*, so the check looks for the concept's word —
+ * matching the label of the code they selected in the form.
+ */
+const CATEGORY_KEYWORDS: Record<TaxonomyCode, string> = {
+  RC: "race",
+  EC: "edge case",
+  HA: "hallucinat",
+  ID: "insecure",
+  SL: "wrong",
+  CX: "complex",
+  SC: "scope",
+  TG: "test",
+  NM: "name",
+  DL: "debug",
+};
+
+/**
+ * The note's rubric, parameterised by the category the learner selected: the
+ * plan's criteria are "names the failure scenario" and "names the taxonomy
+ * category" as machine checks, plus the self-attested judgment call. The
+ * exemplar is written to satisfy its own checks, as the suite requires of
+ * every rubric.
+ */
+export function artifactRubric(
+  m: Milestone,
+  category: TaxonomyCode
+): RubricExercise {
+  const entry = taxonomyEntry(category);
+  const keyword = CATEGORY_KEYWORDS[category];
+  return {
+    id: `artifact-${m.id}`,
+    title: "The note: what the agent got wrong",
+    prompt: m.artifact.noteMust,
+    brief:
+      "Auto-checked criteria read your lower-cased note; the last one is your judgment call.",
+    minWords: 20,
+    criteria: [
+      {
+        id: "names-failure",
+        label: "describes the failure scenario concretely (80+ characters)",
+        // The check grammar exposes `.length` only after a `split`, so the
+        // character count is measured over the split-on-everything array.
+        check: 'output.split("").length >= 80',
+      },
+      {
+        id: "names-category",
+        label: `names the category (${entry.code} · ${entry.label})`,
+        check: `output.includes("${keyword}")`,
+      },
+      {
+        id: "defensible",
+        label: "you could defend this note in a code review",
+      },
+    ],
+    exemplar: `The agent's draft shipped a ${entry.label.toLowerCase()} while doing this task: ${m.artifact.task.toLowerCase()}. ${m.artifact.noteMust.charAt(0).toUpperCase() + m.artifact.noteMust.slice(1)} — a reviewer should be able to reproduce it from this note alone.`,
+  };
+}
+
+/**
+ * Structural completeness of an artifact: every field present and non-empty.
+ * (The note's *quality* is the rubric's job and the proof's is ProofRunner's;
+ * this is what a sanitizer can check without grading.)
+ */
+export function artifactComplete(a: MilestoneArtifacts | undefined): boolean {
+  if (!a) return false;
+  return (
+    a.note.trim().length > 0 &&
+    a.proof.buggy.trim().length > 0 &&
+    a.proof.test.trim().length > 0 &&
+    a.proof.fixed.trim().length > 0
+  );
+}
+
+/**
+ * §8.3's export: the claim rendered as a shareable "judgment card" in
+ * Markdown, so the note + proof can go straight into an application or repo.
+ */
+export function judgmentCardMarkdown(m: Milestone, claim: Claim): string {
+  const a = claim.artifacts;
+  if (!a) return "";
+  const entry = taxonomyEntry(a.noteCategory);
+  const fence = "```";
+  return [
+    `## ${m.title} — judgment card`,
+    "",
+    `**Agent task:** ${a.task}`,
+    "",
+    `**What the agent got wrong (${entry.code} · ${entry.label}):**`,
+    "",
+    a.note,
+    "",
+    "**The test that proved it (fails on the draft, passes on the fix):**",
+    "",
+    fence,
+    a.proof.test,
+    fence,
+    "",
+    "**The fix:**",
+    "",
+    fence,
+    a.proof.fixed,
+    fence,
+  ].join("\n");
 }

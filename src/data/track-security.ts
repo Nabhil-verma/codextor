@@ -720,5 +720,186 @@ console.log(hasHardcodedSecret('const k = process.env.STRIPE_KEY;')); // false`,
         },
       ],
     },
+    /* ── Fix 6 (Wave 2): the boundary *before* the prompt leaves ── */
+    {
+      id: "data-boundaries",
+      title: "Data Boundaries: What Not to Paste Into AI Tools",
+      minutes: 11,
+      body: `V2's leaked-secrets lesson covers a secret already committed to a repo. This one is about the boundary **before** the prompt leaves the laptop — because the model provider's retention, training and jurisdiction are out of your hands the moment you press enter.
+
+**Four boundaries, and what crosses them:**
+
+| Boundary | What it means | The legitimate substitute |
+| --- | --- | --- |
+| **Proprietary / work code** | Your employer's source and business logic | An open-source counterpart, a minimal repro, or a synthetic example |
+| **Secrets & credentials** | Keys, tokens, passwords — even uncommitted, even in a "private" session | Rotate anything that leaked, and paste a placeholder |
+| **Customer data / PII** | Real names, emails, addresses, order histories | Anonymise or synthesise; a real payload is a breach with extra steps |
+| **License & provenance** | Whether generated code may be shipped, and under what terms | Read the provider's terms, the tool's ingestion rules, and your employer's policy |
+
+**The accountability frame:** the engineer remains responsible for what the AI produced *and* for what the AI was shown. No terms of service transfers that — tooling is a power tool, not a scapegoat. That single sentence is what makes the classification exercise below decidable: you are not asked whether a tool is "allowed", you are asked who owns the consequence when it isn't. The last section's note asks you to write that ownership down.
+
+**Classify the scenario cards below first** — never / redact first / fine, plus the boundary it touches — then write the accountability note. The classification is graded exactly (a wrong card cancels a right one), because the real skill is refusing the plausible middle: *"it's fine, I'll delete it after"* is how production payloads end up in a vendor's logs.`,
+      quiz: [
+        {
+          q: "A customer's support ticket with their email address and order history",
+          options: [
+            "Never — customer PII; anonymise or synthesise instead",
+            "Redact first — secrets",
+            "Fine — support tickets aren't sensitive",
+            "Fine if the vendor promises not to train on it",
+          ],
+          answer: 0,
+          explanation:
+            "PII plus vendor-side retention is a data-processing event you can't control. The synthetic version usually answers the question just as well.",
+        },
+        {
+          q: "A production stack trace containing an internal hostname (prod-db.internal)",
+          options: [
+            "Redact the hostname first — infrastructure detail with no role in the debugging question",
+            "Never — any production log line is forbidden",
+            "Fine as-is — stack traces are public knowledge",
+            "Fine if you delete the timestamps",
+          ],
+          answer: 0,
+          explanation:
+            "The sanitised trace (or a minimal repro) carries all the debugging value; internal topology carries none and leaks your network.",
+        },
+        {
+          q: "An open-source snippet you're debugging, already published on GitHub",
+          options: [
+            "Fine — public code crosses no boundary",
+            "Never — license risk",
+            "Redact first — attribution",
+            "Fine only with the author's written permission",
+          ],
+          answer: 0,
+          explanation:
+            "Public code is public. (Its *license* still constrains reuse in your project — that's a separate question from pasting it into a chat.)",
+        },
+        {
+          q: "The company's unannounced pricing algorithm, described in prose",
+          options: [
+            "Never — proprietary business logic; ask for a synthetic example instead",
+            "Fine — prose isn't code",
+            "Redact the numbers first",
+            "Fine if you're off the clock",
+          ],
+          answer: 0,
+          explanation:
+            "The boundary is about the *information*, not the format. Describing it in words crosses the same line as pasting it.",
+        },
+        {
+          q: "A failing test with synthetic fixtures",
+          options: [
+            "Fine — synthetic data crosses no customer boundary",
+            "Never — test failures reveal internals",
+            "Redact the fixture names first",
+            "Fine only after legal review",
+          ],
+          answer: 0,
+          explanation:
+            "This is the substitute pattern the lesson is teaching: a test with fake data is safe to share *and* usually isolates the bug better.",
+        },
+        {
+          q: "A live API key, to ask why authentication fails",
+          options: [
+            "Never — a live credential stays on the machine; rotate it and paste a placeholder",
+            "Fine — it's your own key",
+            "Redact the middle characters first, then paste",
+            "Fine in a private/incognito session",
+          ],
+          answer: 0,
+          explanation:
+            "Even uncommitted, even 'private' — retention is out of your hands. If it was already sent, rotation is the only real remedy.",
+        },
+        {
+          q: "A real customer payload from a failing production request (names, addresses)",
+          options: [
+            "Never — anonymise or synthesise; a real payload is a breach with extra steps",
+            "Redact first — support teams do it all the time",
+            "Fine — you're only debugging",
+            "Fine if the customer data is already in the logs",
+          ],
+          answer: 0,
+          explanation:
+            "'It's already in the logs' doesn't grant a new copy a new purpose. The payload's shape is what you need — recompose it synthetically.",
+        },
+        {
+          q: "AI-generated code you're considering shipping in a client project",
+          options: [
+            "Check license and provenance against the provider's terms and your client's policy before shipping",
+            "Never — AI output can't be licensed",
+            "Fine — generated code is always yours",
+            "Fine as long as you reformat it",
+          ],
+          answer: 0,
+          explanation:
+            "Provenance isn't clean-room, and redistribution depends on provider terms, tool ingestion and policy. Attribution risk is real and generally yours.",
+        },
+        {
+          q: "A private repo file from your employer, to ask for a refactor",
+          options: [
+            "Never — work code stays behind the company boundary; use an open-source counterpart or a minimal repro",
+            "Fine if the repo is marked internal",
+            "Redact first — remove the comments",
+            "Fine if you paste only one function",
+          ],
+          answer: 0,
+          explanation:
+            "The boundary is the employer's, not yours to waive. A rewritten repro gets the same refactor advice with none of the exposure.",
+        },
+        {
+          q: "A failing query with the table schema and column names, but no rows",
+          options: [
+            "Fine — schema shape isn't customer data",
+            "Never — schema reveals architecture",
+            "Redact the column names first",
+            "Fine only for open-source projects",
+          ],
+          answer: 0,
+          explanation:
+            "Structure and rows are different classes: schema is often in migrations and docs; the rows are the boundary. Paste the shape, never the data.",
+        },
+      ],
+      rubric: {
+        id: "accountability-note",
+        title: "The Accountability Note",
+        prompt:
+          "In ~120 words: what you would do before pasting anything into a new tool, and who owns a defective output.",
+        brief:
+          "Auto-checked criteria run the word checks; the last one is your judgment call. This note is portfolio evidence — copy it into your repo.",
+        minWords: 120,
+        criteria: [
+          {
+            id: "owns-output",
+            label:
+              "states the engineer — not the tool — owns what the AI produced",
+            check: `output.includes("responsib") || output.includes("accountab")`,
+          },
+          {
+            id: "owns-input",
+            label: "states that the engineer also owns what was shown to the tool",
+            check: `output.includes("input") || output.includes("pasted") || output.includes("what i")`,
+          },
+          {
+            id: "names-boundary",
+            label:
+              "names a boundary it touches (proprietary, secret, PII, or license)",
+            check: `output.includes("proprietar") || output.includes("company") || output.includes("secret") || output.includes("credential") || output.includes("pii") || output.includes("customer") || output.includes("licen") || output.includes("provenance")`,
+          },
+          {
+            id: "verification-step",
+            label:
+              "names a concrete verification step for generated code (test it, review it, run it)",
+            check: `output.includes("test") || output.includes("review") || output.includes("verify") || output.includes("run")`,
+          },
+          {
+            id: "defensible",
+            label: "you could defend this note in a code review",
+          },
+        ],
+        exemplar: `Before I paste anything, I run a boundary check. If it is my employer's proprietary code, I use an open-source equivalent or a minimal reproduction instead. If it contains secrets or credentials, they get rotated and replaced with placeholders — even for a private session, because retention is out of my hands. Customer data and PII are anonymised or synthesised; a real payload never leaves the company. If I plan to ship generated code, I check its license and provenance against the provider's terms and my client's policy. The engineer stays responsible for both sides of the tool: what the AI produced and what the AI was shown as input. So I verify generated code the way I verify anyone's work — I read it, I run it, and I test the paths that matter. The tool never owns that responsibility.`,
+      },
+    },
   ],
 };

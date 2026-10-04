@@ -5,6 +5,7 @@ import Nav from "../components/Nav";
 import { PageFade, Reveal } from "../components/motion";
 import LivePreview from "../components/LivePreview";
 import Playground from "../components/Playground";
+import ProofRunner from "../components/ProofRunner";
 import { useProgressState } from "../lib/progress";
 import { todayKey } from "../lib/gamification";
 import {
@@ -12,15 +13,25 @@ import {
   PORTFOLIO_PROJECT,
   PORTFOLIO_XP,
   allMilestoneStatus,
+  artifactRubric,
   milestonesClaimed,
 } from "../lib/milestones";
 import { claimMilestone, useClaims } from "../lib/milestoneStore";
+import { evaluateRubric } from "../lib/labGrade";
+import { recordAttempt } from "../lib/telemetry";
+import { REVIEW_CODES, taxonomyEntry, type TaxonomyCode } from "../data/bug-taxonomy";
 
 /* ═══════════════════════════════════════════════════════════════
    The project board. Every milestone shows what to build, which
    lessons unlock it, the functional components to tick off, and —
    where it's verifiable — a real sandbox that grades the work.
+   Since Fix 8 (Wave 3) each claim also carries an artifact: a note
+   on what the agent got wrong and the proof test that demonstrated
+   it, graded by the rubric and ProofRunner respectively.
    ═══════════════════════════════════════════════════════════════ */
+
+const ARTIFACT_CODE_FIELD =
+  "block w-full resize-y rounded-xl border border-paper-200 bg-paper-50/70 p-3 font-mono text-[12.5px] leading-relaxed text-ink-900 outline-none transition focus:border-gold-400";
 
 export default function Projects() {
   const progress = useProgressState();
@@ -164,21 +175,55 @@ function MilestoneCard({
   status: ReturnType<typeof allMilestoneStatus>[number];
   index: number;
 }) {
-  const { milestone: m, unlocked, claimed, claimedAt, missingSkills, missingKeys } =
-    status;
+  const {
+    milestone: m,
+    unlocked,
+    claimed,
+    claimedAt,
+    missingSkills,
+    missingKeys,
+    hasArtifacts,
+    legacyClaim,
+  } = status;
   const [ticked, setTicked] = useState<number[]>(claimed ? m.deliverables.map((_, i) => i) : []);
   const [proofPassed, setProofPassed] = useState(false);
 
+  /* Fix 8's artifact: the note (rubric-graded) and the proof test (dual-run). */
+  const [note, setNote] = useState("");
+  const [category, setCategory] = useState<TaxonomyCode | "">("");
+  const [draft, setDraft] = useState("");
+  const [proofTest, setProofTest] = useState("");
+  const [fixed, setFixed] = useState("");
+  const [attested, setAttested] = useState(false);
+  const [proofScore, setProofScore] = useState<number | null>(null);
+
   const allTicked = ticked.length === m.deliverables.length;
   const proofDone = !m.proof || proofPassed;
-  const canClaim = unlocked && allTicked && proofDone && !claimed;
+  const rubric = category ? artifactRubric(m, category) : null;
+  const rubricResult =
+    rubric && note.trim()
+      ? evaluateRubric(rubric, note, { defensible: attested })
+      : null;
+  const noteReady = (rubricResult?.score ?? 0) >= 1;
+  const artifactReady = noteReady && proofScore === 1;
+  // A fresh claim needs the artifact; a pre-patch claim can resubmit one.
+  const canClaim =
+    unlocked &&
+    allTicked &&
+    artifactReady &&
+    (claimed ? !hasArtifacts : proofDone);
 
   const toggle = (i: number) =>
     setTicked((t) => (t.includes(i) ? t.filter((x) => x !== i) : [...t, i]));
 
   const claim = () => {
-    if (!canClaim) return;
-    claimMilestone(m.id, ticked, todayKey());
+    if (!canClaim || category === "") return;
+    claimMilestone(m.id, ticked, todayKey(), {
+      task: m.artifact.task,
+      note,
+      noteCategory: category,
+      proof: { buggy: draft, test: proofTest, fixed },
+    });
   };
 
   return (
@@ -335,19 +380,166 @@ function MilestoneCard({
             </div>
           )}
 
+          {/* Portfolio artifact — the agent loop (Fix 8) */}
+          {!claimed || legacyClaim ? (
+            <div className="border-t border-paper-200/60 px-6 py-5">
+              <div className="flex flex-wrap items-center gap-3">
+                <p className="font-mono text-[11px] uppercase tracking-widest text-ink-500">
+                  portfolio artifact · the agent loop
+                </p>
+                {legacyClaim ? (
+                  <span className="rounded-full border border-gold-400/50 bg-gold-400/10 px-2.5 py-0.5 font-mono text-[10px] text-gold-700">
+                    pre-patch claim — resubmit with an artifact
+                  </span>
+                ) : (
+                  <span className="rounded-full border border-paper-200 px-2.5 py-0.5 font-mono text-[10px] text-ink-500">
+                    required for new claims
+                  </span>
+                )}
+              </div>
+              <p className="mt-3 text-sm text-ink-700">
+                <strong className="font-semibold text-ink-900">Delegate:</strong>{" "}
+                {m.artifact.task}
+              </p>
+              <p className="mt-1 text-xs text-ink-500">
+                The note must name {m.artifact.noteMust}. The proof test should
+                catch {m.artifact.testCatches}.
+              </p>
+
+              <label className="mt-4 block">
+                <span className="font-mono text-[10px] uppercase tracking-widest text-ink-500">
+                  the note — what the agent got wrong
+                </span>
+                <textarea
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  rows={5}
+                  aria-label="The note: what the agent got wrong"
+                  placeholder="Describe the failure concretely — what broke, and on which input."
+                  className="mt-1.5 block w-full resize-y rounded-xl border border-paper-200 bg-paper-50/70 p-4 text-sm leading-relaxed text-ink-900 outline-none transition focus:border-gold-400"
+                />
+              </label>
+
+              <label className="mt-3 block max-w-sm">
+                <span className="font-mono text-[10px] uppercase tracking-widest text-ink-500">
+                  the category it belongs to
+                </span>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value as TaxonomyCode | "")}
+                  className="mt-1.5 block w-full rounded-xl border border-paper-200 bg-paper-50 px-3 py-2 font-mono text-xs text-ink-900 outline-none focus:border-gold-400"
+                >
+                  <option value="">choose a category…</option>
+                  {REVIEW_CODES.map((code) => (
+                    <option key={code} value={code}>
+                      {code} · {taxonomyEntry(code).label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              {rubricResult && (
+                <ul className="mt-3 space-y-1.5">
+                  {rubricResult.results.map((r) => (
+                    <li key={r.id} className="flex items-start gap-2 text-xs">
+                      {r.auto ? (
+                        <span
+                          className={
+                            "mt-0.5 font-mono " + (r.met ? "text-gold-600" : "text-red-500")
+                          }
+                        >
+                          {r.met ? "✓" : "✗"}
+                        </span>
+                      ) : (
+                        <input
+                          type="checkbox"
+                          checked={attested}
+                          onChange={() => setAttested((v) => !v)}
+                          className="mt-0.5 accent-gold-500"
+                          aria-label={r.label}
+                        />
+                      )}
+                      <span className={r.met ? "text-ink-700" : "text-ink-500"}>
+                        {r.label}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              <p className="mt-4 font-mono text-[10px] uppercase tracking-widest text-ink-500">
+                the proof test — draft · test · fix
+              </p>
+              <div className="mt-2 space-y-3">
+                <textarea
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  rows={4}
+                  aria-label="The agent's draft — a minimal repro"
+                  placeholder="// the agent's draft, reduced to the failing part"
+                  className={ARTIFACT_CODE_FIELD}
+                />
+                <textarea
+                  value={proofTest}
+                  onChange={(e) => setProofTest(e.target.value)}
+                  rows={4}
+                  aria-label="Your test — it must throw on the draft"
+                  placeholder="// your test: throw when the draft behaves wrong"
+                  className={ARTIFACT_CODE_FIELD}
+                />
+                <textarea
+                  value={fixed}
+                  onChange={(e) => setFixed(e.target.value)}
+                  rows={4}
+                  aria-label="Your fix — the same test must pass"
+                  placeholder="// your fix: the same test now passes"
+                  className={ARTIFACT_CODE_FIELD}
+                />
+              </div>
+              <div className="mt-3">
+                <ProofRunner
+                  proof={{ buggy: draft, test: proofTest, fixed }}
+                  onScore={(score) => {
+                    setProofScore(score);
+                    recordAttempt({
+                      key: "project/" + m.id,
+                      element: "proof",
+                      score,
+                      day: todayKey(),
+                    });
+                  }}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="border-t border-paper-200/60 px-6 py-4">
+              <p className="font-mono text-[11px] text-ink-500">
+                artifact attached — it renders as a judgment card on your{" "}
+                <Link to="/portfolio" className="text-gold-600 hover:text-gold-500">
+                  profile
+                </Link>
+                .
+              </p>
+            </div>
+          )}
+
           {/* Claim */}
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-paper-200/60 bg-paper-50/50 px-6 py-4">
             <p className="font-mono text-[11px] text-ink-500">
               {claimed
-                ? "claimed — this one is on your record"
+                ? hasArtifacts
+                  ? "claimed — this one is on your record"
+                  : "pre-patch claim — add the artifact to complete it"
                 : !allTicked
                   ? `tick all ${m.deliverables.length} components to claim`
                   : !proofDone
                     ? "pass the sandbox above to claim"
-                    : "everything checks out"}
+                    : !artifactReady
+                      ? "run the proof and pass the note checks to claim"
+                      : "everything checks out"}
             </p>
             <AnimatePresence>
-              {claimed ? (
+              {claimed && hasArtifacts ? (
                 <span className="flex items-center gap-2 font-mono text-xs text-gold-600">
                   <span className="text-lg">🏅</span> {m.badge.title}
                 </span>
@@ -363,7 +555,7 @@ function MilestoneCard({
                       : "rounded-full border border-paper-200 px-5 py-2 font-mono text-xs text-ink-400"
                   }
                 >
-                  Claim {m.xp} XP
+                  {claimed ? "Submit artifact" : `Claim ${m.xp} XP`}
                 </motion.button>
               )}
             </AnimatePresence>

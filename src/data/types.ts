@@ -162,6 +162,12 @@ export type RepoQuestion =
   | {
       kind: "select";
       prompt: string;
+      /**
+       * Single-answer select: rendered as radios, not checkboxes, so "pick the
+       * first fault line" cannot be answered by ticking every line. Exactly
+       * one option must be correct (tests pin that).
+       */
+      single?: boolean;
       /** multi-select: exact-set scoring, with per-option credit */
       options: { label: string; correct: boolean }[];
       why: string;

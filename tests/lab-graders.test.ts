@@ -2,10 +2,22 @@ import { describe, expect, it } from "vitest";
 import { DIFF_CHALLENGES, diffChallenge } from "../src/data/diff-challenges";
 import { REPO_SNAPSHOTS } from "../src/data/repo-snapshots";
 import { BUG_TAXONOMY, EXECUTED_CODES, REVIEW_CODES } from "../src/data/bug-taxonomy";
-import { scoreDiffAttempt, scoreLocate, scoreSelect, evaluateRubric } from "../src/lib/labGrade";
+import {
+  scoreDiffAttempt,
+  scoreLocate,
+  scoreSelect,
+  evaluateRubric,
+  gradeProofRun,
+} from "../src/lib/labGrade";
 import { tracks, findLesson } from "../src/data";
 import { checkExpressionSupported } from "../src/lib/checkExpr";
 import { DEBUG_CHALLENGES } from "../src/data/debug-challenges";
+import {
+  MILESTONES,
+  artifactRubric,
+  judgmentCardMarkdown,
+  type MilestoneArtifacts,
+} from "../src/lib/milestones";
 
 /* ═══════════════════════════════════════════════════════════════
    The V2.1 lab graders are deterministic content, which makes them
@@ -102,38 +114,59 @@ describe("diff scoring ladder", () => {
 describe("repo trace grading", () => {
   const repo = REPO_SNAPSHOTS[0];
 
-  it("ships locate and select questions with declared answers", () => {
-    expect(repo.questions.length).toBeGreaterThanOrEqual(3);
-    expect(repo.questions.some((q) => q.kind === "locate")).toBe(true);
-    expect(repo.questions.filter((q) => q.kind === "select").length).toBeGreaterThanOrEqual(1);
-    for (const q of repo.questions) {
-      if (q.kind === "locate") {
-        // The answer must be one of the offered choices — otherwise it is
-        // unreachable and the question cannot be completed.
-        expect(
-          q.choices.some((c) => c.file === q.answer.file && c.symbol === q.answer.symbol),
-          `${repo.id}: locate answer not among choices`
-        ).toBe(true);
-      } else {
-        expect(q.options.filter((o) => o.correct).length).toBeGreaterThan(0);
-        expect(q.options.some((o) => !o.correct), `${repo.id}: no wrong options`).toBe(true);
+  it("ships locate and single/multi select questions with declared answers", () => {
+    // The library must cover both answer modes: archaeology uses locate plus
+    // multi-select, and the incident labs add single-answer selects.
+    expect(REPO_SNAPSHOTS.some((r) => r.questions.some((q) => q.kind === "locate"))).toBe(
+      true
+    );
+    expect(
+      REPO_SNAPSHOTS.some((r) =>
+        r.questions.some((q) => q.kind === "select" && q.single === true)
+      )
+    ).toBe(true);
+
+    for (const r of REPO_SNAPSHOTS) {
+      expect(r.questions.length, `${r.id}: questions`).toBeGreaterThanOrEqual(2);
+      for (const q of r.questions) {
+        if (q.kind === "locate") {
+          // The answer must be one of the offered choices — otherwise it is
+          // unreachable and the question cannot be completed.
+          expect(
+            q.choices.some((c) => c.file === q.answer.file && c.symbol === q.answer.symbol),
+            `${r.id}: locate answer not among choices`
+          ).toBe(true);
+        } else {
+          const correct = q.options.filter((o) => o.correct).length;
+          expect(correct, `${r.id}: select with no correct option`).toBeGreaterThan(0);
+          expect(q.options.some((o) => !o.correct), `${r.id}: no wrong options`).toBe(true);
+          // A single-answer select is graded exactly; two correct options would
+          // make "pick the one" unanswerable.
+          if (q.single) {
+            expect(correct, `${r.id}: single-select needs exactly one correct`).toBe(1);
+          }
+        }
+        expect(q.why.length).toBeGreaterThan(60);
       }
-      expect(q.why.length).toBeGreaterThan(60);
     }
+    // The pilot's archaeology snapshot keeps its three-question shape.
+    expect(REPO_SNAPSHOTS[0].questions.length).toBeGreaterThanOrEqual(3);
   });
 
-  it("every referenced file exists in the snapshot", () => {
-    const paths = new Set(repo.files.map((f) => f.path));
-    for (const q of repo.questions) {
-      if (q.kind === "locate") {
-        for (const c of q.choices) {
-          expect(paths, `${repo.id}: choice file missing: ${c.file}`).toContain(c.file);
-        }
-      } else {
-        for (const o of q.options) {
-          const file = o.label.split(" ")[0].split("→")[0].trim();
-          if (file.includes("/") || file.endsWith(".ts")) {
-            expect(paths, `${repo.id}: option file missing: ${file}`).toContain(file);
+  it("every referenced file exists in its snapshot", () => {
+    for (const r of REPO_SNAPSHOTS) {
+      const paths = new Set(r.files.map((f) => f.path));
+      for (const q of r.questions) {
+        if (q.kind === "locate") {
+          for (const c of q.choices) {
+            expect(paths, `${r.id}: choice file missing: ${c.file}`).toContain(c.file);
+          }
+        } else {
+          for (const o of q.options) {
+            const file = o.label.split(" ")[0].split("→")[0].trim();
+            if (file.includes("/") || file.endsWith(".ts")) {
+              expect(paths, `${r.id}: option file missing: ${file}`).toContain(file);
+            }
           }
         }
       }
@@ -265,5 +298,119 @@ describe("Track XVI — the pilot track", () => {
       expect(c.diagnosis.codes).toContain(c.diagnosis.answer);
       expect(c.diagnosis.codes.length).toBeGreaterThanOrEqual(2);
     }
+  });
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   Wave 2 (Fix 5 + Fix 6) and Wave 3 (Fix 8): the content and the
+   artifact loop, held to the same standard as everything else.
+   ═══════════════════════════════════════════════════════════════ */
+
+describe("Wave 2 — production debugging & data boundaries", () => {
+  it("ships the three production-debugging lessons in order with their graders", () => {
+    const ids = tracks.find((t) => t.id === "testing")!.lessons.map((l) => l.id);
+    expect(ids).toEqual([
+      "testing-why",
+      "debugging-method",
+      "tdd-mocking",
+      "debug-the-bug",
+      "prod-traces",
+      "prod-logs",
+      "incident-timeline",
+    ]);
+    expect(findLesson("testing", "prod-traces")?.diff).toBeTruthy();
+    expect(findLesson("testing", "prod-logs")?.repo).toBeTruthy();
+    const timeline = findLesson("testing", "incident-timeline");
+    expect(timeline?.sort).toBeTruthy();
+    expect(timeline?.repo).toBeTruthy();
+  });
+
+  it("gives each new lesson ≥2 quiz questions with valid answers", () => {
+    for (const id of ["prod-traces", "prod-logs", "incident-timeline"]) {
+      const lesson = findLesson("testing", id)!;
+      expect(lesson.quiz.length, id).toBeGreaterThanOrEqual(2);
+      for (const [i, q] of lesson.quiz.entries()) {
+        expect(q.options.length, `${id} q${i}`).toBeGreaterThanOrEqual(3);
+        expect(q.answer, `${id} q${i}`).toBeGreaterThanOrEqual(0);
+        expect(q.answer, `${id} q${i}`).toBeLessThan(q.options.length);
+        expect(q.explanation.length, `${id} q${i}`).toBeGreaterThan(5);
+      }
+    }
+  });
+
+  it("ships data-boundaries with ten classify cards and an accountability rubric", () => {
+    const lesson = findLesson("security", "data-boundaries")!;
+    expect(lesson.quiz).toHaveLength(10);
+    expect(lesson.rubric).toBeTruthy();
+    expect(lesson.rubric!.criteria.length).toBeGreaterThanOrEqual(4);
+    for (const [i, q] of lesson.quiz.entries()) {
+      expect(q.options.length, `card ${i}`).toBeGreaterThanOrEqual(3);
+      expect(q.answer, `card ${i}`).toBeGreaterThanOrEqual(0);
+      expect(q.answer, `card ${i}`).toBeLessThan(q.options.length);
+      expect(q.explanation.length, `card ${i}`).toBeGreaterThan(5);
+    }
+  });
+});
+
+describe("Fix 8 — the artifact loop", () => {
+  const ARTIFACT: MilestoneArtifacts = {
+    task: "Convert the shell to semantic landmarks",
+    note: "The agent skipped a heading level and trapped focus in the mobile nav on the draft.",
+    noteCategory: "EC",
+    proof: {
+      buggy: "const headings = [\"h1\", \"h3\"];",
+      test: "if (headings[1] !== \"h2\") throw new Error(\"skipped heading level\");",
+      fixed: "const headings = [\"h1\", \"h2\"];",
+    },
+  };
+
+  it("gradeProofRun verifies only when both sides behave", () => {
+    expect(gradeProofRun(true, true)).toBe(1);
+    expect(gradeProofRun(true, false)).toBe(0.5);
+    expect(gradeProofRun(false, true)).toBe(0.5);
+    expect(gradeProofRun(false, false)).toBe(0);
+  });
+
+  it("every milestone's note rubric is satisfiable for every category", () => {
+    for (const m of MILESTONES) {
+      for (const code of REVIEW_CODES) {
+        const ex = artifactRubric(m, code);
+        for (const c of ex.criteria) {
+          if (c.check) {
+            expect(
+              checkExpressionSupported(c.check),
+              `${m.id}/${code}: criterion ${c.id} not supported: ${c.check}`
+            ).toBe(true);
+          }
+        }
+        const claims = Object.fromEntries(ex.criteria.map((c) => [c.id, true]));
+        const { score, results } = evaluateRubric(ex, ex.exemplar, claims);
+        expect(
+          results.filter((r) => !r.met).map((r) => r.id),
+          `${m.id}/${code}: exemplar fails its own criteria`
+        ).toEqual([]);
+        expect(score).toBe(1);
+      }
+      // A stub note cannot pass: the scenario check requires substance.
+      const short = evaluateRubric(artifactRubric(m, "EC"), "the agent broke it", {
+        defensible: true,
+      });
+      expect(short.score, `${m.id}: a stub note passed`).toBeLessThan(1);
+    }
+  });
+
+  it("renders a judgment card with the note and proof, and nothing without an artifact", () => {
+    const md = judgmentCardMarkdown(MILESTONES[0], {
+      at: "2026-05-01",
+      deliverables: [0],
+      artifacts: ARTIFACT,
+    });
+    expect(md).toContain("judgment card");
+    expect(md).toContain(ARTIFACT.note);
+    expect(md).toContain(ARTIFACT.proof.test);
+    expect(md).toContain(ARTIFACT.proof.fixed);
+    expect(
+      judgmentCardMarkdown(MILESTONES[0], { at: "2026-05-01", deliverables: [0] })
+    ).toBe("");
   });
 });

@@ -25,8 +25,12 @@ import { createLocalStore, readRecord } from "./localStore";
 
 const KEY = "clr-attempts-v1"; // additive local store; no Convex changes
 
-/** Which grader produced a score. Sort/preview are pass-only, no score. */
-export type AttemptElement = "quiz" | "debug" | "diff" | "repo" | "rubric";
+/**
+ * Which grader produced a score. Sort/preview are pass-only, no score.
+ * `proof` is the milestone ProofRunner: the dual-run test-of-the-test whose
+ * first-submission outcome is the §8.4(b) metric.
+ */
+export type AttemptElement = "quiz" | "debug" | "diff" | "repo" | "rubric" | "proof";
 
 export type Attempt = {
   /** lesson key: `${trackId}/${lessonId}` */
@@ -59,7 +63,16 @@ export type AttemptAgg = {
   first: number;
   best: number;
   attempts: number;
+  /** epoch ms of the **latest** attempt — freshness only. */
   at: number;
+  /**
+   * epoch ms of the **earliest** attempt. This is the clock the merge has to
+   * compare: using `at` (the latest) to pick whose `first` wins lets a device
+   * that merely stopped earlier steal the first attempt from a device that
+   * genuinely attempted sooner. That bias is invisible in `best` and moves the
+   * gate's catch rate upward, so it is separated out deliberately.
+   */
+  firstAt: number;
 };
 export type AttemptAggs = Record<string, AttemptAgg>;
 
@@ -68,22 +81,28 @@ function sanitizeAggs(raw: unknown): AttemptAggs | undefined {
   const out: AttemptAggs = {};
   for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
     if (!value || typeof value !== "object") continue;
-    const { first, best, attempts, at } = value as Record<string, unknown>;
+    const { first, best, attempts, at, firstAt } = value as Record<string, unknown>;
     const f = typeof first === "number" ? first : Number(first);
     const b = typeof best === "number" ? best : Number(best);
     const n = typeof attempts === "number" ? attempts : Number(attempts);
     if (!Number.isFinite(f) || !Number.isFinite(b) || !Number.isFinite(n) || n < 1) continue;
+    const t = typeof at === "number" && Number.isFinite(at) ? at : 0;
+    const fa =
+      typeof firstAt === "number" && Number.isFinite(firstAt) ? firstAt : t;
     out[key] = {
       first: Math.min(1, Math.max(0, f)),
       best: Math.min(1, Math.max(0, b)),
       attempts: Math.floor(n),
-      at: Number.isFinite(at) ? Number(at) : 0,
+      at: t,
+      // Rows written before the split only carry `at`; falling back to it keeps
+      // legacy aggregates readable (and merges no worse than they used to).
+      firstAt: fa,
     };
   }
   return Object.keys(out).length > 0 ? out : undefined;
 }
 
-const ELEMENTS: AttemptElement[] = ["quiz", "debug", "diff", "repo", "rubric"];
+const ELEMENTS: AttemptElement[] = ["quiz", "debug", "diff", "repo", "rubric", "proof"];
 
 function sanitizeAttempt(raw: unknown): Attempt | null {
   if (!raw || typeof raw !== "object") return null;
@@ -170,22 +189,30 @@ export function resetTelemetry() {
 /**
  * The shape that crosses the network: one aggregate per lesson, not the raw
  * log. The gates need first / best / count, and a bounded row beats a growing
- * one — `at` is what lets the server tell which device saw the first attempt.
+ * one — `firstAt` is what lets the server tell which device saw the first
+ * attempt, while `at` only says when the row was last touched.
  */
 export function aggregateAttempts(t: Telemetry): AttemptAggs {
   const out: AttemptAggs = {};
   for (const a of t.attempts) {
     const cur = out[a.key];
     if (!cur) {
-      out[a.key] = { first: a.score, best: a.score, attempts: 1, at: a.at };
+      out[a.key] = {
+        first: a.score,
+        best: a.score,
+        attempts: 1,
+        at: a.at,
+        firstAt: a.at,
+      };
       continue;
     }
-    const isEarlier = a.at < cur.at;
+    const isEarlier = a.at < cur.firstAt;
     out[a.key] = {
       first: isEarlier ? a.score : cur.first,
       best: Math.max(cur.best, a.score),
       attempts: cur.attempts + 1,
       at: Math.max(cur.at, a.at),
+      firstAt: Math.min(cur.firstAt, a.at),
     };
   }
   return out;
@@ -208,10 +235,13 @@ export function mergeAggregates(
       continue;
     }
     out[key] = {
-      first: next.at < mine.at ? next.first : mine.first,
+      // The record whose *first* attempt is earlier owns `first` — comparing
+      // `at` (latest) would hand it to whichever device went quiet soonest.
+      first: next.firstAt < mine.firstAt ? next.first : mine.first,
       best: Math.max(mine.best, next.best),
       attempts: Math.max(mine.attempts, next.attempts),
       at: Math.max(mine.at, next.at),
+      firstAt: Math.min(mine.firstAt, next.firstAt),
     };
   }
   return out;

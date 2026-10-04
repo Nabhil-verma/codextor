@@ -4,7 +4,7 @@
 **From:** Curriculum Architect (author of record, V2 / V2.1)
 **Date:** 2026-10-02
 **Document type:** strategic planning deliverable (plan patch). This document records status and requests authorization; it implements nothing.
-**Status of record:** documentation phase complete. **Wave 0 (the Pilot) authorized and shipped** — see §6.
+**Status of record:** documentation phase complete. **Waves 0–3 authorized and shipped** — see §6 and §7. Wave 4 (Next.js) remains gated on market re-validation.
 **Source artifacts:** [CURRICULUM-V2.md](./CURRICULUM-V2.md) · [CURRICULUM-V2-PATCH.md](./CURRICULUM-V2-PATCH.md). Section references resolve against these; where they disagree, the patch wins.
 
 ---
@@ -132,6 +132,22 @@ The green light was given and the pilot is implemented. All three deliverables e
 
 **Verified invariants** (`tests/lab-graders.test.ts`): every planted line is in bounds of its file; exactly one blocker per exercise; ≥2 distractors with one near the blocker; every rubric is satisfiable by its own exemplar in the check grammar; locate answers are reachable; only executed taxonomy codes appear in DebugLab diagnoses; Track XVI's nine ids ship in order. Track count assertions were updated from 15 → 16 in `tests/curriculum.test.ts`.
 
-**Not touched, still closed:** the Pyodide runner and executed Python lessons (Wave 1), Fix 2's propagation seeds — Workflow `19.2` → `testing/debug-the-bug` → further Agents expansion (Wave 1), production debugging 11.5–11.7 (Wave 2), the AI data-boundaries lesson (Wave 2), milestone artifacts + ProofRunner (Wave 3), the Next.js track (Wave 4, conditional). No Convex schema or function changed.
+**Since Wave 0** — the remaining waves were authorized and executed; the record is §7.
 
-**Gates still stand.** Gate A (diff catch rate beats chance) and Gate B (Track XVI completions recorded via both written exercises) are now measurable from real attempts; Waves 1–4 remain closed until they clear.
+**Gates still stand.** Gate A (diff catch rate beats chance) and Gate B (Track XVI completions recorded via both written exercises) remain measurable from real attempts. The wave records below document what shipped; Fix 7 (Wave 4) is still gated on the lead's market re-validation rather than on code.
+
+---
+
+## 7. Waves 1–3 — execution record (shipped)
+
+Post-pilot authorization extended the walk through the patch's rollout table. All three waves are implemented, verified by typecheck (`bun tsc -b --noEmit`, clean) and the full suite (`bun run test`, 319/319 across 32 files).
+
+**Wave 1 — `1e24abc`.** Fix 1: Python executes via Pyodide in a terminable worker, self-hosted from `public/`, with three lessons graded by the output-check contract. Fix 2's seeds: Workflow `19.2` (`upload-retry-blocks-400`), then `testing/debug-the-bug` station 3 (`agent-pr-search-race`), then `16.7`'s diff review.
+
+**Wave 2 — Fix 5 + Fix 6.** Three production-debugging lessons in `testing` (track 4 → 7): `prod-traces` (the 14:20 deploy diff — the API's null contract vs the unguarded read), `prod-logs` (four service log files: failed request ids, first fault, origin service — with single-answer selects added to the repo-trace grader), and `incident-timeline` (the drag-to-order chain plus first-file locate). And the data-boundaries lesson in `security` (track 5 → 6): ten classify cards plus the rubric-graded accountability note.
+
+**Wave 3 — Fix 8.** Milestone claims now carry optional artifacts (`{ task, note, noteCategory, proof: { buggy, test, fixed } }`); `ProofRunner` grades the proof by dual run (fails on the draft AND passes on the fix → 1.0; one side → 0.5, artifact incomplete); claim merges extend the pinned rule (more ticks → with-artifacts → earlier date) on both the client and Convex; `Portfolio` exports claimed milestones as Markdown judgment cards. Pre-patch claims stay valid and get a resubmission path.
+
+**Telemetry correction shipped alongside.** The attempt aggregate split `at` (latest attempt) from `firstAt` (earliest): the merge had been choosing whose `first` wins by comparing the *latest* attempt timestamps, which could move the gate's reported first-attempt score in either direction. Both sides of the network now compare `firstAt`, with a legacy fallback for rows written before the split.
+
+**Still closed.** Fix 7 (the Next.js track, Wave 4) — gated on re-validating the market, not on code.

@@ -85,6 +85,20 @@ export type RubricCriterionResult = {
   auto: boolean;
 };
 
+/* ---------------------- Milestone proof runner ------------------------ */
+
+/**
+ * Fix 8 §8.3's dual-run contract as a pure function, so the ladder is testable
+ * without executing code: the learner's test must **fail** on the agent's
+ * draft and **pass** on the learner's fix. Both sides verified → 1.0; exactly
+ * one → 0.5 (the proof is incomplete, the claim is not); neither → 0.
+ */
+export function gradeProofRun(buggyFailed: boolean, fixedPassed: boolean): number {
+  if (buggyFailed && fixedPassed) return 1;
+  if (buggyFailed || fixedPassed) return 0.5;
+  return 0;
+}
+
 /**
  * Auto-checkable criteria evaluate the existing check grammar over the
  * **lower-cased** learner text bound as `output`, so authors write checks in

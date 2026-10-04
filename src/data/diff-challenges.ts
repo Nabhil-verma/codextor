@@ -416,6 +416,130 @@ describe("withRetry", () => {
       },
     ],
   },
+  {
+    id: "deploy-order-summary-null",
+    title: "The 14:20 Deploy: Intermittent 500s from Checkout",
+    brief:
+      "PR: \"checkout summary refactor + orders API contract cleanup — the empty-cart path is handled in the UI now\". It shipped at 14:20. By 14:25 the error tracker reads: TypeError: Cannot read properties of undefined (reading 'total') at orderSummary (chunk-7f2a.js → src/checkout/summary.ts:88). Read the deploy before you blame the deploy.",
+    files: [
+      {
+        path: "src/api/orders.ts",
+        before: `import { db } from \"./db\";
+
+/** Fetches one order for the checkout screen. */
+export async function getOrder(id: number) {
+  return { order: await db.orders.find(id) };
+}`,
+        after: `import { db } from \"./db\";
+
+/**
+ * Fetches one order for the checkout screen.
+ * Contract: an unknown id or an empty cart is represented as \`null\` —
+ * consumers own the empty state.
+ */
+export async function getOrder(id: number) {
+  const order = await db.orders.find(id);
+  return { order: order ?? null };
+}`,
+      },
+      {
+        path: "src/checkout/summary.ts",
+        before: `import { formatPrice } from \"../lib/money\";
+
+/** Shapes an order for the checkout screen. */
+export function orderSummary(order: { total: number; status: string }) {
+  return {
+    totalLabel: formatPrice(order.total),
+    status: order.status,
+  };
+}`,
+        after: `import { formatPrice } from \"../lib/money\";
+
+/**
+ * Shapes an order for the checkout screen.
+ * The API returns \`{ order: Order | null }\` — an empty cart has none.
+ */
+export function orderSummary(order: { total: number; status: string }) {
+  const total = order.total;
+  return {
+    totalLabel: formatPrice(total),
+    status: order.status,
+  };
+}`,
+      },
+      {
+        path: "src/checkout/cart.ts",
+        before: `import type { CartRow } from \"./types\";
+
+export function cartCount(rows: CartRow[]) {
+  return rows.reduce((n, row) => n + row.quantity, 0);
+}`,
+        after: `import type { CartRow } from \"./types\";
+
+export function cartCount(rows: CartRow[]) {
+  console.log(\"cart rows\", rows.length);
+  return rows.reduce((n, row) => n + row.quantity, 0);
+}`,
+      },
+      {
+        path: "src/components/OrderSummary.tsx",
+        before: `export function OrderSummary({ summary }: { summary: { totalLabel: string } | null }) {
+  if (!summary) return null;
+  return <p className=\"text-sm\">{summary.totalLabel}</p>;
+}`,
+        after: `export function OrderSummary({ summary }: { summary: { totalLabel: string } | null }) {
+  if (!summary) return null;
+  return (
+    <section aria-label=\"order summary\">
+      <p className=\"text-sm\">{summary.totalLabel}</p>
+    </section>
+  );
+}`,
+      },
+      {
+        path: "src/lib/money.ts",
+        before: `/** Formats a cent amount for display. */
+export function formatPrice(cents: number): string {
+  return \"$\" + cents / 100;
+}`,
+        after: `/** Formats a cent amount for display — always two decimals. */
+export function formatPrice(cents: number): string {
+  return \"$\" + (cents / 100).toFixed(2);
+}`,
+      },
+      {
+        path: "package.json",
+        before: `{\n  \"name\": \"checkout-web\",\n  \"dependencies\": {\n    \"react\": \"^18.3.1\"\n  },\n  \"devDependencies\": {\n    \"vite\": \"^5.4.10\"\n  }\n}`,
+        after: `{\n  \"name\": \"checkout-web\",\n  \"dependencies\": {\n    \"react\": \"^18.3.1\"\n  },\n  \"devDependencies\": {\n    \"vite\": \"^5.4.11\"\n  }\n}`,
+      },
+    ],
+    planted: {
+      file: "src/checkout/summary.ts",
+      line: 8,
+      category: "EC",
+      why: "The API's new contract represents an empty cart as { order: null }, and this function still reads order.total straight off it — an unguarded property read on null. That is why the 500s are intermittent: only carts with no order yet take the path, so local happy-path testing never hit it. The fix is to handle the empty case in orderSummary (guard the read or map null to the empty-cart state) — the UI is already prepared for a null summary, and retrying a correctly-empty cart cannot help.",
+    },
+    distractors: [
+      "The updated JSDoc in src/checkout/summary.ts — it documents the API's null contract accurately. Documenting a contract is not a defect.",
+      "The new console.log in src/checkout/cart.ts prints only the row count — leftover debug noise to remove, but it cannot throw.",
+      "The .toFixed(2) change in src/lib/money.ts is a fix, not a regression — it stops labels like $4.5 shipping to customers.",
+      "The vite patch bump in package.json is unrelated housekeeping.",
+    ],
+    hints: [
+      {
+        tier: 1,
+        text: "Start from the trace's shape: the crash is a property read on null. So the question is which caller can legally produce null — and whether every consumer was taught the new contract.",
+      },
+      {
+        tier: 2,
+        text: "Read src/api/orders.ts first. What does getOrder now return for an empty cart, and which function still assumes an object arrives?",
+      },
+      {
+        tier: 3,
+        text: "The planted line is the raw `order.total` read in src/checkout/summary.ts. Handle the null case there — an empty cart is a valid state, not a transient failure.",
+      },
+    ],
+  },
 ];
 
 const BY_ID = new Map(DIFF_CHALLENGES.map((c) => [c.id, c]));

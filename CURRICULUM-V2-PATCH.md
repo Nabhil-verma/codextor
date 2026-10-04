@@ -789,6 +789,8 @@ not count. Fix 8 changes the milestone claim schema, not lesson count.
 | 3 | Fix 8 (milestone artifacts + ProofRunner + claim merge + export) | Wave 2; rubric grader | §8.4 metrics; merge tests green |
 | 4 — conditional | Fix 7 (Next.js track) | **Re-validation against the owner's actual market** | Postings show Next.js/RSC in the target market, or it is deprioritized |
 
+**Execution status (2026-10-04).** Waves 0–3 are shipped: Wave 0 (the pilot) at the initial authorization; Wave 1 (Fix 1 + Fix 2's seeds) in commit `1e24abc`; Wave 2 (Fix 5 + Fix 6) and Wave 3 (Fix 8) in the follow-up implementation, verified by `bun tsc -b --noEmit` and the full `bun run test` suite (319/319 across 32 files). The attempt-aggregate telemetry was corrected alongside — `firstAt` (earliest attempt) now decides whose `first` wins, not `at` (latest). Wave 4 remains closed pending the market re-validation in §7.1; the table above is now a status record, not a forecast.
+
 ---
 
 *Patch authored against the repository state of 2026-10-02. Every "confirmed"

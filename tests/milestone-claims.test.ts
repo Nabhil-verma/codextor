@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { convexTest } from "convex-test";
 import { api } from "../src/convex/_generated/api";
 import schema from "../src/convex/schema";
@@ -8,7 +8,25 @@ import {
   mergeClaims,
   milestoneStatus,
   type Claims,
+  type MilestoneArtifacts,
 } from "../src/lib/milestones";
+import {
+  claimMilestone,
+  loadClaims,
+  resetClaims,
+} from "../src/lib/milestoneStore";
+
+/* The local claim log, stubbed like `tests/progress.test.ts` does. */
+const local = new Map<string, string>();
+vi.stubGlobal("localStorage", {
+  getItem: (k: string) => local.get(k) ?? null,
+  setItem: (k: string, v: string) => void local.set(k, v),
+  removeItem: (k: string) => void local.delete(k),
+});
+beforeEach(() => {
+  local.clear();
+  resetClaims();
+});
 
 /*
  * Milestone claims used to be local-only, which meant two devices disagreed
@@ -27,6 +45,17 @@ import {
  */
 
 const modules = import.meta.glob("../src/convex/**/*.*s");
+
+const ARTIFACT: MilestoneArtifacts = {
+  task: "Convert the shell to semantic landmarks",
+  note: "The agent skipped a heading level and trapped focus in the mobile nav on the draft.",
+  noteCategory: "EC",
+  proof: {
+    buggy: "const headings = [\"h1\", \"h3\"];",
+    test: "if (headings[1] !== \"h2\") throw new Error(\"skipped heading level\");",
+    fixed: "const headings = [\"h1\", \"h2\"];",
+  },
+};
 
 type Server = ReturnType<typeof convexTest>;
 
@@ -73,6 +102,83 @@ describe("claim merge rule", () => {
     const early: Claims = { "m-ship": { at: "2026-06-01", deliverables: [0, 1] } };
     expect(mergeClaims(late, early)["m-ship"].at).toBe("2026-06-01");
     expect(mergeClaims(early, late)["m-ship"].at).toBe("2026-06-01");
+  });
+
+  it("gives ties with artifacts to the artifact claim, then the earlier date", () => {
+    const withArtifact: Claims = {
+      "m-shell": { at: "2026-05-05", deliverables: [0, 1], artifacts: ARTIFACT },
+    };
+    const without: Claims = {
+      "m-shell": { at: "2026-05-01", deliverables: [0, 1] },
+    };
+    // Both directions: the artifact wins over the earlier bare claim, which is
+    // what makes the pre-patch resubmission path work.
+    expect(mergeClaims(without, withArtifact)["m-shell"].artifacts).toEqual(ARTIFACT);
+    expect(mergeClaims(withArtifact, without)["m-shell"].artifacts).toEqual(ARTIFACT);
+    // Commutative and idempotent: re-merging never oscillates.
+    expect(
+      mergeClaims(mergeClaims(without, withArtifact), withArtifact)["m-shell"].artifacts
+    ).toEqual(ARTIFACT);
+
+    // Both carry artifacts → the earlier proof wins, whichever side it is on.
+    const later: Claims = {
+      "m-shell": { at: "2026-05-09", deliverables: [0, 1], artifacts: ARTIFACT },
+    };
+    const earlier: Claims = {
+      "m-shell": { at: "2026-05-02", deliverables: [0, 1], artifacts: ARTIFACT },
+    };
+    expect(mergeClaims(later, earlier)["m-shell"].at).toBe("2026-05-02");
+    expect(mergeClaims(earlier, later)["m-shell"].at).toBe("2026-05-02");
+
+    // More ticks still beats artifacts — the evidence rule never downgrades work.
+    const fuller: Claims = { "m-shell": { at: "2026-06-01", deliverables: [0, 1, 2] } };
+    expect(mergeClaims(withArtifact, fuller)["m-shell"].deliverables).toEqual([0, 1, 2]);
+  });
+
+  it("flags pre-patch claims and artifact-bearing claims", () => {
+    const empty = { completed: {} };
+    const legacy: Claims = { "m-shell": { at: "2026-05-01", deliverables: [0] } };
+    const withArt: Claims = {
+      "m-shell": { at: "2026-05-01", deliverables: [0], artifacts: ARTIFACT },
+    };
+    const legacyStatus = milestoneStatus(MILESTONES[0], empty, legacy);
+    expect(legacyStatus.legacyClaim).toBe(true);
+    expect(legacyStatus.hasArtifacts).toBe(false);
+    const artStatus = milestoneStatus(MILESTONES[0], empty, withArt);
+    expect(artStatus.legacyClaim).toBe(false);
+    expect(artStatus.hasArtifacts).toBe(true);
+  });
+});
+
+describe("claimMilestone (local store)", () => {
+  it("never downgrades and allows a pre-patch resubmission with artifacts", () => {
+    claimMilestone("m-shell", [0, 1], "2026-05-01");
+    // A partial re-claim can't replace the fuller one.
+    claimMilestone("m-shell", [0], "2026-05-02");
+    expect(loadClaims()["m-shell"].deliverables).toEqual([0, 1]);
+    expect(loadClaims()["m-shell"].artifacts).toBeUndefined();
+
+    // The resubmission path: same ticks, artifacts attached.
+    claimMilestone("m-shell", [0, 1], "2026-05-03", ARTIFACT);
+    expect(loadClaims()["m-shell"].artifacts).toEqual(ARTIFACT);
+
+    // A bare re-claim can't strip the artifact back off.
+    claimMilestone("m-shell", [0, 1], "2026-05-04");
+    expect(loadClaims()["m-shell"].artifacts).toEqual(ARTIFACT);
+
+    // An identical resubmission is a no-op, not a rewrite.
+    const before = JSON.stringify(loadClaims());
+    claimMilestone("m-shell", [0, 1], "2026-05-05", ARTIFACT);
+    expect(JSON.stringify(loadClaims())).toBe(before);
+  });
+
+  it("drops a malformed artifact instead of storing junk", () => {
+    claimMilestone("m-shell", [0, 1], "2026-05-01", {
+      ...ARTIFACT,
+      noteCategory: "NOPE" as never,
+    });
+    expect(loadClaims()["m-shell"].deliverables).toEqual([0, 1]);
+    expect(loadClaims()["m-shell"].artifacts).toBeUndefined();
   });
 });
 
@@ -211,14 +317,14 @@ describe("attempt aggregates on the server", () => {
 
     await me.mutation(api.progress.saveAttempts, {
       attempts: {
-        "agents/verifying-agent-output": { first: 0.4, best: 0.4, attempts: 1, at: 100 },
+        "agents/verifying-agent-output": { first: 0.4, best: 0.4, attempts: 1, at: 100, firstAt: 100 },
       },
     });
     // A second device that attempted later and scored better.
     await me.mutation(api.progress.saveAttempts, {
       attempts: {
-        "agents/verifying-agent-output": { first: 1, best: 1, attempts: 1, at: 200 },
-        "web/es6-syntax": { first: 0, best: 0.7, attempts: 3, at: 300 },
+        "agents/verifying-agent-output": { first: 1, best: 1, attempts: 1, at: 200, firstAt: 200 },
+        "web/es6-syntax": { first: 0, best: 0.7, attempts: 3, at: 300, firstAt: 300 },
       },
     });
 
@@ -229,8 +335,116 @@ describe("attempt aggregates on the server", () => {
       best: 1,
       attempts: 1,
       at: 200,
+      firstAt: 100,
     });
-    expect(back["web/es6-syntax"]).toEqual({ first: 0, best: 0.7, attempts: 3, at: 300 });
+    expect(back["web/es6-syntax"]).toEqual({
+      first: 0,
+      best: 0.7,
+      attempts: 3,
+      at: 300,
+      firstAt: 300,
+    });
+  });
+
+  it("picks first from the earlier first attempt, not the earlier latest attempt", async () => {
+    const t = server();
+    const userId = await makeUser(t, "ada@attempts-clock.test");
+    const me = t.withIdentity({ subject: userId });
+
+    // Device A: first attempt at t=500, still practising at t=900.
+    await me.mutation(api.progress.saveAttempts, {
+      attempts: {
+        "agents/verifying-agent-output": {
+          first: 0.4,
+          best: 0.7,
+          attempts: 2,
+          at: 900,
+          firstAt: 500,
+        },
+      },
+    });
+    // Device B: one attempt at t=600 — later than A's first, earlier than A's last.
+    await me.mutation(api.progress.saveAttempts, {
+      attempts: {
+        "agents/verifying-agent-output": {
+          first: 1,
+          best: 1,
+          attempts: 1,
+          at: 600,
+          firstAt: 600,
+        },
+      },
+    });
+
+    const back = (await me.query(api.progress.getAttempts, {}))!;
+    // Using `at` for this decision would report 1.0 here and inflate the gate.
+    expect(back["agents/verifying-agent-output"]).toEqual({
+      first: 0.4,
+      best: 1,
+      attempts: 2,
+      at: 900,
+      firstAt: 500,
+    });
+  });
+
+  it("round-trips artifacts and drops only the broken ones", async () => {
+    const t = server();
+    const userId = await makeUser(t, "ada@artifacts.test");
+    const me = t.withIdentity({ subject: userId });
+
+    await me.mutation(api.progress.saveClaims, {
+      claims: {
+        "m-shell": { at: "2026-05-02", deliverables: [0, 1], artifacts: ARTIFACT },
+        // A junk category drops the artifact but keeps the claim.
+        "m-style": {
+          at: "2026-05-02",
+          deliverables: [0],
+          artifacts: { ...ARTIFACT, noteCategory: "NOT_A_CODE" },
+        },
+        // A structurally broken proof is dropped the same way.
+        "m-data": {
+          at: "2026-05-02",
+          deliverables: [0],
+          artifacts: {
+            task: "x",
+            note: "y",
+            noteCategory: "EC",
+            proof: { buggy: "a", test: "b" },
+          },
+        },
+      },
+    });
+
+    const back = (await me.query(api.progress.getClaims, {}))!;
+    expect(back["m-shell"].artifacts).toEqual(ARTIFACT);
+    expect(back["m-style"].deliverables).toEqual([0]);
+    expect(back["m-style"].artifacts).toBeUndefined();
+    expect(back["m-data"].deliverables).toEqual([0]);
+    expect(back["m-data"].artifacts).toBeUndefined();
+  });
+
+  it("lets a pre-patch claim resubmit with an artifact, without downgrading", async () => {
+    const t = server();
+    const userId = await makeUser(t, "ada@resubmit.test");
+    const me = t.withIdentity({ subject: userId });
+
+    await me.mutation(api.progress.saveClaims, {
+      claims: { "m-shell": { at: "2026-05-01", deliverables: [0, 1] } },
+    });
+    // The resubmission: same ticks, later date, now with the artifact.
+    await me.mutation(api.progress.saveClaims, {
+      claims: {
+        "m-shell": { at: "2026-05-03", deliverables: [0, 1], artifacts: ARTIFACT },
+      },
+    });
+    // And an attempt to strip it again must lose.
+    await me.mutation(api.progress.saveClaims, {
+      claims: { "m-shell": { at: "2026-05-05", deliverables: [0, 1] } },
+    });
+
+    const back = (await me.query(api.progress.getClaims, {}))!;
+    expect(back["m-shell"].artifacts).toEqual(ARTIFACT);
+    expect(back["m-shell"].at).toBe("2026-05-03");
   });
 
   it("drops malformed aggregates and never stores an empty map", async () => {
@@ -249,7 +463,8 @@ describe("attempt aggregates on the server", () => {
 
     const back = (await me.query(api.progress.getAttempts, {}))!;
     expect(Object.keys(back)).toEqual(["clamped"]);
-    expect(back["clamped"]).toEqual({ first: 1, best: 0, attempts: 1, at: 1 });
+    // No firstAt on this legacy row → it falls back to `at`.
+    expect(back["clamped"]).toEqual({ first: 1, best: 0, attempts: 1, at: 1, firstAt: 1 });
 
     // An all-junk push writes nothing at all — not even a row.
     const t2 = server();
@@ -284,6 +499,7 @@ describe("attempt aggregates on the server", () => {
       best: 1,
       attempts: 2,
       at: 10,
+      firstAt: 10,
     });
   });
 

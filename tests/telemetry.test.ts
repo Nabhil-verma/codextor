@@ -139,12 +139,22 @@ describe("cloud aggregates", () => {
     recordAttempt({ key: LESSON, element: "quiz", score: 0.5, day: "2026-10-03", at: 30 });
 
     const aggs = aggregateAttempts(loadTelemetry());
-    expect(aggs[LESSON]).toEqual({ first: 0.4, best: 1, attempts: 3, at: 30 });
+    expect(aggs[LESSON]).toEqual({
+      first: 0.4,
+      best: 1,
+      attempts: 3,
+      at: 30,
+      firstAt: 10,
+    });
   });
 
   it("keeps the earliest first attempt when two devices merge", () => {
-    const deviceA: AttemptAggs = { [LESSON]: { first: 0.4, best: 0.7, attempts: 2, at: 100 } };
-    const deviceB: AttemptAggs = { [LESSON]: { first: 1, best: 1, attempts: 1, at: 200 } };
+    const deviceA: AttemptAggs = {
+      [LESSON]: { first: 0.4, best: 0.7, attempts: 2, at: 100, firstAt: 100 },
+    };
+    const deviceB: AttemptAggs = {
+      [LESSON]: { first: 1, best: 1, attempts: 1, at: 200, firstAt: 200 },
+    };
 
     // B's first attempt happened later, so A's 0.4 is the real first attempt.
     expect(mergeAggregates(deviceA, deviceB)[LESSON].first).toBe(0.4);
@@ -153,10 +163,50 @@ describe("cloud aggregates", () => {
     expect(mergeAggregates(deviceA, deviceB)[LESSON].best).toBe(1);
     expect(mergeAggregates(deviceB, deviceA)[LESSON].best).toBe(1);
     expect(mergeAggregates(deviceA, deviceB)[LESSON].attempts).toBe(2);
+    expect(mergeAggregates(deviceA, deviceB)[LESSON].firstAt).toBe(100);
+  });
+
+  it("never lets a later first attempt win because its latest attempt is older", () => {
+    // The metric-integrity case: A attempted first at t=500 and kept going to
+    // t=900; B's only attempt is at t=600. Comparing `at` (the latest) would
+    // hand `first` to B (600 < 900) — for a *failed* B attempt that lowers the
+    // reported first score, and for a lucky B attempt it would raise it. The
+    // first-attempt clock is `firstAt`, so A's 0.4 must survive both ways.
+    const deviceA: AttemptAggs = {
+      [LESSON]: { first: 0.4, best: 0.7, attempts: 2, at: 900, firstAt: 500 },
+    };
+    const deviceB: AttemptAggs = {
+      [LESSON]: { first: 1, best: 1, attempts: 1, at: 600, firstAt: 600 },
+    };
+
+    expect(mergeAggregates(deviceA, deviceB)[LESSON].first).toBe(0.4);
+    expect(mergeAggregates(deviceB, deviceA)[LESSON].first).toBe(0.4);
+    expect(mergeAggregates(deviceA, deviceB)[LESSON].firstAt).toBe(500);
+    expect(mergeAggregates(deviceA, deviceB)[LESSON].at).toBe(900);
+  });
+
+  it("treats a legacy aggregate without firstAt as firstAt = at", () => {
+    localStorage.setItem(
+      "clr-attempts-v1",
+      JSON.stringify({
+        attempts: [],
+        remote: { [LESSON]: { first: 0.4, best: 0.7, attempts: 2, at: 5 } },
+      })
+    );
+    const agg = loadMergedAggs()[LESSON];
+    expect(agg.firstAt).toBe(5);
+  });
+
+  it("accepts the milestone proof element", () => {
+    recordAttempt({ key: "project/m-shell", element: "proof", score: 0.5, day: "2026-10-03" });
+    const t = loadTelemetry();
+    expect(attemptsFor(t, "project/m-shell", "proof")).toHaveLength(1);
   });
 
   it("reads the account's aggregates through the gate helper", () => {
-    applyCloudAttempts({ [LESSON]: { first: 0.4, best: 1, attempts: 3, at: 30 } });
+    applyCloudAttempts({
+      [LESSON]: { first: 0.4, best: 1, attempts: 3, at: 30, firstAt: 10 },
+    });
     const gate = reviewGateFromAggs(loadMergedAggs(), LESSON);
     expect(gate).toMatchObject({
       attempts: 3,
@@ -170,7 +220,9 @@ describe("cloud aggregates", () => {
   it("unions the local log with the account rather than replacing it", () => {
     recordAttempt({ key: LESSON, element: "diff", score: 0.7, day: "2026-10-03", at: 500 });
     // The account knows about an earlier attempt on another machine.
-    applyCloudAttempts({ [LESSON]: { first: 0.4, best: 0.4, attempts: 1, at: 100 } });
+    applyCloudAttempts({
+      [LESSON]: { first: 0.4, best: 0.4, attempts: 1, at: 100, firstAt: 100 },
+    });
 
     const gate = reviewGateFromAggs(loadMergedAggs(), LESSON);
     expect(gate.first).toBe(0.4); // the cloud's earlier attempt wins
@@ -180,7 +232,9 @@ describe("cloud aggregates", () => {
     expect(gate.attempts).toBe(1);
 
     // Idempotent: applying the same cloud row twice changes nothing.
-    applyCloudAttempts({ [LESSON]: { first: 0.4, best: 0.4, attempts: 1, at: 100 } });
+    applyCloudAttempts({
+      [LESSON]: { first: 0.4, best: 0.4, attempts: 1, at: 100, firstAt: 100 },
+    });
     expect(reviewGateFromAggs(loadMergedAggs(), LESSON).attempts).toBe(1);
   });
 

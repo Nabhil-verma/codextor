@@ -29,8 +29,113 @@ import {
   TitleTag,
 } from "../components/gamification/Pieces";
 import { useAccount } from "../AccountProvider";
+import { useClaims } from "../lib/milestoneStore";
+import { MILESTONES, judgmentCardMarkdown } from "../lib/milestones";
+import { taxonomyEntry } from "../data/bug-taxonomy";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
+
+/* ── Fix 8 §8.3's export: claimed milestones as shareable judgment cards ── */
+
+function JudgmentCards() {
+  const claims = useClaims();
+  const [copied, setCopied] = useState<string | null>(null);
+
+  const cards = MILESTONES.map((m) => ({ m, claim: claims[m.id] })).filter(
+    ({ claim }) => Boolean(claim?.artifacts)
+  );
+
+  const copy = async (id: string, text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(id);
+    } catch {
+      // Clipboard unavailable (permissions, http): the card text is still on
+      // screen to select by hand, so this stays a soft failure.
+      setCopied(null);
+    }
+  };
+
+  if (cards.length === 0) {
+    return (
+      <div className="glass rounded-2xl border border-paper-200/40 p-8 text-center">
+        <p className="text-sm text-ink-500">
+          No judgment cards yet — attach the note and the proof test to a
+          milestone claim on the{" "}
+          <Link to="/projects" className="text-gold-600 hover:text-gold-500">
+            project board
+          </Link>{" "}
+          and it renders here.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-5">
+      {cards.map(({ m, claim }) => {
+        const a = claim!.artifacts!;
+        const entry = taxonomyEntry(a.noteCategory);
+        const markdown = judgmentCardMarkdown(m, claim!);
+        return (
+          <div
+            key={m.id}
+            className="glass glass-edge rounded-2xl border border-paper-200/60 p-5"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-widest text-ink-500">
+                  {m.phase}
+                </p>
+                <h3 className="mt-1 font-display text-lg font-semibold text-ink-950">
+                  {m.title}
+                </h3>
+              </div>
+              <span className="rounded-full border border-gold-400/50 bg-gold-400/10 px-3 py-1 font-mono text-[10px] text-gold-700">
+                {entry.code} · {entry.label}
+              </span>
+            </div>
+
+            <p className="mt-3 text-sm leading-relaxed text-ink-700">{a.note}</p>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-widest text-ink-500">
+                  the test that proved it
+                </p>
+                <pre className="code-window mt-1.5 max-h-56 overflow-auto p-3 font-mono text-[11.5px] leading-relaxed text-paper-300">
+                  <code>{a.proof.test}</code>
+                </pre>
+              </div>
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-widest text-ink-500">
+                  the fix
+                </p>
+                <pre className="code-window mt-1.5 max-h-56 overflow-auto p-3 font-mono text-[11.5px] leading-relaxed text-paper-300">
+                  <code>{a.proof.fixed}</code>
+                </pre>
+              </div>
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => copy(m.id, markdown)}
+                className="btn-ghost !px-4 !py-1.5 text-xs"
+              >
+                {copied === m.id ? "copied ✓" : "Copy as Markdown"}
+              </button>
+              <span className="font-mono text-[10px] text-ink-500">
+                reuse it in an application or your repo — it's the point of the
+                artifact
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 function HeatMap() {
   const progress = useProgressState();
@@ -535,6 +640,12 @@ export default function Portfolio() {
               ))}
             </div>
           )}
+        </RevealSection>
+
+        {/* Judgment cards — Fix 8's artifact export */}
+        <RevealSection className="mt-12">
+          <h2 className="eyebrow mb-4">judgment cards</h2>
+          <JudgmentCards />
         </RevealSection>
 
         {/* Share */}

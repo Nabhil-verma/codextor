@@ -2,9 +2,33 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
-/** One shipped milestone: the day it was claimed and what was ticked off. */
-type Claim = { at: string; deliverables: number[] };
+/**
+ * One shipped milestone: the day it was claimed, what was ticked off, and —
+ * Fix 8 — the optional artifact (note + proof test) the claim carries. Kept in
+ * sync with `src/lib/milestones.ts`.
+ */
+type MilestoneArtifacts = {
+  task: string;
+  note: string;
+  noteCategory: string;
+  proof: { buggy: string; test: string; fixed: string };
+};
+type Claim = {
+  at: string;
+  deliverables: number[];
+  artifacts?: MilestoneArtifacts;
+};
 type Claims = Record<string, Claim>;
+
+/**
+ * The taxonomy codes a note may carry, mirrored from
+ * `src/data/bug-taxonomy.ts` (the Convex bundle should not depend on data
+ * modules). A code absent from this list drops the artifact, not the claim.
+ */
+const REVIEW_CODES = ["RC", "EC", "HA", "ID", "SL", "CX", "SC", "TG", "NM", "DL"];
+const MAX_ARTIFACT_NOTE = 4_000;
+const MAX_ARTIFACT_CODE = 4_000;
+const MAX_ARTIFACT_TASK = 300;
 
 /*
  * A signed-in client is still a trust boundary: `data` and `claims` arrive as
@@ -21,20 +45,54 @@ const MAX_KEY_LENGTH = 120;
  * One lesson's aggregated attempt record. The client owns the first-attempt
  * score (it is the only side that sees attempts in order); the server's job is
  * to keep the *earliest* first, the *highest* best and the *largest* count, so
- * a second device can only ever add information — never rewind it.
+ * a second device can only ever add information — never rewind it. `at` is the
+ * latest attempt (freshness); `firstAt` is the earliest, and only `firstAt`
+ * may decide whose `first` wins.
  */
 type AttemptAgg = {
   first: number;
   best: number;
   attempts: number;
   at: number;
+  firstAt: number;
 };
 type Attempts = Record<string, AttemptAgg>;
 
 /**
+ * The Fix 8 artifact, validated: strings capped, the category must be a real
+ * taxonomy code, and a structurally broken artifact is dropped while the
+ * claim itself survives (it just reads as pre-patch).
+ */
+function sanitizeArtifacts(raw: unknown): MilestoneArtifacts | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const { task, note, noteCategory, proof } = raw as Record<string, unknown>;
+  if (typeof task !== "string" || typeof note !== "string") return undefined;
+  if (typeof noteCategory !== "string" || !REVIEW_CODES.includes(noteCategory)) {
+    return undefined;
+  }
+  if (!proof || typeof proof !== "object") return undefined;
+  const { buggy, test, fixed } = proof as Record<string, unknown>;
+  const code = (v: unknown): string | null =>
+    typeof v === "string" && v.trim().length > 0 ? v.slice(0, MAX_ARTIFACT_CODE) : null;
+  const b = code(buggy);
+  const t = code(test);
+  const f = code(fixed);
+  if (!b || !t || !f) return undefined;
+  const n = note.slice(0, MAX_ARTIFACT_NOTE);
+  if (n.trim().length === 0) return undefined;
+  return {
+    task: task.slice(0, MAX_ARTIFACT_TASK),
+    note: n,
+    noteCategory,
+    proof: { buggy: b, test: t, fixed: f },
+  };
+}
+
+/**
  * Claims, validated the way `sanitize` validates scores: a malformed client
  * must not be able to store junk that breaks every later merge. The date is
- * normalised to a day key and the deliverables to a sorted set of integers.
+ * normalised to a day key, the deliverables to a sorted set of integers, and
+ * the artifact (when present) through `sanitizeArtifacts`.
  */
 function sanitizeClaims(raw: unknown): Claims {
   const out: Claims = {};
@@ -43,9 +101,10 @@ function sanitizeClaims(raw: unknown): Claims {
     if (Object.keys(out).length >= MAX_CLAIMS) break;
     if (id.length > MAX_KEY_LENGTH) continue;
     if (!value || typeof value !== "object") continue;
-    const { at, deliverables } = value as {
+    const { at, deliverables, artifacts } = value as {
       at?: unknown;
       deliverables?: unknown;
+      artifacts?: unknown;
     };
     if (typeof at !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(at)) continue;
     if (!Array.isArray(deliverables)) continue;
@@ -57,28 +116,42 @@ function sanitizeClaims(raw: unknown): Claims {
       ),
     ].sort((a, b) => a - b);
     if (ticks.length === 0) continue;
-    out[id] = { at, deliverables: ticks };
+    const clean = sanitizeArtifacts(artifacts);
+    out[id] = clean
+      ? { at, deliverables: ticks, artifacts: clean }
+      : { at, deliverables: ticks };
   }
   return out;
 }
 
 /**
  * Union of two claim logs, matching `mergeClaims` in `src/lib/milestones.ts`
- * exactly: the claim with more ticked deliverables wins, ties go to the
- * earlier date. Commutative and associative, so a push and a pull converging
- * from either side land on the same log.
+ * exactly: more ticked deliverables wins; ties go to the claim carrying
+ * artifacts (Fix 8's resubmission rule); if both (or neither) carry artifacts,
+ * the earlier date wins. A deterministic total order, commutative and
+ * associative, so a push and a pull converging from either side land on the
+ * same log.
  */
 function mergeClaims(a: Claims, b: Claims): Claims {
   const out: Claims = { ...a };
   for (const [id, claim] of Object.entries(b)) {
     const mine = out[id];
-    if (!mine || claim.deliverables.length > mine.deliverables.length) {
+    if (!mine) {
       out[id] = claim;
-    } else if (
-      claim.deliverables.length === mine.deliverables.length &&
-      claim.at < mine.at
-    ) {
+      continue;
+    }
+    const claimTicks = claim.deliverables.length;
+    const mineTicks = mine.deliverables.length;
+    if (claimTicks > mineTicks) {
       out[id] = claim;
+    } else if (claimTicks === mineTicks) {
+      const claimHasArtifacts = Boolean(claim.artifacts);
+      const mineHasArtifacts = Boolean(mine.artifacts);
+      if (claimHasArtifacts !== mineHasArtifacts) {
+        if (claimHasArtifacts) out[id] = claim;
+      } else if (claim.at < mine.at) {
+        out[id] = claim;
+      }
     }
   }
   return out;
@@ -96,28 +169,33 @@ function sanitizeAttempts(raw: unknown): Attempts {
     if (Object.keys(out).length >= MAX_ATTEMPTS) break;
     if (key.length === 0 || key.length > MAX_KEY_LENGTH) continue;
     if (!value || typeof value !== "object") continue;
-    const { first, best, attempts, at } = value as Record<string, unknown>;
+    const { first, best, attempts, at, firstAt } = value as Record<string, unknown>;
     const f = typeof first === "number" ? first : Number(first);
     const b = typeof best === "number" ? best : Number(best);
     const n = typeof attempts === "number" ? attempts : Number(attempts);
     const t = typeof at === "number" ? at : Number(at);
+    const fa = typeof firstAt === "number" ? firstAt : Number(firstAt);
     if (!Number.isFinite(f) || !Number.isFinite(b)) continue;
     if (!Number.isFinite(n) || n < 1) continue;
+    const last = Number.isFinite(t) ? t : 0;
     out[key] = {
       first: Math.min(1, Math.max(0, f)),
       best: Math.min(1, Math.max(0, b)),
       attempts: Math.min(100_000, Math.floor(n)),
-      at: Number.isFinite(t) ? t : 0,
+      at: last,
+      // Legacy rows only carried `at`; falling back keeps them mergeable.
+      firstAt: Number.isFinite(fa) ? fa : last,
     };
   }
   return out;
 }
 
 /**
- * Union of two attempt maps. `first` keeps the value from the record with the
- * earlier `at` (the genuinely first attempt wins, whichever device saw it),
- * `best` takes the max, `attempts` the max, `at` the max. Commutative and
- * idempotent in both copies, exactly like the score and claim merges.
+ * Union of two attempt maps. `first` keeps the value from the record whose
+ * **first attempt** (`firstAt`) is earlier — the genuinely first attempt wins,
+ * whichever device saw it. `best` takes the max, `attempts` the max, `at` and
+ * `firstAt` the max/min. Commutative and idempotent in both copies, exactly
+ * like the score and claim merges.
  */
 function mergeAttempts(a: Attempts, b: Attempts): Attempts {
   const out: Attempts = { ...a };
@@ -127,12 +205,16 @@ function mergeAttempts(a: Attempts, b: Attempts): Attempts {
       out[key] = next;
       continue;
     }
-    const firstWins = next.at < mine.at ? next.first : mine.first;
+    // `first` is decided by the earliest *first* attempt, never by `at`
+    // (the latest): the latest says when a device went quiet, not who
+    // attempted first, and using it biases the pilot's catch rate upward.
+    const firstWins = next.firstAt < mine.firstAt ? next.first : mine.first;
     out[key] = {
       first: firstWins,
       best: Math.max(mine.best, next.best),
       attempts: Math.max(mine.attempts, next.attempts),
       at: Math.max(mine.at, next.at),
+      firstAt: Math.min(mine.firstAt, next.firstAt),
     };
   }
   return out;

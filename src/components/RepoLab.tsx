@@ -58,8 +58,11 @@ export default function RepoLab({ exercise, onScore, onPass }: Props) {
   };
 
   const toggleOption = (i: number, option: number) => {
+    const isSingle = exercise.questions[i].kind === "select" && exercise.questions[i].single;
     setSelected((s) => {
       const list = s[i] ?? [];
+      // Single-answer questions behave like radios: a pick replaces the last.
+      if (isSingle) return { ...s, [i]: [option] };
       return {
         ...s,
         [i]: list.includes(option)
@@ -172,7 +175,8 @@ export default function RepoLab({ exercise, onScore, onPass }: Props) {
                         }
                       >
                         <input
-                          type="checkbox"
+                          type={q.single ? "radio" : "checkbox"}
+                          name={q.single ? `repo-q${i}` : undefined}
                           checked={on}
                           onChange={() => toggleOption(i, oi)}
                           className="mt-1 accent-gold-500"
