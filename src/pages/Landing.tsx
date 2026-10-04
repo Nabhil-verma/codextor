@@ -1,12 +1,15 @@
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
+  animate,
   motion,
-  useMotionValue,
+  useInView,
   useReducedMotion,
   useScroll,
   useSpring,
   useTransform,
 } from "framer-motion";
+import { Brain, Infinity as InfinityIcon, ListChecks, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import Nav from "../components/Nav";
 import TrackCard from "../components/TrackCard";
 import QuickSandbox from "../components/QuickSandbox";
@@ -18,36 +21,31 @@ import {
 } from "../components/gamification/Pieces";
 import { resolveAscension } from "../lib/gamification";
 import { Marquee, Magnetic, Orb, Reveal, Tilt } from "../components/motion";
+import {
+  BentoGrid,
+  BentoItem,
+  CodeLine,
+  CyberBadge,
+  MinimalGlassCard,
+  NeonPulseButton,
+  SocraticChatBubble,
+  TypingCode,
+} from "../components/ui";
 import { tracks, totalLessonCount, findTrack } from "../data";
 import { scoreFor, useProgressState } from "../lib/progress";
 import { useAccount } from "../AccountProvider";
 
-const features = [
-  {
-    icon: "⚡",
-    title: "Learn by running real code",
-    text: "Every lesson ships with a live editor and console. No videos — you write JavaScript from minute one.",
-    gradient: "from-gold-400/20 to-gold-300/5",
-  },
-  {
-    icon: "✓",
-    title: "Exercises that verify themselves",
-    text: "Each lesson checks your output automatically, so you always know whether you actually got it.",
-    gradient: "from-ink-950/10 to-paper-200/50",
-  },
-  {
-    icon: "🧠",
-    title: "Quizzes that lock it in",
-    text: "Short quizzes with explanations at the end of every lesson. Score 100% to mark it complete.",
-    gradient: "from-gold-300/15 to-paper-200/40",
-  },
-  {
-    icon: "∞",
-    title: "100% free, forever",
-    text: "One free account keeps every score, streak, and badge — no paywall, no ads, no catch.",
-    gradient: "from-paper-200/60 to-gold-400/10",
-  },
-];
+/* ═══════════════════════════════════════════════════════════════
+   Real numbers only. Every stat on this page is derived from the
+   curriculum that ships in the bundle — nothing is invented.
+   ═══════════════════════════════════════════════════════════════ */
+
+const allLessons = tracks.flatMap((t) => t.lessons);
+const QUIZ_TOTAL = allLessons.reduce((n, l) => n + l.quiz.length, 0);
+const HOURS_TOTAL = Math.max(
+  1,
+  Math.round(allLessons.reduce((n, l) => n + l.minutes, 0) / 60)
+);
 
 const marqueeItems = [
   "console.log",
@@ -74,30 +72,112 @@ const marqueeItems = [
 
 const headlineWords = ["The", "code", "teacher", "that", "runs", "your", "code"];
 
+const HERO_CODE = `const learner = { name: "you", excuses: "none" };
+console.log("Hello, free education. 👋");`;
+
+/* ─────────────────────────── small building blocks ─────────────────────────── */
+
+/** Section header: mono index, tight headline, optional lede. Left-aligned. */
+function SectionHead({
+  index,
+  label,
+  title,
+  lede,
+}: {
+  index: string;
+  label: string;
+  title: string;
+  lede?: string;
+}) {
+  return (
+    <Reveal>
+      <p className="eyebrow flex items-center gap-3">
+        <span className="text-ink-400">{index}</span>
+        <span className="h-px w-8 bg-white/10" aria-hidden />
+        {label}
+      </p>
+      <h2 className="mt-5 max-w-2xl font-display text-4xl font-bold tracking-tighter text-ink-950 sm:text-5xl">
+        {title}
+      </h2>
+      {lede && <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-600">{lede}</p>}
+    </Reveal>
+  );
+}
+
+/** Number that counts up the first time it scrolls into view. */
+function CountUp({ to, suffix = "" }: { to: number; suffix?: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true });
+  const reduce = useReducedMotion();
+  const [n, setN] = useState(reduce ? to : 0);
+
+  useEffect(() => {
+    if (reduce) {
+      setN(to);
+      return;
+    }
+    if (!inView) return;
+    const controls = animate(0, to, {
+      duration: 1.4,
+      ease: [0.25, 1, 0.5, 1],
+      onUpdate: (v) => setN(Math.round(v)),
+    });
+    return () => controls.stop();
+  }, [inView, to, reduce]);
+
+  return (
+    <span ref={ref}>
+      {n.toLocaleString()}
+      {suffix}
+    </span>
+  );
+}
+
+/* ─────────────────────────── continue / start card ─────────────────────────── */
+
+function ContinueShell({
+  to,
+  kicker,
+  title,
+}: {
+  to: string;
+  kicker: string;
+  title: string;
+}) {
+  return (
+    <Reveal className="mx-auto mt-14 max-w-xl">
+      <Link
+        to={to}
+        className="glass glass-edge neon-border group flex items-center gap-5 rounded-2xl px-6 py-5 text-left transition-transform duration-300 ease-snap hover:scale-[1.015] active:scale-[0.985]"
+      >
+        <CyberBadge tone="cyan" dot pulse>
+          {kicker}
+        </CyberBadge>
+        <span className="min-w-0 flex-1 truncate font-display text-lg font-semibold tracking-tight text-ink-950">
+          {title}
+        </span>
+        <span
+          className="font-mono text-sm text-gold-400 transition-transform duration-300 ease-snap group-hover:translate-x-1"
+          aria-hidden
+        >
+          →
+        </span>
+      </Link>
+    </Reveal>
+  );
+}
+
 function ContinueCard() {
   const { user } = useAccount();
   const progress = useProgressState();
 
   if (!user) {
     return (
-      <Reveal className="mx-auto mt-12 max-w-2xl">
-        <Tilt max={4}>
-          <Link
-            to="/auth?returnTo=%2Flearn"
-            className="glass glass-edge group flex items-center gap-4 rounded-2xl border border-paper-200/80 p-5 text-left"
-          >
-            <span className="gradient-text shrink-0 font-mono text-xs font-bold uppercase tracking-[0.2em]">
-              Free account
-            </span>
-            <span className="min-w-0 flex-1 font-display text-lg font-medium text-ink-950">
-              Create one to save your progress
-            </span>
-            <span className="font-mono text-sm text-gold-600 transition group-hover:translate-x-1">
-              →
-            </span>
-          </Link>
-        </Tilt>
-      </Reveal>
+      <ContinueShell
+        to="/auth?returnTo=%2Flearn"
+        kicker="Free account"
+        title="Create one to save your progress"
+      />
     );
   }
 
@@ -107,40 +187,178 @@ function ContinueCard() {
       if (scoreFor(progress, track.id + "/" + lesson.id) < 1) {
         const first = findTrack(tracks[0].id) === track && i === 0;
         return (
-          <Reveal className="mx-auto mt-12 max-w-2xl">
-            <Tilt max={4}>
-              <Link
-                to={`/learn/${track.id}/${lesson.id}`}
-                className="glass glass-edge group flex items-center gap-4 rounded-2xl border border-paper-200/80 p-5 text-left"
-              >
-                <span className="gradient-text shrink-0 font-mono text-xs font-bold uppercase tracking-[0.2em]">
-                  {first ? "Start here" : "Continue"}
-                </span>
-                <span className="min-w-0 flex-1 truncate font-display text-lg font-medium text-ink-950">
-                  {lesson.title}
-                </span>
-                <span className="font-mono text-sm text-gold-600 transition group-hover:translate-x-1">
-                  →
-                </span>
-              </Link>
-            </Tilt>
-          </Reveal>
+          <ContinueShell
+            to={`/learn/${track.id}/${lesson.id}`}
+            kicker={first ? "Start here" : "Continue"}
+            title={lesson.title}
+          />
         );
       }
     }
   }
 
   return (
-    <Reveal className="mx-auto mt-12 max-w-2xl">
-      <div className="glass glass-edge flex items-center gap-4 rounded-2xl border border-gold-400/40 p-5">
-        <span className="gradient-text shrink-0 font-mono text-xs font-bold uppercase tracking-[0.2em]">
+    <Reveal className="mx-auto mt-14 max-w-xl">
+      <div className="glass glass-edge flex items-center gap-5 rounded-2xl border border-emerald-400/30 px-6 py-5">
+        <CyberBadge tone="emerald" dot>
           Complete
-        </span>
-        <span className="flex-1 font-display text-lg font-medium text-ink-950">
+        </CyberBadge>
+        <span className="flex-1 font-display text-lg font-semibold tracking-tight text-ink-950">
           Every lesson finished — congratulations.
         </span>
       </div>
     </Reveal>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Socratic tutor showcase — a live-looking session. It plays once,
+   when it scrolls into view: learner asks, the tutor "analyzes",
+   then answers with a QUESTION (it never writes the code for you).
+   ═══════════════════════════════════════════════════════════════ */
+
+const SHOWCASE_CODE = [
+  "const scores = [3, 5, 8];",
+  "const total = scores.reduce((a, b) => a + b, 0);",
+  "console.log(totl);",
+];
+const SHOWCASE_ERROR_LINE = 3;
+
+function SocraticShowcase() {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-120px" });
+  const reduce = useReducedMotion();
+  // 0 idle · 1 learner asks · 2 tutor analyzing · 3 tutor answers
+  const [stage, setStage] = useState<0 | 1 | 2 | 3>(reduce ? 3 : 0);
+
+  useEffect(() => {
+    if (reduce) {
+      setStage(3);
+      return;
+    }
+    if (!inView) return;
+    const timers = [
+      setTimeout(() => setStage(1), 350),
+      setTimeout(() => setStage(2), 1500),
+      setTimeout(() => setStage(3), 3200),
+    ];
+    return () => timers.forEach(clearTimeout);
+  }, [inView, reduce]);
+
+  return (
+    <div ref={ref}>
+      <MinimalGlassCard
+        padded={false}
+        neonEdge
+        className="overflow-hidden !rounded-[1.75rem]"
+      >
+        <div className="grid lg:grid-cols-[1.1fr_1fr]">
+          {/* ── editor + terminal ── */}
+          <div className="flex min-w-0 flex-col border-b border-white/[0.06] lg:border-b-0 lg:border-r">
+            <div className="flex items-center justify-between px-5 py-3.5">
+              <div className="flex items-center gap-1.5" aria-hidden>
+                <span className="h-2.5 w-2.5 rounded-full bg-rose-400/70" />
+                <span className="h-2.5 w-2.5 rounded-full bg-amber-400/70" />
+                <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
+              </div>
+              <span className="font-mono text-[0.7rem] uppercase tracking-widest text-ink-500">
+                sum.js
+              </span>
+              <span className="font-mono text-[0.7rem] text-ink-500">⌘ ↵ run</span>
+            </div>
+
+            <div className="bg-[#06060a] py-4 font-mono text-[0.8rem] leading-7">
+              {SHOWCASE_CODE.map((line, i) => {
+                const n = i + 1;
+                const bad = n === SHOWCASE_ERROR_LINE;
+                return (
+                  <div
+                    key={n}
+                    className={
+                      "flex border-l-2 px-5 " +
+                      (bad
+                        ? "border-rose-400 bg-rose-500/[0.09] shadow-[inset_0_0_30px_-12px_rgba(244,63,94,0.35)]"
+                        : "border-transparent")
+                    }
+                  >
+                    <span
+                      aria-hidden
+                      className={
+                        "w-7 shrink-0 select-none text-right pr-4 " +
+                        (bad ? "text-rose-300" : "text-[#6b6e82]")
+                      }
+                    >
+                      {n}
+                    </span>
+                    <span className="min-w-0 whitespace-pre-wrap break-words">
+                      <CodeLine text={line} />
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="bg-black px-5 py-4 font-mono text-[0.78rem] leading-6">
+              <p className="text-[0.62rem] uppercase tracking-[0.22em] text-[#6b6e82]">
+                terminal
+              </p>
+              <p className="mt-2 text-rose-300">
+                ✗ ReferenceError: totl is not defined
+              </p>
+              <p className="text-[#6b6e82]">&nbsp;&nbsp;at sum.js:3</p>
+            </div>
+          </div>
+
+          {/* ── socratic drawer ── */}
+          <div className="flex min-h-[22rem] flex-col">
+            <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-3.5">
+              <p className="flex items-center gap-2 font-display text-sm font-semibold tracking-tight text-ink-950">
+                <Sparkles className="h-4 w-4 text-violet-300" aria-hidden />
+                Socratic Tutor
+              </p>
+              <CyberBadge tone={stage === 2 ? "violet" : "emerald"} dot pulse={stage === 2}>
+                {stage === 2 ? "analyzing" : "asks, never tells"}
+              </CyberBadge>
+            </div>
+
+            <div
+              className="flex flex-1 flex-col justify-end gap-4 p-5"
+              aria-live="polite"
+              aria-label="Example tutor conversation"
+            >
+              {stage === 0 && (
+                <p className="py-10 text-center font-mono text-xs text-ink-500">
+                  stuck on your code? ask for a hint.
+                </p>
+              )}
+              {stage >= 1 && (
+                <SocraticChatBubble role="user">I'm stuck, can you help?</SocraticChatBubble>
+              )}
+              {stage === 2 && (
+                <SocraticChatBubble role="ai" analyzing>
+                  {null}
+                </SocraticChatBubble>
+              )}
+              {stage === 3 && (
+                <SocraticChatBubble
+                  role="ai"
+                  chips={["I don't understand the error", "How should I think about this?"]}
+                >
+                  Look at line 3 — which name is it printing, and where did you first create
+                  that name?
+                </SocraticChatBubble>
+              )}
+            </div>
+
+            <div className="border-t border-white/[0.06] px-5 py-3.5">
+              <div className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 font-mono text-xs text-ink-500">
+                Ask a question about your code…
+              </div>
+            </div>
+          </div>
+        </div>
+      </MinimalGlassCard>
+    </div>
   );
 }
 
@@ -181,40 +399,37 @@ const MOCK_ROWS = [
 
 function GameLayer() {
   return (
-    <section className="relative overflow-hidden border-y border-paper-200 bg-paper-100/50 py-24">
+    <section className="relative overflow-hidden py-24">
       <div className="pointer-events-none absolute inset-0" aria-hidden>
-        <Orb className="left-[5%] top-[15%] bg-gold-400/10" size={200} duration={15} />
-        <Orb className="right-[6%] bottom-[10%] bg-gold-300/15" size={170} duration={12} delay={1} />
+        <div className="absolute left-[-10%] top-[20%] h-[28rem] w-[28rem] rounded-full bg-violet-600/20 blur-[140px]" />
+        <div className="absolute bottom-[0%] right-[-8%] h-[24rem] w-[24rem] rounded-full bg-cyan-400/10 blur-[140px]" />
       </div>
 
       <div className="relative mx-auto max-w-6xl px-4">
-        <Reveal>
-          <p className="eyebrow text-center">the game layer</p>
-          <h2 className="mt-4 text-center font-display text-3xl font-semibold tracking-tight text-ink-950 sm:text-4xl">
-            A curriculum that plays like a game
-          </h2>
-          <p className="mx-auto mt-4 max-w-xl text-center text-ink-600">
-            Same lessons. Same code. But now every completion moves a number you
-            care about, against people who are trying as hard as you are.
-          </p>
-        </Reveal>
+        <SectionHead
+          index="04"
+          label="the game layer"
+          title="A curriculum that plays like a game"
+          lede="Same lessons. Same code. But now every completion moves a number you care about, against people who are trying as hard as you are."
+        />
 
-        <div className="mt-14 grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
-          {/* Pillars */}
-          <div className="space-y-4">
+        <div className="mt-20 grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-14">
+          {/* Pillars — no boxes, just rhythm and hairlines */}
+          <div role="list">
             {GAME_PILLARS.map((p, i) => (
-              <Reveal key={p.title} delay={i * 0.08}>
-                <div className="glass glass-edge flex gap-4 rounded-2xl border border-paper-200/60 p-5">
-                  <span className="text-2xl" aria-hidden>
+              <Reveal key={p.title} delay={i * 0.07}>
+                <div role="listitem" className="flex gap-5 border-t border-white/[0.06] py-7 first:border-t-0 first:pt-0">
+                  <span
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-xl"
+                    aria-hidden
+                  >
                     {p.icon}
                   </span>
                   <div>
-                    <h3 className="font-display text-lg font-semibold text-ink-950">
+                    <h3 className="font-display text-xl font-semibold tracking-tight text-ink-950">
                       {p.title}
                     </h3>
-                    <p className="mt-1.5 text-sm leading-relaxed text-ink-600">
-                      {p.text}
-                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-ink-600">{p.text}</p>
                   </div>
                 </div>
               </Reveal>
@@ -224,22 +439,17 @@ function GameLayer() {
           {/* Board preview */}
           <Reveal delay={0.15}>
             <Tilt max={5} scale={1.01}>
-              <div className="dark-canvas glass-edge-dark noise-overlay relative overflow-hidden rounded-3xl p-5">
+              <div className="dark-canvas neon-border glass-edge-dark noise-overlay relative overflow-hidden rounded-3xl p-6">
                 <div className="relative flex items-center justify-between">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-gold-400">
+                  <p className="font-mono text-[0.68rem] uppercase tracking-[0.22em] text-gold-400">
                     global · this week
                   </p>
-                  <motion.span
-                    className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-paper-300/70"
-                    animate={{ opacity: [1, 0.45, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    <span className="h-1.5 w-1.5 rounded-full bg-gold-400" />
+                  <CyberBadge tone="emerald" dot pulse>
                     live
-                  </motion.span>
+                  </CyberBadge>
                 </div>
 
-                <ul className="relative mt-4 space-y-2">
+                <ul className="relative mt-5 space-y-2">
                   {MOCK_ROWS.map((row, i) => {
                     const tier = resolveAscension(row.ascension, row.level);
                     return (
@@ -248,12 +458,12 @@ function GameLayer() {
                         initial={{ opacity: 0, x: 24 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
-                        transition={{ duration: 0.5, delay: 0.2 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                        transition={{ type: "spring", stiffness: 400, damping: 30, delay: 0.2 + i * 0.09 }}
                         className={
                           "flex items-center gap-3 rounded-xl border px-3 py-2.5 " +
                           (row.isMe
-                            ? "border-gold-400/70 bg-gold-400/10 shadow-glow"
-                            : "border-paper-100/10 bg-paper-100/5")
+                            ? "border-gold-400/50 bg-gold-400/[0.08] shadow-glow"
+                            : "border-white/[0.06] bg-white/[0.02]")
                         }
                       >
                         <RankMedal rank={row.rank} />
@@ -267,7 +477,7 @@ function GameLayer() {
                           <p className="truncate font-display text-sm font-semibold text-paper-50">
                             {row.name}
                             {row.isMe && (
-                              <span className="ml-2 rounded-full bg-gold-400 px-1.5 py-0.5 font-mono text-[8px] font-bold uppercase tracking-widest text-ink-950">
+                              <span className="ml-2 rounded-full bg-gold-400 px-1.5 py-0.5 font-mono text-[8px] font-bold uppercase tracking-widest text-[#030305]">
                                 you
                               </span>
                             )}
@@ -281,26 +491,23 @@ function GameLayer() {
                         </div>
                         <StreakFlame days={row.streak} />
                         <span className="font-mono text-sm font-bold text-paper-50">
-                          <span className="text-gold-400">✦</span>{" "}
-                          {row.xp.toLocaleString()}
+                          <span className="text-gold-400">✦</span> {row.xp.toLocaleString()}
                         </span>
                       </motion.li>
                     );
                   })}
                 </ul>
 
-                <div className="relative mt-4 flex items-center justify-between rounded-xl border border-paper-100/10 bg-paper-100/5 px-4 py-3">
+                <div className="relative mt-5 flex items-center justify-between rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
                   <div>
-                    <p className="font-mono text-[10px] uppercase tracking-widest text-gold-400">
+                    <p className="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-gold-400">
                       daily quests
                     </p>
                     <p className="mt-1 font-mono text-[11px] text-paper-300/80">
                       First Blood ✓ · Triple Threat 2/3 · Flawless Run ✓
                     </p>
                   </div>
-                  <span className="font-mono text-xs font-bold text-gold-300">
-                    +285 xp
-                  </span>
+                  <span className="font-mono text-xs font-bold text-emerald-300">+285 xp</span>
                 </div>
               </div>
             </Tilt>
@@ -308,18 +515,15 @@ function GameLayer() {
         </div>
 
         <Reveal delay={0.1}>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+          <div className="mt-16 flex flex-wrap items-center gap-4">
             <Magnetic>
-              <Link to="/leaderboard" className="btn-gold text-base">
-                Open the leaderboard →
-              </Link>
+              <NeonPulseButton to="/leaderboard" size="lg">
+                Open the leaderboard
+              </NeonPulseButton>
             </Magnetic>
-            <Link
-              to="/clans"
-              className="glass rounded-full border border-paper-200/80 px-7 py-3 font-semibold text-ink-800 transition hover:border-gold-400 hover:text-gold-600"
-            >
+            <NeonPulseButton to="/clans" variant="glass" size="lg" trailingIcon={false}>
               Found a guild
-            </Link>
+            </NeonPulseButton>
           </div>
         </Reveal>
       </div>
@@ -327,48 +531,15 @@ function GameLayer() {
   );
 }
 
-/* Floating code snippet with its own parallax depth */
-function FloatingSnippet({
-  children,
-  className,
-  depth,
-  mx,
-  my,
-}: {
-  children: string;
-  className: string;
-  depth: number;
-  mx: ReturnType<typeof useSpring>;
-  my: ReturnType<typeof useSpring>;
-}) {
-  const x = useTransform(mx, (v) => v * depth);
-  const y = useTransform(my, (v) => v * depth);
-  return (
-    <motion.span
-      aria-hidden
-      className={className}
-      style={{ x, y }}
-      animate={{ rotate: [0, 2, -2, 0] }}
-      transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-    >
-      {children}
-    </motion.span>
-  );
-}
+/* ═══════════════════════════════════════════════════════════════
+   Landing
+   ═══════════════════════════════════════════════════════════════ */
 
 export default function Landing() {
-  /* Mouse parallax for the whole hero scene */
-  const mx = useMotionValue(0);
-  const my = useMotionValue(0);
-  const smx = useSpring(mx, { stiffness: 50, damping: 20 });
-  const smy = useSpring(my, { stiffness: 50, damping: 20 });
-
   /*
-   * Scroll-driven hero exit. The raw scroll position is spiky (especially on
-   * trackpads and momentum scrolling), so it's run through a spring first — the
-   * fade then glides instead of snapping frame to frame. Only opacity and
-   * translate are animated: scaling a text-heavy layer forced a repaint of the
-   * whole hero on every frame, which is what made it feel laggy.
+   * Scroll-driven hero exit. The raw scroll position is spiky (trackpads,
+   * momentum), so it's sprung first — the fade glides instead of snapping.
+   * Only opacity + translate animate; scaling text forced a full repaint.
    */
   const { scrollY } = useScroll();
   const smoothScroll = useSpring(scrollY, {
@@ -378,274 +549,326 @@ export default function Landing() {
     restDelta: 0.5,
   });
   const reduceMotion = useReducedMotion();
-  const heroOpacity = useTransform(smoothScroll, [0, 480], [1, 0]);
-  const heroY = useTransform(smoothScroll, [0, 480], [0, 72]);
+  const heroOpacity = useTransform(smoothScroll, [0, 520], [1, 0]);
+  const heroY = useTransform(smoothScroll, [0, 520], [0, 64]);
   const gridScroll = useTransform(smoothScroll, [0, 700], [0, 120]);
 
-  /* Parallax tracks the pointer over the hero only — not the whole page. */
-  function onMouseMove(e: React.MouseEvent<HTMLElement>) {
-    const { innerWidth, innerHeight } = window;
-    mx.set((e.clientX / innerWidth - 0.5) * 40);
-    my.set((e.clientY / innerHeight - 0.5) * 30);
-  }
+  const stats = [
+    { value: tracks.length, label: "tracks", suffix: "" },
+    { value: totalLessonCount, label: "hands-on lessons", suffix: "" },
+    { value: QUIZ_TOTAL, label: "quiz questions", suffix: "" },
+    { value: HOURS_TOTAL, label: "hours of material", suffix: "h" },
+  ];
 
   return (
     <div className="min-h-screen overflow-x-hidden">
       <Nav />
 
       {/* ─── Hero ─── */}
-      <section
-        className="relative overflow-hidden mesh-bg noise-overlay"
-        onMouseMove={reduceMotion ? undefined : onMouseMove}
-      >
-        {/* Parallax orbs */}
+      <section className="relative overflow-hidden">
+        {/* Ambient light — low opacity so the black stays black */}
         <div className="pointer-events-none absolute inset-0" aria-hidden>
-          <Orb className="left-[8%] top-[15%] bg-gold-400/10" size={260} duration={16} />
-          <Orb className="right-[10%] top-[25%] bg-gold-300/15" size={200} duration={12} delay={1.5} />
-          <Orb className="bottom-[10%] left-[40%] bg-paper-200/40" size={170} duration={10} delay={0.8} />
+          <div className="absolute left-[8%] top-[-6rem] h-[30rem] w-[30rem] rounded-full bg-cyan-400/20 opacity-60 blur-[150px]" />
+          <div className="absolute right-[2%] top-[8rem] h-[26rem] w-[26rem] rounded-full bg-violet-600/20 opacity-70 blur-[150px]" />
+          <motion.div
+            className="grid-floor absolute inset-x-0 bottom-0 h-[42%] opacity-[0.07]"
+            style={reduceMotion ? undefined : { y: gridScroll }}
+          />
         </div>
 
-        {/* Perspective grid floor — drifts with scroll */}
         <motion.div
-          className="grid-floor pointer-events-none absolute inset-x-0 bottom-0 h-[45%] opacity-[0.07]"
-          style={{ y: gridScroll }}
-          aria-hidden
-        />
-
-        <motion.div
-          className="relative mx-auto max-w-6xl px-4 pb-20 pt-20 text-center sm:pb-24 sm:pt-36"
+          className="relative mx-auto max-w-6xl px-4 pb-28 pt-24 text-center sm:pb-36 sm:pt-40"
           style={reduceMotion ? undefined : { opacity: heroOpacity, y: heroY }}
         >
-          {/* Floating code snippets — mouse parallax depths */}
-          <div className="pointer-events-none absolute inset-0" aria-hidden>
-            <FloatingSnippet
-              className="absolute left-[5%] top-[12%] hidden rotate-[-6deg] font-mono text-sm text-gold-400/30 sm:block"
-              depth={1.6}
-              mx={smx}
-              my={smy}
-            >
-              {"const learn = () => {"}
-            </FloatingSnippet>
-            <FloatingSnippet
-              className="absolute right-[3%] top-[18%] hidden rotate-[4deg] font-mono text-sm text-ink-600/20 sm:block"
-              depth={-1.2}
-              mx={smx}
-              my={smy}
-            >
-              {"for (let i = 0; i < infinity; i++)"}
-            </FloatingSnippet>
-            <FloatingSnippet
-              className="absolute bottom-[30%] left-[12%] hidden rotate-[-3deg] font-mono text-xs text-gold-500/25 md:block"
-              depth={2.2}
-              mx={smx}
-              my={smy}
-            >
-              {"</>"}
-            </FloatingSnippet>
-            <FloatingSnippet
-              className="absolute bottom-[25%] right-[8%] hidden rotate-[5deg] font-mono text-xs text-ink-700/15 md:block"
-              depth={-1.8}
-              mx={smx}
-              my={smy}
-            >
-              {"return <Skills />"}
-            </FloatingSnippet>
-          </div>
-
-          <div className="relative z-10">
-            <motion.p
-              className="eyebrow mb-6 text-sm"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="flex justify-center"
+          >
+            <CyberBadge tone="cyan" dot pulse>
               beta · free forever
-            </motion.p>
+            </CyberBadge>
+          </motion.div>
 
-            {/* Word-by-word 3D headline */}
-            <h1
-              className="mx-auto max-w-4xl font-display text-5xl font-semibold leading-[1.06] tracking-tight text-ink-950 sm:text-7xl lg:text-8xl"
-              style={{ perspective: "800px" }}
-              aria-label="The code teacher that runs your code"
-            >
-              {headlineWords.map((w, i) => (
-                <motion.span
-                  key={i}
-                  className="mr-[0.24em] inline-block will-change-transform"
-                  initial={{ opacity: 0, y: 34, rotateX: -55 }}
-                  animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                  transition={{
-                    duration: 0.7,
-                    delay: 0.08 + i * 0.07,
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
-                >
-                  {w === "your" ? (
-                    <span className="gradient-text italic">{w}</span>
-                  ) : (
-                    w
-                  )}
-                </motion.span>
-              ))}
-            </h1>
-
-            <motion.p
-              className="mx-auto mt-7 max-w-xl text-lg leading-relaxed text-ink-600"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.55 }}
-            >
-              Interactive JavaScript lessons with a built-in editor, console, and
-              self-checking exercises. From your first{" "}
-              <code className="rounded-md bg-ink-950 px-2 py-0.5 font-mono text-sm text-gold-300">
-                console.log
-              </code>{" "}
-              to real programs — create a free account and go.
-            </motion.p>
-
-            <motion.div
-              className="mt-11 flex flex-wrap items-center justify-center gap-4"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.7 }}
-            >
-              <Magnetic>
-                <Link to="/auth?returnTo=%2Flearn" className="btn-gold text-base">
-                  Start learning free →
-                </Link>
-              </Magnetic>
-              <Link
-                to="/auth?returnTo=%2Flearn"
-                className="glass rounded-full border border-paper-200/80 px-7 py-3 font-semibold text-ink-800 transition hover:border-gold-400 hover:text-gold-600"
+          {/* Kinetic headline — words resolve out of blur, one by one */}
+          <h1
+            className="mx-auto mt-10 max-w-5xl text-balance font-display text-[2.9rem] font-bold leading-[0.98] tracking-tighter text-ink-950 sm:text-7xl lg:text-[6.5rem]"
+            aria-label="The code teacher that runs your code"
+          >
+            {headlineWords.map((w, i) => (
+              <motion.span
+                key={i}
+                aria-hidden
+                className="mr-[0.22em] inline-block will-change-transform"
+                initial={{ opacity: 0, y: 44, filter: "blur(14px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                transition={{
+                  duration: 0.8,
+                  delay: 0.1 + i * 0.075,
+                  ease: [0.25, 1, 0.5, 1],
+                }}
               >
-                I already have an account
-              </Link>
-            </motion.div>
-            <motion.p
-              className="mt-5 font-mono text-xs text-ink-600"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.9 }}
-            >
-              free forever · takes 10 seconds
-            </motion.p>
+                {i >= 4 ? <span className="gradient-text">{w}</span> : w}
+              </motion.span>
+            ))}
+          </h1>
 
-            {/* Hero code window with 3D tilt + entrance */}
-            <motion.div
-              className="mx-auto mt-20 max-w-2xl"
-              initial={{ opacity: 0, y: 60, rotateX: 14 }}
-              animate={{ opacity: 1, y: 0, rotateX: 0 }}
-              transition={{ duration: 0.9, delay: 0.75, ease: [0.22, 1, 0.36, 1] }}
-              style={{ transformPerspective: 1000 }}
+          <motion.p
+            className="mx-auto mt-10 max-w-xl text-lg leading-relaxed text-ink-600"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.7 }}
+          >
+            Interactive JavaScript lessons with a built-in editor, console, and
+            self-checking exercises. From your first{" "}
+            <code className="rounded-md border border-white/10 bg-white/[0.05] px-2 py-0.5 font-mono text-sm text-gold-300">
+              console.log
+            </code>{" "}
+            to real programs — create a free account and go.
+          </motion.p>
+
+          <motion.div
+            className="mt-12 flex flex-wrap items-center justify-center gap-4"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.85 }}
+          >
+            <Magnetic>
+              <NeonPulseButton to="/auth?returnTo=%2Flearn" size="lg">
+                Start learning free
+              </NeonPulseButton>
+            </Magnetic>
+            <NeonPulseButton
+              to="/auth?returnTo=%2Flearn"
+              variant="glass"
+              size="lg"
+              trailingIcon={false}
             >
-              <Tilt max={7} scale={1.015}>
-                <div className="code-window text-left shadow-lift">
-                  <div className="flex items-center justify-between border-b border-ink-800 px-5 py-3">
-                    <div className="flex items-center gap-1.5">
-                      <span className="h-2.5 w-2.5 rounded-full bg-ink-700" />
-                      <span className="h-2.5 w-2.5 rounded-full bg-ink-700" />
-                      <span className="h-2.5 w-2.5 rounded-full bg-gold-400" />
-                    </div>
-                    <span className="font-mono text-xs text-ink-600">lesson-01.js</span>
+              I already have an account
+            </NeonPulseButton>
+          </motion.div>
+          <motion.p
+            className="mt-6 font-mono text-[0.7rem] uppercase tracking-[0.22em] text-ink-500"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.05 }}
+          >
+            free forever · takes 10 seconds
+          </motion.p>
+
+          {/* Floating code window — types itself, then runs */}
+          <motion.div
+            className="relative mx-auto mt-24 max-w-2xl"
+            initial={{ opacity: 0, y: 70, rotateX: 14 }}
+            animate={{ opacity: 1, y: 0, rotateX: 0 }}
+            transition={{ duration: 1, delay: 0.95, ease: [0.25, 1, 0.5, 1] }}
+            style={{ transformPerspective: 1100 }}
+          >
+            <div
+              className="pointer-events-none absolute -inset-x-8 -inset-y-6 rounded-[3rem] bg-gradient-to-r from-cyan-400/20 via-violet-500/20 to-cyan-400/20 opacity-60 blur-3xl"
+              aria-hidden
+            />
+            <Tilt max={6} scale={1.012}>
+              <div className="code-window neon-border relative !rounded-2xl text-left">
+                <div className="flex items-center justify-between border-b border-white/[0.07] px-5 py-3.5">
+                  <div className="flex items-center gap-1.5" aria-hidden>
+                    <span className="h-2.5 w-2.5 rounded-full bg-white/10" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-white/10" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-gold-400 shadow-[0_0_10px_rgba(0,229,255,0.8)]" />
                   </div>
-                  <pre className="overflow-x-auto p-6 font-mono text-[13px] leading-relaxed">
-                    <code>
-                      <span className="text-gold-300">const</span>{" "}
-                      <span className="text-paper-100">learner</span>{" "}
-                      <span className="text-ink-600">=</span>{" "}
-                      <span className="text-paper-100">{"{"}</span>{" "}
-                      <span className="text-gold-400">name</span>
-                      <span className="text-ink-600">:</span>{" "}
-                      <span className="text-paper-300">"you"</span>
-                      <span className="text-ink-600">,</span>{" "}
-                      <span className="text-gold-400">excuses</span>
-                      <span className="text-ink-600">:</span>{" "}
-                      <span className="text-paper-300">"none"</span>{" "}
-                      <span className="text-paper-100">{"}"}</span>
-                      {"\n"}
-                      <span className="text-gold-300">console</span>
-                      <span className="text-ink-600">.</span>
-                      <span className="text-paper-100">log</span>
-                      <span className="text-paper-100">(</span>
-                      <span className="text-paper-300">"Hello, free education. 👋"</span>
-                      <span className="text-paper-100">)</span>
-                      {"\n\n"}
-                      <span className="text-ink-600">{"// → Hello, free education. 👋"}</span>
-                    </code>
-                  </pre>
+                  <span className="font-mono text-[0.7rem] uppercase tracking-widest text-ink-400">
+                    lesson-01.js
+                  </span>
+                  <span className="font-mono text-[0.7rem] text-ink-400">⌘ ↵ run</span>
                 </div>
-              </Tilt>
-            </motion.div>
+                <div className="p-6 pb-7">
+                  <TypingCode
+                    code={HERO_CODE}
+                    output="Hello, free education. 👋"
+                    startDelay={1500}
+                  />
+                </div>
+              </div>
+            </Tilt>
+          </motion.div>
 
-            <ContinueCard />
-          </div>
+          <ContinueCard />
         </motion.div>
       </section>
 
-      {/* ─── Horizontal scrolling marquee (framer-driven) ─── */}
-      <section className="relative overflow-hidden border-y border-paper-200 bg-ink-950 py-5">
-        <Marquee speed={45} className="dark-canvas">
-          {marqueeItems.map((item, i) => (
-            <span
-              key={i}
-              className="mx-6 flex shrink-0 items-center gap-3 font-mono text-sm text-paper-100/50"
-            >
-              <span className="h-1 w-1 rounded-full bg-gold-400/50" />
-              {item}
-            </span>
-          ))}
-        </Marquee>
+      {/* ─── Real stats + topic marquee ─── */}
+      <section className="relative mx-auto max-w-6xl px-4">
+        <MinimalGlassCard padded={false} className="overflow-hidden">
+          <dl className="grid grid-cols-2 divide-white/[0.06] md:grid-cols-4 md:divide-x">
+            {stats.map((s, i) => (
+              <div
+                key={s.label}
+                className={
+                  "px-8 py-9 " +
+                  (i < 2 ? "border-b border-white/[0.06] md:border-b-0" : "") +
+                  (i % 2 === 0 ? " border-r border-white/[0.06] md:border-r-0" : "")
+                }
+              >
+                <dd className="font-mono text-4xl font-bold tracking-tighter text-ink-950 sm:text-5xl">
+                  <CountUp to={s.value} suffix={s.suffix} />
+                </dd>
+                <dt className="mt-3 font-mono text-[0.68rem] uppercase tracking-[0.22em] text-ink-500">
+                  {s.label}
+                </dt>
+              </div>
+            ))}
+          </dl>
+          <div className="border-t border-white/[0.06] py-4">
+            <Marquee speed={42} fadeColor="rgb(var(--paper-50))">
+              {marqueeItems.map((item, i) => (
+                <span
+                  key={i}
+                  className="mx-6 flex shrink-0 items-center gap-3 font-mono text-xs uppercase tracking-widest text-ink-500"
+                >
+                  <span className="h-1 w-1 rounded-full bg-gold-400/60" />
+                  {item}
+                </span>
+              ))}
+            </Marquee>
+          </div>
+        </MinimalGlassCard>
       </section>
 
       {/* ─── Try-it sandbox ─── */}
-      <Reveal className="mx-auto max-w-6xl px-4 py-20">
-        <p className="eyebrow text-center">try it right now</p>
-        <h2 className="mt-4 text-center font-display text-3xl font-semibold tracking-tight text-ink-950 sm:text-4xl">
-          No signup. Just run code.
-        </h2>
-        <p className="mx-auto mt-4 max-w-md text-center text-ink-600">
-          Edit the code below and press Run. This is exactly what every lesson feels like.
-        </p>
-        <div className="mx-auto mt-10 max-w-2xl">
-          <Tilt max={4} scale={1.008}>
-            <QuickSandbox />
+      <section className="mx-auto max-w-6xl px-4 py-32">
+        <SectionHead
+          index="01"
+          label="try it right now"
+          title="No signup. Just run code."
+          lede="Edit the code below and press Run. This is exactly what every lesson feels like."
+        />
+        <Reveal className="mx-auto mt-16 max-w-3xl" delay={0.1}>
+          <Tilt max={3} scale={1.006}>
+            <div className="neon-border rounded-2xl">
+              <QuickSandbox />
+            </div>
           </Tilt>
-        </div>
-      </Reveal>
-
-      {/* ─── Features ─── */}
-      <section className="mx-auto max-w-6xl px-4 py-24">
-        <Reveal>
-          <p className="eyebrow text-center">why it works</p>
-          <h2 className="mt-4 text-center font-display text-3xl font-semibold tracking-tight text-ink-950 sm:text-4xl">
-            Built like a game. Teaches like a mentor.
-          </h2>
         </Reveal>
-        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4" style={{ perspective: "1200px" }}>
-          {features.map((f, i) => (
-            <motion.div
-              key={f.title}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <Tilt max={10} className="h-full">
-                <div className="glass glass-edge group relative h-full overflow-hidden rounded-2xl border border-paper-200/60 p-8 transition-all duration-300">
-                  <div
-                    className={`absolute inset-0 bg-gradient-to-br ${f.gradient} opacity-0 transition-opacity duration-300 group-hover:opacity-100`}
-                  />
-                  <div className="relative z-10" style={{ transform: "translateZ(30px)" }}>
-                    <span className="text-3xl">{f.icon}</span>
-                    <h3 className="mt-5 font-display text-lg font-semibold text-ink-950">
-                      {f.title}
-                    </h3>
-                    <p className="mt-3 text-sm leading-relaxed text-ink-600">{f.text}</p>
-                  </div>
+      </section>
+
+      {/* ─── Features bento ─── */}
+      <section className="mx-auto max-w-6xl px-4 pb-32">
+        <SectionHead
+          index="02"
+          label="why it works"
+          title="Built like a game. Teaches like a mentor."
+        />
+        <BentoGrid className="mt-16 md:grid-rows-[auto_auto_auto]">
+          <BentoItem span="md:col-span-2 md:row-span-2" index={0} className="!p-10">
+            <div className="flex h-full flex-col">
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-cyan-400/25 bg-cyan-400/[0.07] text-cyan-300">
+                <Zap className="h-5 w-5" aria-hidden />
+              </span>
+              <h3 className="mt-8 font-display text-3xl font-bold tracking-tighter text-ink-950">
+                Learn by running real code
+              </h3>
+              <p className="mt-4 max-w-md leading-relaxed text-ink-600">
+                Every lesson ships with a live editor and console. No videos — you write
+                JavaScript from minute one.
+              </p>
+              <div className="mt-auto pt-10">
+                <div className="rounded-2xl border border-white/[0.07] bg-[#06060a] p-5 font-mono text-[0.78rem] leading-7">
+                  <p className="text-[#7c7f93]">// no videos. just you and the console.</p>
+                  <p>
+                    <CodeLine text={"const double = (n) => n * 2;"} />
+                  </p>
+                  <p>
+                    <CodeLine text={"console.log(double(21));"} />
+                  </p>
+                  <p className="mt-1 border-l-2 border-emerald-400/50 pl-3 text-emerald-300">
+                    <span className="mr-2 text-[#7c7f93]">→</span>42
+                  </p>
                 </div>
-              </Tilt>
-            </motion.div>
-          ))}
+              </div>
+            </div>
+          </BentoItem>
+
+          <BentoItem span="md:col-span-2" index={1}>
+            <div className="flex h-full flex-col justify-between gap-8 sm:flex-row sm:items-center">
+              <div>
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-violet-400/25 bg-violet-400/[0.08] text-violet-300">
+                  <Brain className="h-5 w-5" aria-hidden />
+                </span>
+                <h3 className="mt-6 font-display text-2xl font-bold tracking-tighter text-ink-950">
+                  A Socratic tutor
+                </h3>
+                <p className="mt-3 max-w-sm text-sm leading-relaxed text-ink-600">
+                  Stuck? It asks the question that unsticks you — and never writes your
+                  code. Optional: bring your own Gemini or Claude key.
+                </p>
+              </div>
+              <div className="shrink-0 rounded-2xl border border-violet-400/20 bg-violet-500/[0.07] px-4 py-3 text-sm text-ink-800 shadow-[0_0_30px_-10px_rgba(139,92,246,0.4)] sm:max-w-[13rem]">
+                What did you expect line 3 to print?
+              </div>
+            </div>
+          </BentoItem>
+
+          <BentoItem index={2}>
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-emerald-400/25 bg-emerald-400/[0.08] text-emerald-300">
+              <ShieldCheck className="h-5 w-5" aria-hidden />
+            </span>
+            <h3 className="mt-6 font-display text-xl font-bold tracking-tighter text-ink-950">
+              Exercises that verify themselves
+            </h3>
+            <p className="mt-3 text-sm leading-relaxed text-ink-600">
+              Each lesson checks your output automatically, so you always know whether you
+              actually got it.
+            </p>
+          </BentoItem>
+
+          <BentoItem index={3}>
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-amber-400/25 bg-amber-400/[0.08] text-amber-300">
+              <ListChecks className="h-5 w-5" aria-hidden />
+            </span>
+            <h3 className="mt-6 font-display text-xl font-bold tracking-tighter text-ink-950">
+              Quizzes that lock it in
+            </h3>
+            <p className="mt-3 text-sm leading-relaxed text-ink-600">
+              Short quizzes with explanations at the end of every lesson. Score 100% to
+              mark it complete.
+            </p>
+          </BentoItem>
+
+          <BentoItem span="md:col-span-4" index={4} className="!py-7">
+            <div className="flex flex-wrap items-center justify-between gap-6">
+              <div className="flex items-center gap-5">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-ink-800">
+                  <InfinityIcon className="h-5 w-5" aria-hidden />
+                </span>
+                <div>
+                  <h3 className="font-display text-xl font-bold tracking-tighter text-ink-950">
+                    100% free, forever
+                  </h3>
+                  <p className="mt-1 text-sm text-ink-600">
+                    One free account keeps every score, streak, and badge — no paywall, no
+                    ads, no catch.
+                  </p>
+                </div>
+              </div>
+              <CyberBadge tone="emerald" dot>
+                $0 · no card
+              </CyberBadge>
+            </div>
+          </BentoItem>
+        </BentoGrid>
+      </section>
+
+      {/* ─── Socratic tutor showcase ─── */}
+      <section className="mx-auto max-w-6xl px-4 pb-16">
+        <SectionHead
+          index="03"
+          label="the socratic tutor"
+          title="It asks. You figure it out."
+          lede="Run into an error and the tutor reads your code and your console — then replies with a question, never the answer."
+        />
+        <div className="mt-16">
+          <SocraticShowcase />
         </div>
       </section>
 
@@ -653,28 +876,31 @@ export default function Landing() {
       <GameLayer />
 
       {/* ─── Curriculum ─── */}
-      <section className="mx-auto max-w-6xl px-4 py-20" id="tracks-section">
-        <Reveal>
-          <div id="tracks" className="scroll-mt-20">
-            <p className="eyebrow text-center">The curriculum</p>
-            <h2 className="mt-4 text-center font-display text-4xl font-semibold tracking-tight text-ink-950">
-              {tracks.length} tracks · {totalLessonCount} hands-on lessons
-            </h2>
-            <p className="mx-auto mt-5 max-w-lg text-center text-ink-600">
-              Start at the top if you're new. Every lesson ends with code you ran
-              yourself and a quiz you passed.
-            </p>
-          </div>
-        </Reveal>
-        <div className="mt-14 grid gap-6 md:grid-cols-3" style={{ perspective: "1200px" }}>
+      <section className="mx-auto max-w-6xl px-4 py-32" id="tracks-section">
+        <div id="tracks" className="scroll-mt-20">
+          <SectionHead
+            index="05"
+            label="the curriculum"
+            title={`${tracks.length} tracks · ${totalLessonCount} hands-on lessons`}
+            lede="Start at the top if you're new. Every lesson ends with code you ran yourself and a quiz you passed."
+          />
+        </div>
+        <div
+          className="mt-16 grid gap-5 md:grid-cols-2 lg:grid-cols-3"
+          style={{ perspective: "1200px" }}
+        >
           {tracks.map((t, i) => (
             <motion.div
               key={t.id}
-              initial={{ opacity: 0, y: 48, rotateX: 8 }}
-              whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-80px" }}
-              transition={{ duration: 0.7, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-              style={{ transformPerspective: 1000 }}
+              transition={{
+                type: "spring",
+                stiffness: 400,
+                damping: 30,
+                delay: Math.min((i % 3) * 0.08, 0.24),
+              }}
             >
               <TrackCard track={t} />
             </motion.div>
@@ -682,65 +908,48 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ─── Second marquee (reverse, light) ─── */}
-      <section className="relative overflow-hidden border-y border-paper-200 bg-paper-100/60 py-5">
-        {/* the fade must match the section surface in both themes */}
-        <Marquee speed={38} reverse fadeColor="rgb(var(--paper-100))">
-          {marqueeItems
-            .slice()
-            .reverse()
-            .map((item, i) => (
-              <span
-                key={i}
-                className="mx-6 flex shrink-0 items-center gap-3 font-mono text-sm text-ink-600/40"
-              >
-                <span className="h-1 w-1 rounded-full bg-gold-400/40" />
-                {item}
-              </span>
-            ))}
-        </Marquee>
-      </section>
-
       {/* ─── CTA ─── */}
-      <section className="mx-auto max-w-6xl px-4 py-20">
+      <section className="mx-auto max-w-6xl px-4 pb-32">
         <Reveal>
-          <div className="dark-canvas glass-edge-dark noise-overlay relative overflow-hidden rounded-3xl px-8 py-20 text-center sm:px-14">
+          <div className="dark-canvas neon-border glass-edge-dark noise-overlay relative overflow-hidden rounded-[2rem] px-8 py-24 text-center sm:px-14">
             <div className="pointer-events-none absolute inset-0" aria-hidden>
-              <Orb className="-right-16 -top-16 bg-gold-400/20" size={320} duration={13} />
-              <Orb className="-bottom-12 -left-12 bg-gold-300/10" size={240} duration={17} delay={2} />
+              <Orb className="-right-16 -top-16 bg-cyan-400/20" size={320} duration={13} />
+              <Orb className="-bottom-12 -left-12 bg-violet-500/20" size={260} duration={17} delay={2} />
             </div>
             <div className="relative z-10">
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-gold-400">
+              <p className="font-mono text-[0.72rem] uppercase tracking-[0.22em] text-gold-400">
                 No excuses left
               </p>
-              <h2 className="mx-auto mt-5 max-w-lg font-display text-4xl font-semibold tracking-tight text-paper-50 sm:text-5xl">
+              <h2 className="mx-auto mt-6 max-w-xl font-display text-4xl font-bold tracking-tighter text-paper-50 sm:text-6xl">
                 Ready to write your first line?
               </h2>
-              <p className="mx-auto mt-5 max-w-md text-paper-300/80">
+              <p className="mx-auto mt-6 max-w-md text-paper-300/80">
                 It takes about five minutes to finish your first lesson. That's it.
                 That's the pitch.
               </p>
-              <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+              <div className="mt-12 flex flex-wrap items-center justify-center gap-4">
                 <Magnetic>
-                  <Link to="/auth?returnTo=%2Flearn" className="btn-gold text-base">
-                    Create your free account →
-                  </Link>
+                  <NeonPulseButton to="/auth?returnTo=%2Flearn" size="lg">
+                    Create your free account
+                  </NeonPulseButton>
                 </Magnetic>
-                <Link
+                <NeonPulseButton
                   to="/auth?returnTo=%2Flearn"
-                  className="rounded-full border border-paper-100/20 px-7 py-3 font-semibold text-paper-300 transition hover:border-gold-400/60 hover:text-gold-300"
+                  variant="glass"
+                  size="lg"
+                  trailingIcon={false}
+                  className="!text-paper-50"
                 >
-                  Sign in →
-                </Link>
+                  Sign in
+                </NeonPulseButton>
               </div>
             </div>
           </div>
         </Reveal>
       </section>
 
-      <footer className="border-t border-paper-200 py-10 text-center font-mono text-xs text-ink-600">
-        Codexter · a 100% free
-        code teacher · built with ♥ and zero dollars
+      <footer className="border-t border-white/[0.06] py-10 text-center font-mono text-[0.7rem] uppercase tracking-[0.22em] text-ink-500">
+        Codexter · a 100% free code teacher · built with ♥ and zero dollars
       </footer>
     </div>
   );

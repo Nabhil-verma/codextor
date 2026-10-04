@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <title>Codexter — free, interactive coding lessons</title>
+    <meta
+      name="description"
+      content="A 100% free code teacher. Interactive lessons, a live playground, and quizzes — create an account to keep your progress across devices."
+    />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="canonical" href="https://nnghedico.freebuff.app/" />
+    <meta name="theme-color" content="#030305" />
+    <!-- Codexter ships in night mode: the browser chrome follows the obsidian shell. -->
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#030305" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Codexter" />
+    <meta property="og:title" content="Codexter — free, interactive coding lessons" />
+    <meta
+      property="og:description"
+      content="Write and run real code from minute one: 15 tracks, 86 hands-on lessons, a live playground and quizzes. Free forever."
+    />
+    <meta property="og:url" content="https://nnghedico.freebuff.app/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Codexter — free, interactive coding lessons" />
+    <meta
+      name="twitter:description"
+      content="Write and run real code from minute one: 15 tracks, 86 hands-on lessons, a live playground and quizzes. Free forever."
+    />
+    <script>
+      // Codexter ships dark. First visit: seed "dark" as the saved choice so
+      // the pre-paint class and src/lib/theme.ts agree; learners can still
+      // flip to light from the nav and that choice sticks.
+      (function () {
+        try {
+          var saved = localStorage.getItem("codexter-theme");
+          if (saved !== "light" && saved !== "dark") {
+            saved = "dark";
+            localStorage.setItem("codexter-theme", saved);
+          }
+          if (saved === "dark") document.documentElement.classList.add("dark");
+        } catch (e) {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

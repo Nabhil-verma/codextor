@@ -1,5 +1,7 @@
 import { useCallback, useRef, useState } from "react";
+import { Sparkles } from "lucide-react";
 import { callAi, loadAiSettings, useAiSettings, type TutorMessage } from "../lib/ai";
+import SocraticChatBubble from "./ui/SocraticChatBubble";
 
 type Props = {
   /** The student's current code in the editor. */
@@ -116,14 +118,17 @@ export default function SocraticTutor({
 
   if (!settingsReady) {
     return (
-      <div className="rounded-2xl border border-dashed border-ink-200 bg-paper-50 p-6 text-center">
-        <p className="font-mono text-[11px] uppercase tracking-widest text-ink-400">
+      <div className="glass rounded-3xl border border-dashed border-paper-300/70 p-8 text-center">
+        <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl border border-violet-400/25 bg-violet-400/[0.08] text-violet-300">
+          <Sparkles className="h-4 w-4" aria-hidden />
+        </span>
+        <p className="mt-4 font-mono text-[0.7rem] uppercase tracking-[0.22em] text-ink-500">
           Socratic AI Tutor
         </p>
-        <p className="mt-2 text-sm text-ink-500">
+        <p className="mt-3 text-sm text-ink-600">
           Optional: add a Gemini or Claude API key in Settings to enable guided help.
         </p>
-        <p className="mt-1 text-xs text-ink-400">
+        <p className="mt-1 text-xs text-ink-500">
           The tutor asks questions to guide you &mdash; it never writes code for you.
         </p>
       </div>
@@ -131,18 +136,18 @@ export default function SocraticTutor({
   }
 
   return (
-    <div className="rounded-2xl border border-ink-200 bg-paper-50">
+    <div className="glass glass-edge overflow-hidden rounded-3xl border border-paper-200/70">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-ink-200 px-4 py-3">
-        <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gold-400/15 text-sm">
-            {"\u2728"}
+      <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-4">
+        <div className="flex items-center gap-3">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-violet-400/25 bg-violet-400/[0.08] text-violet-300">
+            <Sparkles className="h-4 w-4" aria-hidden />
           </span>
           <div>
-            <p className="font-display text-sm font-semibold text-ink-950">
+            <p className="font-display text-sm font-bold tracking-tighter text-ink-950">
               Socratic Tutor
             </p>
-            <p className="font-mono text-[10px] text-ink-500">
+            <p className="font-mono text-[0.62rem] uppercase tracking-widest text-ink-500">
               asks questions, never writes code
             </p>
           </div>
@@ -151,7 +156,7 @@ export default function SocraticTutor({
           <button
             type="button"
             onClick={() => setMessages([])}
-            className="font-mono text-[11px] text-ink-500 hover:text-ink-800"
+            className="rounded-full px-3 py-1 font-mono text-[0.68rem] uppercase tracking-widest text-ink-500 transition-colors hover:bg-white/[0.05] hover:text-ink-900"
           >
             clear chat
           </button>
@@ -159,16 +164,20 @@ export default function SocraticTutor({
       </div>
 
       {/* Messages */}
-      <div ref={scrollRef} className="max-h-72 overflow-auto p-4 space-y-3">
+      <div
+        ref={scrollRef}
+        className="max-h-80 space-y-4 overflow-auto p-5"
+        aria-live="polite"
+      >
         {messages.length === 0 && (
           <div className="py-6 text-center">
-            <p className="text-sm text-ink-500">
+            <p className="text-sm text-ink-600">
               Stuck on your code? Ask the tutor for a hint.
             </p>
-            <p className="mt-1 text-xs text-ink-400">
+            <p className="mt-1 text-xs text-ink-500">
               It will guide you with questions &mdash; not solutions.
             </p>
-            <div className="mt-4 flex flex-wrap justify-center gap-2">
+            <div className="mt-5 flex flex-wrap justify-center gap-2">
               {[
                 "I'm stuck, can you help?",
                 "What's wrong with my code?",
@@ -179,7 +188,7 @@ export default function SocraticTutor({
                   key={q}
                   type="button"
                   onClick={() => void askTutor(q)}
-                  className="rounded-full border border-ink-200 px-3 py-1.5 text-xs text-ink-600 transition hover:border-gold-400 hover:text-gold-600"
+                  className="rounded-full border border-cyan-400/20 bg-cyan-400/[0.05] px-3.5 py-1.5 text-xs text-cyan-200 transition-all duration-300 ease-snap hover:scale-[1.03] hover:border-cyan-400/50 hover:bg-cyan-400/10 active:scale-[0.97]"
                 >
                   {q}
                 </button>
@@ -189,35 +198,20 @@ export default function SocraticTutor({
         )}
 
         {messages.map((m, i) => (
-          <div
-            key={i}
-            className={`flex ${
-              m.role === "user" ? "justify-end" : "justify-start"
-            }`}
-          >
-            <div
-              className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                m.role === "user"
-                  ? "bg-ink-950 text-paper-100"
-                  : "bg-paper-100 text-ink-800"
-              }`}
-            >
-              <p className="whitespace-pre-wrap">{m.content}</p>
-            </div>
-          </div>
+          <SocraticChatBubble key={i} role={m.role === "user" ? "user" : "ai"}>
+            <p className="whitespace-pre-wrap">{m.content}</p>
+          </SocraticChatBubble>
         ))}
 
         {busy && (
-          <div className="flex justify-start">
-            <div className="rounded-2xl bg-paper-100 px-4 py-2.5 text-sm text-ink-500">
-              thinking{"\u2026"}
-            </div>
-          </div>
+          <SocraticChatBubble role="ai" analyzing>
+            {null}
+          </SocraticChatBubble>
         )}
       </div>
 
       {/* Input */}
-      <div className="border-t border-ink-200 p-3">
+      <div className="border-t border-white/[0.06] p-4">
         <div className="flex gap-2">
           <textarea
             ref={inputRef}
@@ -225,8 +219,9 @@ export default function SocraticTutor({
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             rows={2}
-            className="flex-1 resize-none rounded-xl border border-ink-200 bg-paper-50 px-3 py-2 text-sm text-ink-900 outline-none focus:border-gold-400"
+            className="flex-1 resize-none rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-ink-900 outline-none transition-colors duration-300 placeholder:text-ink-400 focus:border-cyan-400/50 focus:bg-white/[0.05]"
             placeholder="Ask a question about your code..."
+            aria-label="Ask the Socratic tutor"
           />
           <button
             type="button"
@@ -234,12 +229,12 @@ export default function SocraticTutor({
               if (input.trim() && !busy) void askTutor(input.trim());
             }}
             disabled={busy || !input.trim()}
-            className="self-end rounded-full bg-gold-400 px-4 py-2 font-mono text-xs font-bold text-ink-950 transition hover:bg-gold-300 disabled:opacity-50"
+            className="self-end rounded-full bg-gold-400 px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-widest text-[#030305] transition-all duration-300 ease-snap hover:scale-[1.03] hover:bg-gold-300 hover:shadow-neon active:scale-[0.96] disabled:pointer-events-none disabled:opacity-40"
           >
             ask
           </button>
         </div>
-        <p className="mt-1.5 text-center font-mono text-[10px] text-ink-400">
+        <p className="mt-2.5 text-center font-mono text-[0.62rem] uppercase tracking-widest text-ink-400">
           {"\u2318"}Enter to send &middot; tutor never writes code for you
         </p>
       </div>

@@ -370,7 +370,7 @@ export const ASCENSIONS: Ascension[] = [
     name: "Initiate",
     roman: "I",
     minLevel: 1,
-    frame: "from-ink-300 to-ink-200",
+    frame: "from-ink-400 to-ink-200",
     accent: "text-ink-600",
     perk: "Your name on the board",
   },
@@ -380,7 +380,7 @@ export const ASCENSIONS: Ascension[] = [
     roman: "II",
     minLevel: 2,
     frame: "from-emerald-400 to-emerald-200",
-    accent: "text-emerald-600",
+    accent: "text-emerald-600 dark:text-emerald-300",
     perk: "Emerald frame + first titles",
   },
   {
@@ -389,7 +389,7 @@ export const ASCENSIONS: Ascension[] = [
     roman: "III",
     minLevel: 4,
     frame: "from-sky-400 to-cyan-200",
-    accent: "text-sky-600",
+    accent: "text-sky-600 dark:text-sky-300",
     perk: "Aurora frame + animated streak flame",
   },
   {
@@ -398,7 +398,7 @@ export const ASCENSIONS: Ascension[] = [
     roman: "IV",
     minLevel: 6,
     frame: "from-violet-500 to-fuchsia-300",
-    accent: "text-violet-600",
+    accent: "text-violet-600 dark:text-violet-300",
     perk: "Violet frame + guild banner slot",
   },
   {
@@ -415,8 +415,8 @@ export const ASCENSIONS: Ascension[] = [
     name: "Ascendant",
     roman: "VI",
     minLevel: 12,
-    frame: "from-rose-500 via-fuchsia-400 to-gold-300",
-    accent: "text-rose-600",
+    frame: "from-rose-500 via-fuchsia-400 to-cyan-300",
+    accent: "text-rose-600 dark:text-rose-300",
     perk: "Tri-color frame + rare titles",
   },
   {

@@ -6,7 +6,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <title>Codexter — free, interactive coding lessons</title>
@@ -16,9 +16,9 @@
     />
     <link rel="manifest" href="/manifest.json" />
     <link rel="canonical" href="https://nnghedico.freebuff.app/" />
-    <meta name="theme-color" content="#d4af37" />
-    <!-- Night mode paints a near-black shell, so the browser chrome follows it. -->
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0b0b0c" />
+    <meta name="theme-color" content="#030305" />
+    <!-- Codexter ships in night mode: the browser chrome follows the obsidian shell. -->
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#030305" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Codexter" />
     <meta property="og:title" content="Codexter — free, interactive coding lessons" />
@@ -34,16 +34,20 @@
       content="Write and run real code from minute one: 17 tracks, 103 hands-on lessons, a live playground and quizzes. Free forever. Every exercise runs in your browser."
     />
     <script>
-      // Apply the saved (or OS) theme before first paint so night mode never
-      // flashes a white page. Mirrors src/lib/theme.ts.
+      // Codexter ships dark. First visit: seed "dark" as the saved choice so
+      // the pre-paint class and src/lib/theme.ts agree; learners can still
+      // flip to light from the nav and that choice sticks.
       (function () {
         try {
           var saved = localStorage.getItem("codexter-theme");
-          var dark = saved
-            ? saved === "dark"
-            : window.matchMedia("(prefers-color-scheme: dark)").matches;
-          if (dark) document.documentElement.classList.add("dark");
-        } catch (e) {}
+          if (saved !== "light" && saved !== "dark") {
+            saved = "dark";
+            localStorage.setItem("codexter-theme", saved);
+          }
+          if (saved === "dark") document.documentElement.classList.add("dark");
+        } catch (e) {
+          document.documentElement.classList.add("dark");
+        }
       })();
     </script>
   </head>

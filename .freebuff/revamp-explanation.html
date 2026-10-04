@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Why the &ldquo;revamped UI&rdquo; shipped dead &mdash; and what actually fixed it</title>
+<style>
+  :root{
+    --bg:#05060a; --bg-2:#0a0d16; --bg-3:#111624; --line:#1e2434; --line-2:#2b3346;
+    --fg:#e8ebf2; --fg-2:#a6afc4; --fg-3:#6b748c;
+    --cyan:#00e5ff; --violet:#a78bfa; --amber:#fbbf24; --rose:#fb7185; --emerald:#34d399;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--fg); font-family:var(--sans);
+    line-height:1.65; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px; margin:0 auto; padding:0 24px}
+  code,kbd{font-family:var(--mono)}
+  code{background:var(--bg-3); border:1px solid var(--line); border-radius:5px; padding:.1em .38em; font-size:.88em; color:#cfe6ff}
+  a{color:var(--cyan)}
+  :focus-visible{outline:2px solid var(--cyan); outline-offset:3px; border-radius:4px}
+
+  /* ── Skip link ─────────────────────────────────────────────────── */
+  .skip{position:absolute; left:-9999px; top:0; background:var(--cyan); color:#001; padding:10px 16px; font-weight:700; z-index:100}
+  .skip:focus{left:8px; top:8px}
+
+  /* ── Hero ──────────────────────────────────────────────────────── */
+  header.hero{padding:64px 0 40px; border-bottom:1px solid var(--line); background:radial-gradient(1100px 420px at 12% -8%,rgba(0,229,255,.10),transparent 62%),radial-gradient(800px 380px at 88% -4%,rgba(167,139,250,.10),transparent 60%)}
+  .eyebrow{font:600 11px/1 var(--mono); letter-spacing:.16em; text-transform:uppercase; color:var(--cyan); margin:0 0 18px}
+  h1{font-size:clamp(30px,5.2vw,50px); line-height:1.1; letter-spacing:-.025em; margin:0 0 18px; font-weight:750}
+  h1 em{font-style:normal; color:var(--rose)}
+  .lede{font-size:clamp(16px,2.1vw,19px); color:var(--fg-2); max-width:66ch; margin:0}
+
+  .hero-stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px; margin-top:38px}
+  .stat{background:var(--bg-2); border:1px solid var(--line); border-radius:14px; padding:18px 18px 16px}
+  .stat .n{font:700 30px/1 var(--mono); letter-spacing:-.02em; display:block}
+  .stat .l{display:block; margin-top:9px; font-size:12.5px; color:var(--fg-3); line-height:1.45}
+  .stat.bad .n{color:var(--rose)} .stat.good .n{color:var(--emerald)} .stat.info .n{color:var(--cyan)} .stat.warn .n{color:var(--amber)}
+
+  /* ── Sections ──────────────────────────────────────────────────── */
+  section{padding:52px 0; border-bottom:1px solid var(--line)}
+  h2{font-size:clamp(21px,3.2vw,28px); line-height:1.22; letter-spacing:-.018em; margin:0 0 8px; font-weight:700}
+  h3{font-size:16.5px; margin:0 0 8px; font-weight:660; letter-spacing:-.01em}
+  .sub{color:var(--fg-3); margin:0 0 26px; max-width:74ch; font-size:15px}
+  .num{color:var(--cyan); font:700 13px var(--mono); margin-right:10px}
+
+  .card{background:var(--bg-2); border:1px solid var(--line); border-radius:14px; padding:20px}
+  .callout{border-left:3px solid var(--cyan); background:linear-gradient(90deg,rgba(0,229,255,.07),transparent 70%); padding:15px 18px; border-radius:0 10px 10px 0; margin:20px 0}
+  .callout.warn{border-color:var(--amber); background:linear-gradient(90deg,rgba(251,191,36,.07),transparent 70%)}
+  .callout.bad{border-color:var(--rose); background:linear-gradient(90deg,rgba(251,113,133,.07),transparent 70%)}
+  .callout.good{border-color:var(--emerald); background:linear-gradient(90deg,rgba(52,211,153,.07),transparent 70%)}
+  .callout p{margin:0} .callout p + p{margin-top:10px}
+  .lab{font:700 10.5px var(--mono); letter-spacing:.14em; text-transform:uppercase; color:var(--fg-3); display:block; margin-bottom:7px}
+
+  /* ── Tables ────────────────────────────────────────────────────── */
+  table{width:100%; border-collapse:collapse; font-size:14px; margin:8px 0 4px}
+  /* Tables keep their semantics but scroll inside their own box on narrow
+     screens, instead of forcing the whole page wider than the viewport. */
+  .tablewrap{overflow-x:auto; -webkit-overflow-scrolling:touch; margin:8px 0 4px}
+  .tablewrap table{margin:0; min-width:560px}
+  th{text-align:left; font:600 11px var(--mono); letter-spacing:.09em; text-transform:uppercase; color:var(--fg-3); padding:0 14px 9px 0; border-bottom:1px solid var(--line-2)}
+  td{padding:10px 14px 10px 0; border-bottom:1px solid var(--line); vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  td.m,th.m{font-family:var(--mono); font-size:12.5px; white-space:nowrap}
+  .x{color:var(--rose); font-weight:700} .ok{color:var(--emerald); font-weight:700}
+
+  /* ── Island diagram ────────────────────────────────────────────── */
+  .diagram{background:var(--bg-2); border:1px solid var(--line); border-radius:14px; padding:22px; margin:20px 0; overflow-x:auto}
+  .diagram svg{display:block; min-width:660px; width:100%; height:auto}
+  .dn{font-family:var(--mono); font-size:12.5px; fill:var(--fg-2)}
+  .db{font-family:var(--mono); font-size:12px; fill:#05060a; font-weight:700}
+  .dt{font-family:var(--sans); font-size:13px; fill:var(--fg)}
+  .dmuted{font-family:var(--mono); font-size:11px; fill:var(--fg-3)}
+
+  /* ── Resolve lanes ─────────────────────────────────────────────── */
+  .lanes{display:grid; gap:14px; margin:20px 0}
+  .lane{background:var(--bg-2); border:1px solid var(--line); border-radius:12px; padding:16px 18px}
+  .lane .tag{font:700 10.5px var(--mono); letter-spacing:.13em; text-transform:uppercase; display:inline-block; padding:3px 9px; border-radius:999px; margin-bottom:12px}
+  .lane.bad{border-color:rgba(251,113,133,.34)} .lane.bad .tag{background:rgba(251,113,133,.14); color:var(--rose)}
+  .lane.good{border-color:rgba(52,211,153,.34)} .lane.good .tag{background:rgba(52,211,153,.14); color:var(--emerald)}
+  .steps{display:grid; gap:7px; font-family:var(--mono); font-size:12.5px}
+  .step{display:flex; gap:11px; align-items:baseline; color:var(--fg-2)}
+  .step i{font-style:normal; color:var(--fg-3); min-width:15px; flex:none}
+  .step .p{color:#cfe6ff}
+  .step.res b{color:var(--emerald)} .step.bad b{color:var(--rose)}
+  .step b{font-weight:700}
+
+  /* ── Rename chips ─────────────────────────────────────────────── */
+  .renames{display:grid; grid-template-columns:repeat(auto-fill,minmax(255px,1fr)); gap:9px; margin:18px 0}
+  .rn{background:var(--bg-2); border:1px solid var(--line); border-radius:9px; padding:10px 12px; font-family:var(--mono); font-size:11.5px; display:flex; align-items:center; gap:8px}
+  .rn .arrow{color:var(--fg-3); flex:none}
+  .rn .to{color:var(--cyan); overflow-wrap:anywhere}
+  .rn .pct{margin-left:auto; color:var(--emerald); font-weight:700; flex:none}
+
+  /* ── Bars ─────────────────────────────────────────────────────── */
+  .bars{margin:18px 0; display:grid; gap:11px}
+  .bar{display:grid; grid-template-columns:190px 1fr 96px; gap:13px; align-items:center; font-size:13px}
+  .bar .nm{font-family:var(--mono); font-size:12px; color:var(--fg-2); overflow-wrap:anywhere}
+  .bar .tr{background:var(--bg-3); border-radius:5px; height:23px; overflow:hidden; position:relative}
+  /* display:block is load-bearing — .fl is a <span>, and width/height/min-width
+     are ignored on inline boxes, which left every bar invisible. */
+  .bar .fl{display:block; height:100%; border-radius:5px; width:0; min-width:2px; transition:width .9s cubic-bezier(.22,.68,.36,1)}
+  .bar .vl{font-family:var(--mono); font-size:12px; color:var(--fg-3); text-align:right}
+  .fl.c{background:linear-gradient(90deg,#00e5ff,#0891b2)} .fl.v{background:linear-gradient(90deg,#a78bfa,#6d28d9)}
+  .fl.a{background:linear-gradient(90deg,#fbbf24,#b45309)} .fl.r{background:linear-gradient(90deg,#fb7185,#be123c)}
+
+  /* ── Tabs ─────────────────────────────────────────────────────── */
+  .tabs{display:flex; gap:7px; flex-wrap:wrap; margin:18px 0 14px}
+  .tab{font:600 13px var(--sans); padding:8px 15px; border-radius:999px; background:var(--bg-2); border:1px solid var(--line); color:var(--fg-2); cursor:pointer; transition:.16s}
+  .tab:hover{color:var(--fg); border-color:var(--line-2)}
+  .tab[aria-selected="true"]{background:rgba(0,229,255,.13); border-color:var(--cyan); color:var(--cyan)}
+  .panel{background:var(--bg-2); border:1px solid var(--line); border-radius:12px; padding:18px 20px}
+  .panel[hidden]{display:none}
+  .kv{display:grid; grid-template-columns:auto 1fr; gap:7px 18px; font-size:13.5px; margin-top:4px}
+  .kv dt{font-family:var(--mono); font-size:12px; color:var(--fg-3)}
+  .kv dd{margin:0}
+
+  /* ── Verification ledger ──────────────────────────────────────── */
+  .ledger{display:grid; gap:9px; margin:18px 0}
+  .row{display:grid; grid-template-columns:22px 1fr auto; gap:14px; align-items:start; background:var(--bg-2); border:1px solid var(--line); border-radius:10px; padding:13px 16px}
+  .row .ic{font:700 14px var(--mono); line-height:1.5}
+  .row .tx b{font-weight:650}
+  .row .tx span{display:block; color:var(--fg-3); font-size:12.5px; margin-top:3px}
+  .row .rs{font:700 11px var(--mono); letter-spacing:.08em; text-transform:uppercase; padding:3px 9px; border-radius:999px; white-space:nowrap}
+  .rs.p{background:rgba(52,211,153,.13); color:var(--emerald)}
+  .rs.f{background:rgba(251,191,36,.13); color:var(--amber)}
+
+  footer{padding:40px 0 64px; color:var(--fg-3); font-size:13px}
+  .toc{display:flex; flex-wrap:wrap; gap:8px; margin:26px 0 4px}
+  .toc a{font:500 12.5px var(--mono); color:var(--fg-2); text-decoration:none; border:1px solid var(--line); border-radius:999px; padding:5px 12px; background:var(--bg-2); transition:.16s}
+  .toc a:hover{border-color:var(--cyan); color:var(--cyan)}
+
+  @media (max-width:620px){
+    .bar{grid-template-columns:1fr; gap:5px}
+    .bar .vl{text-align:left}
+    .row{grid-template-columns:22px 1fr}
+    .row .rs{grid-column:2; justify-self:start}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important}
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Post-mortem &middot; commit cb1fa56 &ldquo;NEW AND IMRPROVED UI&rdquo;</p>
+    <h1>A 2,408-line redesign shipped <em>completely dead</em>. The fix was 14 file moves &mdash; not a rewrite.</h1>
+    <p class="lede">
+      The revamped interface was authored in one directory layout and committed in another.
+      Every relative import pointed at a file that did not exist, so the bundle never linked
+      and the new UI could never paint. Crucially, the broken paths still encoded the
+      <em>intended</em> layout &mdash; which is what made the recovery exact rather than guesswork.
+    </p>
+
+    <div class="hero-stats">
+      <div class="stat bad"><span class="n">39<span style="font-size:17px;color:var(--fg-3)">/44</span></span><span class="l">relative imports that resolved to nothing</span></div>
+      <div class="stat bad"><span class="n">0</span><span class="l">routes pointed at the new UI</span></div>
+      <div class="stat good"><span class="n">13</span><span class="l">files restored as R100 renames &mdash; zero content change</span></div>
+      <div class="stat info"><span class="n">53.8<span style="font-size:17px;color:var(--fg-3)">kB</span></span><span class="l">revamp chunk, split out of the entry bundle</span></div>
+    </div>
+
+    <nav class="toc" aria-label="Sections">
+      <a href="#island">1. The orphan island</a>
+      <a href="#evidence">2. The evidence</a>
+      <a href="#recovery">3. The recovery</a>
+      <a href="#hidden">4. Four more failures</a>
+      <a href="#trap">5. The compatibility trap</a>
+      <a href="#verify">6. Verification</a>
+      <a href="#limits">7. Limits</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- 1 ─────────────────────────────────────────────────────────── -->
+<section id="island">
+  <div class="wrap">
+    <h2><span class="num">01</span>The orphan island</h2>
+    <p class="sub">
+      Two complete applications lived in <code>src/</code>: the shipping one under
+      <code>pages/</code> + <code>components/</code>, and a whole new dark design system sitting loose
+      at the top level. Nothing referenced the new system, so the bundler never walked it &mdash;
+      it existed only as text on disk.
+    </p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 880 356" role="img" aria-labelledby="islT islD">
+        <title id="islT">Committed files versus files reachable from the entry point</title>
+        <desc id="islD">The entry point reaches src/pages and src/components only. A second, unreferenced design system sits at the top level of src, including its own types, utilities, data and stylesheet.</desc>
+
+        <text class="dmuted" x="16" y="18">REACHABLE FROM src/main.tsx &#8594; App.tsx</text>
+        <rect x="16" y="28" width="286" height="212" rx="11" fill="#0e1521" stroke="#1e2434"/>
+        <rect x="30" y="46" width="120" height="25" rx="6" fill="#111a28" stroke="#2b3346"/>
+        <text class="db" x="44" y="63" fill="#7dd3fc">pages/Landing.tsx</text>
+        <rect x="30" y="79" width="120" height="25" rx="6" fill="#111a28" stroke="#2b3346"/>
+        <text class="db" x="44" y="96" fill="#7dd3fc">pages/Leaderb…</text>
+        <rect x="30" y="112" width="120" height="25" rx="6" fill="#111a28" stroke="#2b3346"/>
+        <text class="db" x="44" y="129" fill="#7dd3fc">components/Nav</text>
+        <rect x="30" y="145" width="120" height="25" rx="6" fill="#111a28" stroke="#2b3346"/>
+        <text class="db" x="44" y="162" fill="#7dd3fc">lib/runner.ts</text>
+        <rect x="30" y="178" width="120" height="25" rx="6" fill="#111a28" stroke="#2b3346"/>
+        <text class="db" x="44" y="195" fill="#7dd3fc">index.css</text>
+        <text class="dmuted" x="30" y="226">routes wired in App.tsx</text>
+
+        <text class="dmuted" x="360" y="18">COMMITTED, REFERENCED BY NOBODY</text>
+        <rect x="360" y="28" width="504" height="212" rx="11" fill="#150d12" stroke="#4b2634"/>
+        <rect x="374" y="46" width="118" height="25" rx="6" fill="#1d1218" stroke="#4b2634"/>
+        <text class="db" x="386" y="63" fill="#fda4af">Landing.tsx</text>
+        <rect x="500" y="46" width="118" height="25" rx="6" fill="#1d1218" stroke="#4b2634"/>
+        <text class="db" x="512" y="63" fill="#fda4af">Dashboard.tsx</text>
+        <rect x="626" y="46" width="118" height="25" rx="6" fill="#1d1218" stroke="#4b2634"/>
+        <text class="db" x="638" y="63" fill="#fda4af">Arena.tsx</text>
+        <rect x="752" y="46" width="98" height="25" rx="6" fill="#1d1218" stroke="#4b2634"/>
+        <text class="db" x="764" y="63" fill="#fda4af">Leader…</text>
+
+        <rect x="374" y="79" width="118" height="25" rx="6" fill="#1d1218" stroke="#4b2634"/>
+        <text class="db" x="386" y="96" fill="#fda4af">BentoGrid.tsx</text>
+        <rect x="500" y="79" width="118" height="25" rx="6" fill="#1d1218" stroke="#4b2634"/>
+        <text class="db" x="512" y="96" fill="#fda4af">CyberBadge…</text>
+        <rect x="626" y="79" width="118" height="25" rx="6" fill="#1d1218" stroke="#4b2634"/>
+        <text class="db" x="638" y="96" fill="#fda4af">Skeleton.tsx</text>
+        <rect x="752" y="79" width="98" height="25" rx="6" fill="#1d1218" stroke="#4b2634"/>
+        <text class="db" x="764" y="96" fill="#fda4af">+4 more</text>
+
+        <rect x="374" y="112" width="118" height="25" rx="6" fill="#1d1218" stroke="#4b2634"/>
+        <text class="db" x="386" y="129" fill="#fda4af">RevampPrevi…</text>
+        <rect x="500" y="112" width="118" height="25" rx="6" fill="#1d1218" stroke="#4b2634"/>
+        <text class="db" x="512" y="129" fill="#fda4af">mock.ts</text>
+        <rect x="626" y="112" width="118" height="25" rx="6" fill="#1d1218" stroke="#4b2634"/>
+        <text class="db" x="638" y="129" fill="#fda4af">cn.ts</text>
+        <rect x="752" y="112" width="98" height="25" rx="6" fill="#1d1218" stroke="#4b2634"/>
+        <text class="db" x="764" y="129" fill="#fda4af">types.ts</text>
+
+        <rect x="374" y="145" width="118" height="25" rx="6" fill="#1d1218" stroke="#4b2634"/>
+        <text class="db" x="386" y="162" fill="#fda4af">codexter.css</text>
+        <rect x="500" y="145" width="118" height="25" rx="6" fill="#1d1218" stroke="#4b2634"/>
+        <text class="db" x="512" y="162" fill="#fda4af">tailwind.co…</text>
+        <text class="dmuted" x="374" y="194">never imported, never compiled, never routed</text>
+        <text class="dmuted" x="374" y="212">2,408 insertions, 0 lines reachable</text>
+
+        <path d="M310 134 L352 134" stroke="#4b2634" stroke-width="2" stroke-dasharray="4 4"/>
+        <text class="dmuted" x="316" y="126">no edge</text>
+      </svg>
+    </div>
+
+    <div class="callout">
+      <span class="lab">Why the bundler never complained</span>
+      <p>
+        The revamp was not imported by any file the bundler could reach, so the module graph never
+        traversed it. A build is perfectly happy with code it never sees &mdash; the files were
+        syntactically fine, the design was fine, and the commit was green.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- 2 ─────────────────────────────────────────────────────────── -->
+<section id="evidence">
+  <div class="wrap">
+    <h2><span class="num">02</span>The evidence</h2>
+    <p class="sub">
+      A script walked every relative import in the 13 new files against the tree as committed at
+      <code>cb1fa56</code>. 39 of 44 pointed at nothing. Only the five sibling imports
+      (<code>./Arena</code>, <code>./Landing</code> &hellip;), which happened to share the flat
+      directory, resolved.
+    </p>
+
+    <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>Importer</th><th>Import as written</th><th class="m">Resolves to</th><th>Outcome</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>revamp/Landing.tsx</td><td class="m">../components/ui/BentoGrid</td><td class="m">components/ui/BentoGrid</td><td><span class="x">missing</span></td></tr>
+        <tr><td>components/ui/*</td><td class="m">../../lib/cn</td><td class="m">lib/cn</td><td><span class="x">missing</span></td></tr>
+        <tr><td>revamp/*</td><td class="m">../lib/cn</td><td class="m">lib/cn</td><td><span class="x">missing</span></td></tr>
+        <tr><td>revamp/RevampPreview</td><td class="m">../data/mock</td><td class="m">data/mock</td><td><span class="x">missing</span> &mdash; committed at <code>src/mock.ts</code></td></tr>
+        <tr><td>revamp/*, ui/*</td><td class="m">../types</td><td class="m">types</td><td><span class="ok">OK</span> &mdash; this one did exist</td></tr>
+        <tr><td>revamp/RevampPreview</td><td class="m">./Arena</td><td class="m">src/Arena</td><td><span class="ok">OK</span> &mdash; flat siblings</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="callout bad">
+      <span class="lab">The trap worth calling out</span>
+      <p>
+        <code>cn.ts</code> was the <strong>only</strong> definition of <code>cn()</code> in the entire
+        repository, and it sat at <code>src/cn.ts</code> &mdash; a path nothing imported. Every one of
+        the 11 files that used it was reaching for <code>lib/cn</code>, which did not exist.
+      </p>
+      <p>
+        That is also why a <em>casual</em> scan marks the file as dead code and deletes it. I did
+        exactly that, caught it when the resolution script went red, and moved it to
+        <code>src/lib/cn.ts</code> instead.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- 3 ─────────────────────────────────────────────────────────── -->
+<section id="recovery">
+  <div class="wrap">
+    <h2><span class="num">03</span>The recovery: read intent off the broken paths</h2>
+    <p class="sub">
+      The instinct is to open 2,408 lines and rewrite the imports. That is unnecessary. A relative
+      import is a precise statement about where a file lives. <code>../components/ui/BentoGrid</code>
+      from inside a <code>pages/</code>-level folder means the primitives belong one level below
+      <code>src/</code> in <code>components/ui/</code>. The paths were wrong as a set, but
+      internally consistent &mdash; so moving files to satisfy them makes all 44 resolve at once,
+      with no edit to a single line of the redesign.
+    </p>
+
+    <div class="lanes">
+      <div class="lane bad">
+        <span class="tag">Before &mdash; dead</span>
+        <div class="steps">
+          <div class="step"><i>1</i><span class="p">src/<b>Landing.tsx</b></span></div>
+          <div class="step"><i>2</i><span>imports <span class="p">"../components/ui/BentoGrid"</span></span></div>
+          <div class="step"><i>3</i><span>src/ <span style="color:var(--fg-3)">+</span> ../components/ui/BentoGrid</span></div>
+          <div class="step bad res"><i>4</i><span><b>components/ui/BentoGrid</b> &mdash; above <code>src/</code>. Does not exist.</span></div>
+        </div>
+      </div>
+      <div class="lane good">
+        <span class="tag">After &mdash; resolves</span>
+        <div class="steps">
+          <div class="step"><i>1</i><span class="p">src/<b>revamp/Landing.tsx</b></span></div>
+          <div class="step"><i>2</i><span>imports <span class="p">"../components/ui/BentoGrid"</span> &mdash; unchanged</span></div>
+          <div class="step"><i>3</i><span>src/revamp/ <span style="color:var(--fg-3)">+</span> ../components/ui/BentoGrid</span></div>
+          <div class="step res"><i>4</i><span><b>src/components/ui/BentoGrid.tsx</b> &mdash; found.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <p class="sub" style="margin-top:26px">
+      The same arithmetic for <code>../../lib/cn</code>: a file two levels below <code>src/</code>
+      reaching for <code>lib/cn</code> lands on <code>src/lib/cn.ts</code> &mdash; the project&rsquo;s
+      real utilities folder. <code>../data/mock</code> from a <code>src/</code>-level folder lands on
+      <code>src/data/mock.ts</code>, beside the existing tracks. Four target directories, one
+      consistent interpretation, zero rewritten imports.
+    </p>
+
+    <h3 style="margin-top:30px">Git recorded every one of these as a pure rename</h3>
+    <p class="sub" style="margin-bottom:6px">
+      <strong>R100</strong> means 100% of the blob is identical &mdash; the move is provably content-free.
+      This is the checkable form of &ldquo;I did not rewrite your redesign&rdquo;.
+    </p>
+    <div class="renames">
+      <div class="rn"><span>src/Landing.tsx</span><span class="arrow">&rarr;</span><span class="to">src/revamp/Landing.tsx</span><span class="pct">R100</span></div>
+      <div class="rn"><span>src/Arena.tsx</span><span class="arrow">&rarr;</span><span class="to">src/revamp/Arena.tsx</span><span class="pct">R100</span></div>
+      <div class="rn"><span>src/Dashboard.tsx</span><span class="arrow">&rarr;</span><span class="to">src/revamp/Dashboard.tsx</span><span class="pct">R100</span></div>
+      <div class="rn"><span>src/Leaderboard.tsx</span><span class="arrow">&rarr;</span><span class="to">src/revamp/Leaderboard.tsx</span><span class="pct">R100</span></div>
+      <div class="rn"><span>src/BentoGrid.tsx</span><span class="arrow">&rarr;</span><span class="to">src/components/ui/&hellip;</span><span class="pct">R100</span></div>
+      <div class="rn"><span>src/CyberBadge.tsx</span><span class="arrow">&rarr;</span><span class="to">src/components/ui/&hellip;</span><span class="pct">R100</span></div>
+      <div class="rn"><span>src/MinimalGlassCard.tsx</span><span class="arrow">&rarr;</span><span class="to">src/components/ui/&hellip;</span><span class="pct">R100</span></div>
+      <div class="rn"><span>src/NeonPulseButton.tsx</span><span class="arrow">&rarr;</span><span class="to">src/components/ui/&hellip;</span><span class="pct">R100</span></div>
+      <div class="rn"><span>src/PrecisionProgressBar.tsx</span><span class="arrow">&rarr;</span><span class="to">src/components/ui/&hellip;</span><span class="pct">R100</span></div>
+      <div class="rn"><span>src/Skeleton.tsx</span><span class="arrow">&rarr;</span><span class="to">src/components/ui/&hellip;</span><span class="pct">R100</span></div>
+      <div class="rn"><span>src/SocraticChatBubble.tsx</span><span class="arrow">&rarr;</span><span class="to">src/components/ui/&hellip;</span><span class="pct">R100</span></div>
+      <div class="rn"><span>src/mock.ts</span><span class="arrow">&rarr;</span><span class="to">src/data/mock.ts</span><span class="pct">R100</span></div>
+      <div class="rn"><span>src/cn.ts</span><span class="arrow">&rarr;</span><span class="to">src/lib/cn.ts</span><span class="pct">R100</span></div>
+      <div class="rn" style="border-color:rgba(251,191,36,.34)"><span>src/RevampPreview.tsx</span><span class="arrow">&rarr;</span><span class="to">src/revamp/&hellip;</span><span class="pct" style="color:var(--amber)">R082</span></div>
+    </div>
+    <p style="font-size:13.5px;color:var(--fg-3);margin:0">
+      The lone R082 is the one file that genuinely changed &mdash; the deep-link view state, section&nbsp;4.
+    </p>
+  </div>
+</section>
+
+<!-- 4 ─────────────────────────────────────────────────────────── -->
+<section id="hidden">
+  <div class="wrap">
+    <h2><span class="num">04</span>Four more failures hiding behind the imports</h2>
+    <p class="sub">
+      Fixing the module graph only makes the redesign <em>load</em>. Four more things stood between it
+      and a correct first paint, each of which would have been invisible until a human opened the page.
+    </p>
+
+    <div class="tablewrap">
+    <table>
+      <thead><tr><th>Defect</th><th>Symptom if left alone</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>codexter.css</code> was never imported by any entry point</td>
+          <td>The dark <code>#030305</code> canvas never applied; the revamp inherited the old paper background</td>
+          <td>Imported from the revamp entry, scoped as described in 05</td>
+        </tr>
+        <tr>
+          <td><code>tailwind.config.codexter.ts</code> is not the config the build reads</td>
+          <td><code>animate-marquee</code> and <code>animate-blink</code> compiled to nothing &mdash; the logo ticker crept one step and the caret never blinked</td>
+          <td>Keyframes redefined in the revamp stylesheet, not by swapping the project config</td>
+        </tr>
+        <tr>
+          <td>Bricolage Grotesque was absent from <code>index.html</code></td>
+          <td>36 <code>font-display</code> uses silently fell back to Fraunces &mdash; the redesign would have rendered in the <em>old</em> typeface</td>
+          <td>Font appended to the existing Google Fonts URL</td>
+        </tr>
+        <tr>
+          <td>No route pointed at <code>RevampPreview</code></td>
+          <td>Everything above would still have been invisible; there was no URL that rendered it</td>
+          <td>Lazy <code>/revamp</code> route, plus <code>?view=</code> deep links</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="callout">
+      <span class="lab">Design decision: own route, own chunk</span>
+      <p>
+        The revamp went to <code>/revamp</code> rather than over the existing <code>/</code> and
+        <code>/leaderboard</code>. Both designs contain a <code>Landing.tsx</code> and a
+        <code>Leaderboard.tsx</code>, so replacing the live routes is a migration with real product
+        consequences &mdash; not a rename. Isolating it keeps that decision reversible and leaves the
+        entry bundle untouched for existing visitors.
+      </p>
+    </div>
+
+    <h3 style="margin-top:32px">The entry bundle did not move</h3>
+    <p class="sub" style="margin-bottom:4px">
+      Lazy-loading the route means the redesign is paid for only by someone who asks for it.
+      Gzipped sizes from the production build.
+    </p>
+    <div class="bars" id="bars">
+      <div class="bar"><span class="nm">entry index.js</span><span class="tr"><span class="fl v" data-w="100"></span></span><span class="vl">326.4 kB gz</span></div>
+      <div class="bar"><span class="nm">RevampPreview.js</span><span class="tr"><span class="fl c" data-w="4.7"></span></span><span class="vl">15.2 kB gz</span></div>
+      <div class="bar"><span class="nm">RevampPreview.css</span><span class="tr"><span class="fl c" data-w="0.14"></span></span><span class="vl">0.45 kB gz</span></div>
+    </div>
+    <p style="font-size:13.5px;color:var(--fg-3);margin:0">
+      Entry went 975.14&nbsp;&rarr;&nbsp;975.15&nbsp;kB raw (+0.01&nbsp;kB, the route registration alone).
+    </p>
+  </div>
+</section>
+
+<!-- 5 ─────────────────────────────────────────────────────────── -->
+<section id="trap">
+  <div class="wrap">
+    <h2><span class="num">05</span>The compatibility trap</h2>
+    <p class="sub">
+      The single most dangerous line in <code>codexter.css</code> was not broken &mdash; it was
+      <em>correct, and wrong for this codebase</em>. Two design systems, each with its own opinion
+      about the page background.
+    </p>
+
+    <div class="lanes">
+      <div class="lane bad">
+        <span class="tag">As authored &mdash; leaks</span>
+        <div class="steps">
+          <div class="step"><i>&nbsp;</i><span class="p">body { background: #030305; color: #d4d4d8 }</span></div>
+          <div class="step bad res"><i>&rarr;</i><span>Global. Applies to <b>every</b> page in the app, not just the revamp.</span></div>
+          <div class="step bad res"><i>&rarr;</i><span>The warm light <code>/</code> page and all 15 dark lesson pages go black.</span></div>
+        </div>
+      </div>
+      <div class="lane good">
+        <span class="tag">As shipped &mdash; scoped</span>
+        <div class="steps">
+          <div class="step"><i>&nbsp;</i><span class="p">.codexter-dark { background: #030305 }</span></div>
+          <div class="step res"><i>&rarr;</i><span>Two-class selector; applies only inside the revamp root.</span></div>
+          <div class="step res"><i>&rarr;</i><span>Verified in the built CSS: <b>0</b> bare <code>html</code>/<code>body</code> selectors survive minification.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="lab">The second-order landmine: tests/palette.test.ts</span>
+      <p>
+        This repo has a palette audit that recursively scans <em>every</em> <code>.ts/.tsx</code> file
+        under <code>src/</code> and requires that any <code>paper-*</code>, <code>ink-*</code> or
+        <code>gold-*</code> token mentioned in source is declared as a CSS variable in <code>:root</code>
+        <em>and</em> mirrored in <code>.dark</code>.
+      </p>
+      <p>
+        Adding 2,408 lines to <code>src/</code> silently widened that audit&rsquo;s blast radius. The
+        escape hatch was luck: the revamp&rsquo;s palette is entirely default Tailwind shades plus hex
+        (<code>cyan-300</code>, <code>violet-600</code>, <code>#030305</code>) and mentions
+        <code>paper</code>/<code>ink</code>/<code>gold</code> <strong>zero</strong> times. Had it used
+        one new <code>ink-150</code>, the suite would have failed for a file that looks perfectly correct
+        in isolation.
+      </p>
+    </div>
+
+    <div class="callout good">
+      <span class="lab">Regression check that mattered</span>
+      <p>
+        After scoping, the old landing page was re-inspected at runtime: no <code>.codexter-dark</code>
+        element present, its <code>&lt;h1&gt;</code> still computing to
+        <code>Fraunces, Georgia, serif</code>, body background still the app&rsquo;s own
+        <code>rgb(14,14,16)</code> &mdash; not the revamp&rsquo;s <code>#030305</code>. Two palettes,
+        coexisting.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- 6 ─────────────────────────────────────────────────────────── -->
+<section id="verify">
+  <div class="wrap">
+    <h2><span class="num">06</span>Verification</h2>
+    <p class="sub">
+      Two checks were run against the final edited files, not an earlier draft &mdash; the build in
+      particular had gone stale, because the production build predated the deep-link edit.
+    </p>
+
+    <div class="ledger">
+      <div class="row">
+        <span class="ic" style="color:var(--emerald)">&#10003;</span>
+        <span class="tx"><b>tsc -b --noEmit</b><span>Clean, exit 0. Was 10 errors before &mdash; <code>@types/node</code> was missing from devDependencies entirely.</span></span>
+        <span class="rs p">pass</span>
+      </div>
+      <div class="row">
+        <span class="ic" style="color:var(--emerald)">&#10003;</span>
+        <span class="tx"><b>vite build</b><span>Clean, exit 0. Emits <code>RevampPreview</code> as its own JS + CSS chunk; entry bundle unchanged.</span></span>
+        <span class="rs p">pass</span>
+      </div>
+      <div class="row">
+        <span class="ic" style="color:var(--emerald)">&#10003;</span>
+        <span class="tx"><b>Built-CSS scoping audit</b><span>0 bare <code>html</code>/<code>body</code> selectors in the emitted stylesheet &mdash; scoping survives minification.</span></span>
+        <span class="rs p">pass</span>
+      </div>
+      <div class="row">
+        <span class="ic" style="color:var(--emerald)">&#10003;</span>
+        <span class="tx"><b>Import resolution sweep</b><span>All 44 relative imports re-resolved to real files after the moves. 0 broken.</span></span>
+        <span class="rs p">pass</span>
+      </div>
+      <div class="row">
+        <span class="ic" style="color:var(--emerald)">&#10003;</span>
+        <span class="tx"><b>Runtime render of all four views</b><span>Landing, Dashboard, Arena, Leaderboard each render distinct real content (player names, lesson code, leaderboard rows).</span></span>
+        <span class="rs p">pass</span>
+      </div>
+      <div class="row">
+        <span class="ic" style="color:var(--emerald)">&#10003;</span>
+        <span class="tx"><b>Deep links + hostile input</b><span><code>?view=arena</code> resolves directly; <code>?view=bogus</code> falls back to Landing and still renders.</span></span>
+        <span class="rs p">pass</span>
+      </div>
+      <div class="row">
+        <span class="ic" style="color:var(--emerald)">&#10003;</span>
+        <span class="tx"><b>Old app unaffected</b><span>Verified at runtime on <code>/</code>: original palette and typography intact.</span></span>
+        <span class="rs p">pass</span>
+      </div>
+      <div class="row">
+        <span class="ic" style="color:var(--emerald)">&#10003;</span>
+        <span class="tx"><b>Screenshot pixel analysis</b><span>Dependency-free PNG decode proves no blank render: 238&ndash;592 distinct colours, 95&ndash;98% dark, cyan neon accents present.</span></span>
+        <span class="rs p">pass</span>
+      </div>
+      <div class="row">
+        <span class="ic" style="color:var(--amber)">&#33;</span>
+        <span class="tx"><b>vitest run &mdash; 3 failures</b><span>296 pass. The 3 failures in <code>debug-challenges.test.ts</code> are 5s timeouts, <b>pre-existing</b> &mdash; reproduced identically in a pristine worktree at HEAD, importing only files I never touched.</span></span>
+        <span class="rs f">pre-existing</span>
+      </div>
+    </div>
+
+    <h3 style="margin-top:30px">The revamped screens</h3>
+    <p class="sub" style="margin-bottom:4px">
+      Content confirmed in the live app at <code>/revamp</code>, each view independently linkable.
+    </p>
+    <div class="tabs" role="tablist" aria-label="Revamped views">
+      <button class="tab" role="tab" id="t1" aria-controls="p1" aria-selected="true">Landing</button>
+      <button class="tab" role="tab" id="t2" aria-controls="p2" aria-selected="false">Dashboard</button>
+      <button class="tab" role="tab" id="t3" aria-controls="p3" aria-selected="false">Arena</button>
+      <button class="tab" role="tab" id="t4" aria-controls="p4" aria-selected="false">Leaderboard</button>
+    </div>
+    <div class="panel" role="tabpanel" id="p1" aria-labelledby="t1" tabindex="0">
+      <h3>&ldquo;Don&rsquo;t get the answer. Earn it.&rdquo;</h3>
+      <dl class="kv">
+        <dt>route</dt><dd><code>#/revamp?view=landing</code></dd>
+        <dt>typeface</dt><dd>Bricolage Grotesque confirmed resolving via computed style</dd>
+        <dt>animation</dt><dd><code>animate-marquee</code> computed to <code>marquee 40s</code> &mdash; the ticker actually runs now</dd>
+        <dt>pixels</dt><dd>261 distinct colours, 95.0% dark, cyan accent at 1.1%</dd>
+      </dl>
+    </div>
+    <div class="panel" role="tabpanel" id="p2" aria-labelledby="t2" tabindex="0" hidden>
+      <h3>Player hub with quest board</h3>
+      <dl class="kv">
+        <dt>route</dt><dd><code>#/revamp?view=dashboard</code></dd>
+        <dt>content</dt><dd>Player header, &ldquo;The loop that stops short&rdquo;, &ldquo;Your quests&rdquo;; 5 live progress meters</dd>
+        <dt>pixels</dt><dd>332 distinct colours, 97.8% dark</dd>
+      </dl>
+    </div>
+    <div class="panel" role="tabpanel" id="p3" aria-labelledby="t3" tabindex="0" hidden>
+      <h3>Code arena with Socratic tutor</h3>
+      <dl class="kv">
+        <dt>route</dt><dd><code>#/revamp?view=arena</code></dd>
+        <dt>content</dt><dd>&ldquo;Looping over arrays&rdquo;; 190 chars of live starter code; Lesson / Socratic AI / Run controls</dd>
+        <dt>pixels</dt><dd>592 distinct colours &mdash; the richest view, as expected for an editor</dd>
+      </dl>
+    </div>
+    <div class="panel" role="tabpanel" id="p4" aria-labelledby="t4" tabindex="0" hidden>
+      <h3>Guild leaderboard</h3>
+      <dl class="kv">
+        <dt>route</dt><dd><code>#/revamp?view=leaderboard</code></dd>
+        <dt>content</dt><dd>&ldquo;Marcus Lee &middot; LOOP WRANGLER &middot; 11,905 XP&rdquo; with place badges</dd>
+        <dt>pixels</dt><dd>238 distinct colours, gold/amber badge tones</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<!-- 7 ─────────────────────────────────────────────────────────── -->
+<section id="limits">
+  <div class="wrap">
+    <h2><span class="num">07</span>Limits and honest caveats</h2>
+    <div class="callout warn" style="margin-top:6px">
+      <span class="lab">Not fixed, and not mine to fix silently</span>
+      <p>
+        <code>npm test</code> is <strong>red on <code>main</code></strong> because of the 3 pre-existing
+        <code>debug-challenges</code> timeouts. I left them alone: raising the timeout would mask the
+        question rather than answer it. Whether they are genuinely slow or genuinely hanging is still
+        open, and worth settling before the revamp builds on top of the suite.
+      </p>
+    </div>
+    <ul style="color:var(--fg-2);font-size:14.5px;line-height:1.75;padding-left:20px;margin:18px 0 0">
+      <li><strong>In-app screenshots were unavailable.</strong> The preview webview would not composite, so <code>preview_screenshot</code> returned &ldquo;produced no frames&rdquo; throughout. I captured with headless Chrome and verified pixels by decoding the PNGs in Node (<code>zlib</code> only, no new dependencies).</li>
+      <li><strong>Self-inflicted outage, resolved.</strong> I briefly placed Chrome&rsquo;s profile directory inside the repo root; Vite&rsquo;s watcher hit a locked <code>Cookies</code> file and crashed the dev server. Cleaned up, restarted, and moved profiles to <code>%TEMP%</code>.</li>
+      <li><strong>One judgement call worth surfacing.</strong> <code>src/cn.ts</code> appeared to be dead code and I deleted it before the resolution script proved otherwise. It was the repo&rsquo;s only <code>cn()</code>. Caught and placed at <code>src/lib/cn.ts</code>. A static &ldquo;unused export&rdquo; scan would have made the same mistake.</li>
+      <li><strong>Coverage is viewport-only.</strong> Screenshots are 1440&times;900 top folds, not full-page. Responsiveness and dark-mode interaction in the revamp are <em>not</em> verified here.</li>
+      <li><strong>The revamp is not adopted.</strong> It is reachable and correct at <code>/revamp</code>, but no existing route points at it. Wiring it over <code>/</code> and <code>/leaderboard</code> remains an open product decision.</li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    Verified against commit <code>86e808c</code> &ldquo;revamp trial 1&rdquo; on branch <code>main</code>.
+    Figures are measured, not estimated; where something is unproven it is labelled as such above.
+  </div>
+</footer>
+
+<script>
+  (function(){
+    var tabs=[].slice.call(document.querySelectorAll('[role="tab"]'));
+    tabs.forEach(function(t,i){
+      t.addEventListener('click',function(){select(i);});
+      t.addEventListener('keydown',function(e){
+        var n=null;
+        if(e.key==='ArrowRight')n=(i+1)%tabs.length;
+        if(e.key==='ArrowLeft')n=(i-1+tabs.length)%tabs.length;
+        if(e.key==='Home')n=0; if(e.key==='End')n=tabs.length-1;
+        if(n===null)return;
+        e.preventDefault(); select(n); tabs[n].focus();
+      });
+    });
+    function select(i){
+      tabs.forEach(function(t,j){
+        var on=i===j;
+        t.setAttribute('aria-selected',on?'true':'false');
+        t.tabIndex=on?0:-1;
+        document.getElementById(t.getAttribute('aria-controls')).hidden=!on;
+      });
+    }
+    // Animate bars once. IntersectionObserver drives it, but a fallback timer
+    // guarantees the chart is never left empty if the observer never fires
+    // (headless capture, embedded webviews) — fill() is idempotent.
+    var bars=document.querySelectorAll('#bars .fl'), done=false;
+    function fill(){
+      if(done)return; done=true;
+      bars.forEach(function(b){
+        var w=b.getAttribute('data-w');
+        requestAnimationFrame(function(){ b.style.width=w+'%'; });
+      });
+    }
+    if('IntersectionObserver' in window){
+      new IntersectionObserver(function(es){ if(es[0].isIntersecting){fill();} },{threshold:.3})
+        .observe(document.getElementById('bars'));
+    }
+    setTimeout(fill, 700);
+  })();
+</script>
+</body>
+</html>

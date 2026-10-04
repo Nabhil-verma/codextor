@@ -10,6 +10,8 @@ import { PanelBoundary } from "./components/gamification/Pieces";
 import Nav from "./components/Nav";
 import { panelMessage } from "./lib/friendlyError";
 import { useAccount } from "./AccountProvider";
+import { Skeleton } from "./components/ui";
+import { AlertTriangle } from "lucide-react";
 
 /*
  * Code-split routes. Landing, sign-in and 404 stay in the entry chunk — they
@@ -48,17 +50,24 @@ function RouteLoading() {
     <div className="min-h-screen">
       <Nav />
       <main
-        className="mx-auto max-w-3xl px-4 py-24 text-center"
+        className="mx-auto max-w-3xl px-4 py-24"
         role="status"
         aria-live="polite"
       >
         <p className="eyebrow">loading</p>
-        <p className="mt-3 font-display text-2xl font-semibold text-ink-950">
+        <p className="mt-4 font-display text-3xl font-bold tracking-tighter text-ink-950">
           Fetching this page…
         </p>
-        <p className="mt-2 text-sm text-ink-600">
+        <p className="mt-3 text-sm text-ink-600">
           Your progress is already here — this page's code is still arriving.
         </p>
+        <div className="mt-12 space-y-4" aria-hidden>
+          <Skeleton className="h-28 !rounded-3xl" />
+          <div className="grid grid-cols-2 gap-4">
+            <Skeleton className="h-24 !rounded-3xl" />
+            <Skeleton className="h-24 !rounded-3xl" />
+          </div>
+        </div>
       </main>
     </div>
   );
@@ -75,11 +84,11 @@ function RouteCrash({ error, onRetry }: { error: Error; onRetry: () => void }) {
     <div className="min-h-screen">
       <Nav />
       <main className="mx-auto max-w-xl px-4 py-20">
-        <div className="glass glass-edge rounded-2xl border border-paper-200/60 p-8 text-center">
-          <p className="text-3xl" aria-hidden>
-            ⚠️
-          </p>
-          <h1 className="mt-3 font-display text-2xl font-semibold text-ink-950">{title}</h1>
+        <div className="glass glass-edge neon-border rounded-3xl p-10 text-center">
+          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-400/25 bg-amber-400/[0.08] text-amber-300" aria-hidden>
+            <AlertTriangle className="h-5 w-5" />
+          </span>
+          <h1 className="mt-6 font-display text-2xl font-bold tracking-tighter text-ink-950">{title}</h1>
           <p className="mt-3 text-sm leading-relaxed text-ink-600">{body}</p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <button type="button" onClick={onRetry} className="btn-gold !px-6 !py-2 text-sm">
@@ -93,7 +102,7 @@ function RouteCrash({ error, onRetry }: { error: Error; onRetry: () => void }) {
             <summary className="cursor-pointer font-mono text-[11px] uppercase tracking-widest text-ink-500">
               technical details
             </summary>
-            <pre className="mt-2 max-h-40 overflow-auto rounded-xl bg-ink-950 p-3 font-mono text-[11px] text-paper-200">
+            <pre className="mt-2 max-h-40 overflow-auto rounded-xl bg-black p-3 font-mono text-[11px] text-rose-300">
               {error.message}
             </pre>
           </details>

@@ -16,3 +16,7 @@ public/pyodide/
 # not source.
 /isolate/
 *.tsbuildinfo
+
+# Preview screenshots captured from headless Chrome while reviewing the revamp
+# UI — regenerable with scripts/preview-pixels.mjs, not source.
+/.preview-shots/
