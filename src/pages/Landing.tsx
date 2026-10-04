@@ -401,8 +401,8 @@ function GameLayer() {
   return (
     <section className="relative overflow-hidden py-24">
       <div className="pointer-events-none absolute inset-0" aria-hidden>
-        <div className="absolute left-[-10%] top-[20%] h-[28rem] w-[28rem] rounded-full bg-violet-600/20 blur-[140px]" />
-        <div className="absolute bottom-[0%] right-[-8%] h-[24rem] w-[24rem] rounded-full bg-cyan-400/10 blur-[140px]" />
+        <div className="fx-glow absolute left-[-10%] top-[20%] h-[28rem] w-[28rem] rounded-full bg-violet-600/20 blur-[140px]" />
+        <div className="fx-glow absolute bottom-[0%] right-[-8%] h-[24rem] w-[24rem] rounded-full bg-cyan-400/10 blur-[140px]" />
       </div>
 
       <div className="relative mx-auto max-w-6xl px-4">
@@ -568,8 +568,8 @@ export default function Landing() {
       <section className="relative overflow-hidden">
         {/* Ambient light — low opacity so the black stays black */}
         <div className="pointer-events-none absolute inset-0" aria-hidden>
-          <div className="absolute left-[8%] top-[-6rem] h-[30rem] w-[30rem] rounded-full bg-cyan-400/20 opacity-60 blur-[150px]" />
-          <div className="absolute right-[2%] top-[8rem] h-[26rem] w-[26rem] rounded-full bg-violet-600/20 opacity-70 blur-[150px]" />
+          <div className="fx-glow absolute left-[8%] top-[-6rem] h-[30rem] w-[30rem] rounded-full bg-cyan-400/20 opacity-60 blur-[150px]" />
+          <div className="fx-glow absolute right-[2%] top-[8rem] h-[26rem] w-[26rem] rounded-full bg-violet-600/20 opacity-70 blur-[150px]" />
           <motion.div
             className="grid-floor absolute inset-x-0 bottom-0 h-[42%] opacity-[0.07]"
             style={reduceMotion ? undefined : { y: gridScroll }}
@@ -666,7 +666,7 @@ export default function Landing() {
             style={{ transformPerspective: 1100 }}
           >
             <div
-              className="pointer-events-none absolute -inset-x-8 -inset-y-6 rounded-[3rem] bg-gradient-to-r from-cyan-400/20 via-violet-500/20 to-cyan-400/20 opacity-60 blur-3xl"
+              className="fx-glow pointer-events-none absolute -inset-x-8 -inset-y-6 rounded-[3rem] bg-gradient-to-r from-cyan-400/20 via-violet-500/20 to-cyan-400/20 opacity-60 blur-3xl"
               aria-hidden
             />
             <Tilt max={6} scale={1.012}>

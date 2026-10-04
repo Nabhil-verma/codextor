@@ -10,8 +10,8 @@ export default function NotFound() {
       <Nav />
       <main className="relative mx-auto max-w-3xl overflow-hidden px-4 py-32 text-center sm:py-44">
         <div className="pointer-events-none absolute inset-0" aria-hidden>
-          <div className="absolute left-1/2 top-[10%] h-[22rem] w-[22rem] -translate-x-1/2 rounded-full bg-rose-500/15 blur-[130px]" />
-          <div className="absolute right-[12%] bottom-[8%] h-[16rem] w-[16rem] rounded-full bg-violet-600/15 blur-[120px]" />
+          <div className="fx-glow absolute left-1/2 top-[10%] h-[22rem] w-[22rem] -translate-x-1/2 rounded-full bg-rose-500/15 blur-[130px]" />
+          <div className="fx-glow absolute right-[12%] bottom-[8%] h-[16rem] w-[16rem] rounded-full bg-violet-600/15 blur-[120px]" />
         </div>
 
         <div className="relative z-10">

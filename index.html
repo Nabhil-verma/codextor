@@ -6,7 +6,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <title>Codexter — free, interactive coding lessons</title>
@@ -34,9 +34,10 @@
       content="Write and run real code from minute one: 17 tracks, 103 hands-on lessons, a live playground and quizzes. Free forever. Every exercise runs in your browser."
     />
     <script>
-      // Codexter ships dark. First visit: seed "dark" as the saved choice so
-      // the pre-paint class and src/lib/theme.ts agree; learners can still
-      // flip to light from the nav and that choice sticks.
+      // Codexter ships dark in the glass style. First visit: seed "dark" as
+      // the saved choice so the pre-paint classes and src/lib/theme.ts agree;
+      // learners can still flip the theme (light/dark) and the style
+      // (glass/minimal) from Settings, and those choices stick.
       (function () {
         try {
           var saved = localStorage.getItem("codexter-theme");
@@ -45,6 +46,11 @@
             localStorage.setItem("codexter-theme", saved);
           }
           if (saved === "dark") document.documentElement.classList.add("dark");
+
+          // Style defaults to glass: only the minimal choice needs a class.
+          if (localStorage.getItem("codexter-style") === "minimal") {
+            document.documentElement.classList.add("style-minimal");
+          }
         } catch (e) {
           document.documentElement.classList.add("dark");
         }

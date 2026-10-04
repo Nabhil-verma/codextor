@@ -67,7 +67,7 @@ export function BentoItem({
       }}
       style={style}
       className={
-        "spotlight glass glass-edge group relative overflow-hidden rounded-3xl border border-paper-200/70 p-8 " +
+        "spotlight glass-card glass-edge group relative overflow-hidden rounded-3xl border border-paper-200/70 p-8 " +
         "transition-colors duration-500 ease-out hover:border-cyan-400/30 " +
         span +
         (className ? " " + className : "")

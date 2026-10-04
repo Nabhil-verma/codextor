@@ -60,10 +60,11 @@ export function PrecisionProgressBar({
         aria-valuenow={Math.round(v)}
         className="h-1 w-full overflow-hidden rounded-full bg-white/[0.06]"
       >
+        {/* Animated with scaleX (compositor-only) instead of width (layout). */}
         <motion.div
-          className={"h-full rounded-full bg-gradient-to-r " + BAR[tone]}
-          initial={{ width: 0 }}
-          whileInView={{ width: v + "%" }}
+          className={"h-full w-full origin-left rounded-full bg-gradient-to-r " + BAR[tone]}
+          initial={{ scaleX: 0 }}
+          whileInView={{ scaleX: v / 100 }}
           viewport={{ once: true }}
           transition={{ duration: 1.1, ease: [0.25, 1, 0.5, 1], delay }}
         />

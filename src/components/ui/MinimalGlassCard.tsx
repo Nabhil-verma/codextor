@@ -41,7 +41,7 @@ export default function MinimalGlassCard({
   return (
     <Tag
       className={
-        "glass glass-edge rounded-3xl border border-paper-200/70 transition-colors duration-500 ease-out " +
+        "glass-card glass-edge rounded-3xl border border-paper-200/70 transition-colors duration-500 ease-out " +
         HOVER_BORDER[tone] +
         " " +
         pad +

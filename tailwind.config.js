@@ -5,8 +5,11 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        // Swiss-grotesk display face — tight tracking, bold weights.
-        display: ["'Space Grotesk'", "Inter", "system-ui", "sans-serif"],
+        // Display face follows the style setting (`.style-minimal` in
+        // src/index.css): Space Grotesk by default, Fraunces in minimal gold.
+        display: [
+          "var(--font-display, 'Space Grotesk', Inter, system-ui, sans-serif)",
+        ],
         mono: ["'JetBrains Mono'", "'Fira Code'", "ui-monospace", "monospace"],
         sans: ["Inter", "system-ui", "sans-serif"],
       },

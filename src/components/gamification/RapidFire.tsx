@@ -237,14 +237,16 @@ export default function RapidFire({
 
       {/* Clock bar */}
       <div className="relative mt-3 h-1.5 w-full overflow-hidden rounded-full bg-paper-200">
+        {/* scaleX, not width — the clock ticks once a second and a layout
+            animation for every tick is wasted work. */}
         <motion.div
           className={
-            "h-full rounded-full " +
+            "h-full w-full origin-left rounded-full " +
             (remaining <= 3
               ? "bg-gradient-to-r from-red-500 to-orange-400"
               : "bg-gradient-to-r from-gold-500 to-gold-300")
           }
-          animate={{ width: (remaining / seconds) * 100 + "%" }}
+          animate={{ scaleX: remaining / seconds }}
           transition={{ duration: 0.9, ease: "linear" }}
         />
       </div>

@@ -114,10 +114,14 @@ A few consequences worth calling out, because they're unusual for a learning app
 - **Progress that follows you** — lesson scores and project milestone claims are
   saved locally by default; optional Convex Auth email sign-in syncs both across
   devices
-- **Light & night mode** — one `class="dark"` on `<html>` rethemes everything,
-  because every color in the Tailwind config resolves through the CSS variables
-  in `src/index.css`. The choice (or your OS preference) is applied before first
-  paint, so night mode never flashes white
+- **Light & night mode, two design languages** — one `class="dark"` on `<html>`
+  rethemes everything, because every color in the Tailwind config resolves
+  through the CSS variables in `src/index.css`. Settings also swaps the whole
+  visual style between the current glassmorphic cyan look and the original
+  minimal white/black/gold one (`.style-minimal` in `src/index.css` retunes the
+  palette to gold, swaps the display face to Fraunces and retires the neon
+  glow). Both choices are applied before first paint, so night mode never
+  flashes white
 - **Panels that fail alone** — every live-data panel renders inside its own error
   boundary, and pages inside a route-level one: a backend that is missing a
   function or unreachable costs you that panel with a plain-English explanation
@@ -387,8 +391,7 @@ src/
 │   ├── runner.ts             # JS sandbox, loop guard, mock REST server
 │   ├── tsRunner.ts           # in-browser TypeScript compiler host
 │   ├── stepper.ts            # per-line trace for the visualizer
-│   ├── guild.ts / guildState.ts / clanRewards.ts
-│   ├── theme.ts              # dark-mode persistence (mirrors index.html)
+│   ├── guild.ts / guildState.ts / clanRewards.ts  │   ├── theme.ts              # theme + style persistence (mirrors index.html)
 │   ├── url.ts                # absolute-URL guard for the Convex client
 │   ├── errors.ts / friendlyError.ts
 │   └── ai.ts                 # BYOK Gemini/Claude client
@@ -397,7 +400,7 @@ src/
 │   └── clan/                 # guild feed + quest panel
 └── pages/                    # Landing, Learn, Lesson, Playground, Certificate,
                              # Projects, Portfolio, Leaderboard, Clans, Auth
-tests/                        # 32 suites, 319 tests
+tests/                        # 32 suites, 321 tests
 ```
 
 ## Accounts, progress & cloud sync
@@ -460,7 +463,7 @@ you run the code to find out.
 npm test        # or: bun x vitest run
 ```
 
-**319 tests across 32 files.** The content tests are the interesting ones,
+**321 tests across 32 files.** The content tests are the interesting ones,
 because content is where bugs hide:
 
 - Every broken debug program fails its own check, every reference fix passes it,
@@ -487,13 +490,14 @@ because content is where bugs hide:
   defect inside the diff it blames
 - The first cohort's bug list, pinned: real Convex errors render as explanations
   while the rest of the page keeps working, an assembly answer only verifies in
-  *runnable* order, and the theme toggle flips `.dark` and remembers it
+  *runnable* order, the theme toggle flips `.dark` and remembers it, and the
+  settings style switch flips `.style-minimal` and remembers that too
 - Every colour token the source uses exists in both themes *and* in the Tailwind
   config, and every opacity modifier sits on Tailwind's scale — `bg-ink-100` and
   `bg-gold-400/12` both compiled to nothing before this test existed
-- One storage primitive behind progress, claims, guild rewards, AI settings and
-  the theme: corrupt JSON, blocked storage and hand-edited entries all degrade
-  to the default instead of throwing inside a render
+- One storage primitive behind progress, claims, guild rewards, AI settings,
+  the theme and the style: corrupt JSON, blocked storage and hand-edited entries
+  all degrade to the default instead of throwing inside a render
 
 ## Deployment
 

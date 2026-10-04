@@ -167,16 +167,17 @@ function HeatMap() {
             transition={{ duration: 0.4, delay: Math.min(wi * 0.015, 0.6), ease: EASE }}
           >
             {w.map((day) => (
-              <motion.div
+              /* Plain divs: 364 per-cell Framer instances (each with its own
+                 whileHover spring and gesture bookkeeping) became CSS-only —
+                 the hover is a composited transform, zero JS per cell. */
+              <div
                 key={day}
                 title={`${day}: ${daySet.has(day) ? "active" : "inactive"}`}
-                className={`h-3 w-3 rounded-[3px] transition-colors duration-200 ${
+                className={`h-3 w-3 rounded-[3px] transition-transform duration-150 hover:scale-[1.35] ${
                   daySet.has(day)
                     ? "bg-gold-400 shadow-[0_0_8px_rgba(212,175,55,0.3)]"
                     : "bg-ink-100/60"
                 }`}
-                whileHover={{ scale: 1.35 }}
-                transition={{ type: "spring", stiffness: 400, damping: 18 }}
               />
             ))}
           </motion.div>
@@ -425,10 +426,12 @@ function GuildCard() {
           {clan.memberCount === 1 ? "" : "s"} · {tier.tier.name} tier
         </p>
         <div className="mt-2 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-paper-200">
+          {/* scaleX, not width: identical look, but the bar stops touching
+              the layout stage on every frame of the fill. */}
           <motion.div
-            className="h-full rounded-full bg-gradient-to-r from-gold-500 to-gold-300"
-            initial={{ width: 0 }}
-            animate={{ width: tier.pct + "%" }}
+            className="h-full w-full origin-left rounded-full bg-gradient-to-r from-gold-500 to-gold-300"
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: tier.pct / 100 }}
             transition={{ duration: 1, ease: EASE }}
           />
         </div>
@@ -534,9 +537,9 @@ export default function Portfolio() {
               </div>
               <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-paper-200/80">
                 <motion.div
-                  className="h-full rounded-full bg-gradient-to-r from-gold-500 to-gold-300"
-                  initial={{ width: 0 }}
-                  animate={{ width: level.pct + "%" }}
+                  className="h-full w-full origin-left rounded-full bg-gradient-to-r from-gold-500 to-gold-300"
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: level.pct / 100 }}
                   transition={{ duration: 1, ease: EASE, delay: 0.3 }}
                 />
               </div>

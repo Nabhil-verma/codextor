@@ -5,11 +5,26 @@ import {
   type AiSettings,
   type AiProvider,
 } from "../lib/ai";
+import type { ThemeStyle } from "../lib/theme";
+
+/* The two design languages, swappable from the appearance section. */
+const STYLES: { id: ThemeStyle; name: string; blurb: string }[] = [
+  { id: "glass", name: "Glassmorphic", blurb: "Frosted glass · neon cyan" },
+  { id: "minimal", name: "Minimal gold", blurb: "White · black · gold serif" },
+];
 
 const inputCls =
   "w-full rounded-xl border border-paper-300 bg-paper-50 px-4 py-2.5 text-sm text-ink-950 outline-none transition placeholder:text-ink-400 focus:border-gold-400 focus:ring-2 focus:ring-gold-400/25";
 
-export default function AiSettingsModal({ onClose }: { onClose: () => void }) {
+export default function AiSettingsModal({
+  onClose,
+  themeStyle,
+  onThemeStyle,
+}: {
+  onClose: () => void;
+  themeStyle: ThemeStyle;
+  onThemeStyle: (style: ThemeStyle) => void;
+}) {
   const [settings, setSettings] = useState<AiSettings>(loadAiSettings);
   const [saved, setSaved] = useState(false);
   const firstRef = useRef<HTMLInputElement>(null);
@@ -53,12 +68,46 @@ export default function AiSettingsModal({ onClose }: { onClose: () => void }) {
           id="ai-settings-title"
           className="mt-2 font-display text-3xl font-semibold tracking-tight text-ink-950"
         >
-          AI Tutor Settings
+          Settings
         </h2>
-        <p className="mt-2 text-sm leading-relaxed text-ink-600">
-          The Socratic tutor is 100% optional. If you want guided help, bring your own
-          API key for Google Gemini or Anthropic Claude. Keys stay in your browser and are
-          sent only to the provider you choose.
+
+        {/* Style: the two design languages are interchangeable here. */}
+        <div className="mt-6 space-y-3">
+          <p className="font-mono text-[11px] uppercase tracking-widest text-ink-500">
+            appearance
+          </p>
+          <div className="flex gap-3">
+            {STYLES.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => onThemeStyle(s.id)}
+                aria-pressed={themeStyle === s.id}
+                className={`flex-1 rounded-xl border px-4 py-3 text-left transition ${
+                  themeStyle === s.id
+                    ? "border-gold-400 bg-gold-400/10 ring-2 ring-gold-400/25"
+                    : "border-paper-200 hover:border-ink-300"
+                }`}
+              >
+                <span className="block font-display text-lg font-semibold text-ink-950">
+                  {s.name}
+                </span>
+                <span className="mt-0.5 block text-xs text-ink-600">{s.blurb}</span>
+              </button>
+            ))}
+          </div>
+          <p className="text-[11px] text-ink-500">
+            Glass is the neon cyan look; Minimal is the original white, black and gold
+            one. Light/dark is the sun/moon button in the nav.
+          </p>
+        </div>
+
+        <div className="my-7 h-px bg-white/[0.06]" />
+
+        <p className="text-sm leading-relaxed text-ink-600">
+          The AI tutor is 100% optional. If you want guided help, bring your own API key
+          for Google Gemini or Anthropic Claude. Keys stay in your browser and are sent
+          only to the provider you choose.
         </p>
 
         {/* Provider toggle */}

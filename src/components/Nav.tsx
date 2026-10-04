@@ -7,6 +7,7 @@ import AiSettingsModal from "./AiSettingsModal";
 import ThemeToggle from "./ThemeToggle";
 import MobileTabBar from "./MobileTabBar";
 import { lessonIdOf, useProgressState } from "../lib/progress";
+import { useThemeStyle } from "../lib/theme";
 import { totalLessonCount } from "../data";
 
 const syncLabel: Record<string, string> = {
@@ -45,6 +46,8 @@ export default function Nav() {
   const menuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const { user, authReady, sync, signOutUser, resetEverything } = useAccount();
+  // Keeps `.style-minimal` on <html> in sync on every page (Nav is global).
+  const { style: themeStyle, setStyle: setThemeStyle } = useThemeStyle();
 
   const { scrollY } = useScroll();
   useMotionValueEvent(scrollY, "change", (v) => setScrolled(v > 12));
@@ -101,7 +104,7 @@ export default function Nav() {
             type="button"
             onClick={() => setAiOpen(true)}
             className="flex h-8 w-8 items-center justify-center rounded-full border border-paper-200/70 text-ink-600 transition-all duration-300 ease-snap hover:scale-105 hover:border-gold-400/50 hover:text-gold-600 hover:shadow-glow active:scale-95"
-            aria-label="AI tutor settings"
+            aria-label="Settings"
           >
             <Settings className="h-4 w-4" aria-hidden />
           </button>
@@ -203,7 +206,7 @@ export default function Nav() {
                 {l.active(location.pathname) && (
                   <motion.span
                     layoutId="nav-pill"
-                    className="absolute inset-0 rounded-full border border-white/10 bg-white/[0.07] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_0_24px_-6px_rgba(0,229,255,0.35)]"
+                    className="nav-pill absolute inset-0 rounded-full border border-white/10 bg-white/[0.07] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_0_24px_-6px_rgba(0,229,255,0.35)]"
                     transition={{ type: "spring", stiffness: 380, damping: 32 }}
                   />
                 )}
@@ -217,7 +220,13 @@ export default function Nav() {
           </div>
         </nav>
       </div>
-      {aiOpen && <AiSettingsModal onClose={() => setAiOpen(false)} />}
+      {aiOpen && (
+        <AiSettingsModal
+          onClose={() => setAiOpen(false)}
+          themeStyle={themeStyle}
+          onThemeStyle={setThemeStyle}
+        />
+      )}
     </motion.header>
     <MobileTabBar />
     </>

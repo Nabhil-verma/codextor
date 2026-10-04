@@ -34,8 +34,8 @@ export default function Leaderboard() {
 
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0" aria-hidden>
-          <div className="absolute left-1/2 top-[-8rem] h-[26rem] w-[44rem] -translate-x-1/2 rounded-full bg-amber-400/10 blur-[140px]" />
-          <div className="absolute right-[6%] top-[4rem] h-[20rem] w-[20rem] rounded-full bg-violet-600/15 blur-[130px]" />
+          <div className="fx-glow absolute left-1/2 top-[-8rem] h-[26rem] w-[44rem] -translate-x-1/2 rounded-full bg-amber-400/10 blur-[140px]" />
+          <div className="fx-glow absolute right-[6%] top-[4rem] h-[20rem] w-[20rem] rounded-full bg-violet-600/15 blur-[130px]" />
         </div>
         <div className="relative mx-auto max-w-4xl px-4 pb-6 pt-24 text-center sm:pt-32">
           <Reveal>

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { createLocalStore } from "./localStore";
+import { createLocalStore, useLocalStore } from "./localStore";
 
 /* ═══════════════════════════════════════════════════════════════
    Theme (light / dark). The choice lives in localStorage and the
@@ -74,4 +74,49 @@ export function useTheme() {
   );
 
   return { theme, setTheme, toggle };
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Style (glass / minimal). The second axis of the theme system:
+   `glass` is the current frosted, cyan-pulse design language;
+   `minimal` is the earlier white/black/gold one, with Fraunces
+   display type and no glow/noise effects. It is applied as the
+   `.style-minimal` class on <html>, so src/index.css owns every
+   visual difference — no component needs to branch on it.
+   ═══════════════════════════════════════════════════════════════ */
+
+export type ThemeStyle = "glass" | "minimal";
+
+/**
+ * Shared with the pre-paint script in index.html — keep the two in step.
+ * Stored as the bare word (`minimal`), not JSON, because that inline script
+ * reads the raw value before the app bundle exists.
+ */
+const styleStore = createLocalStore<ThemeStyle | null>(
+  "codexter-style",
+  (raw) => (raw === "glass" || raw === "minimal" ? raw : null),
+  (value) => value ?? ""
+);
+
+function paintStyle(style: ThemeStyle) {
+  document.documentElement.classList.toggle("style-minimal", style === "minimal");
+}
+
+/**
+ * Read + change the visual style. Subscribes through the shared local store,
+ * so every mounted view (the nav and the settings modal) flips together.
+ */
+export function useThemeStyle() {
+  const stored = useLocalStore(styleStore);
+  const style = stored ?? "glass";
+
+  useEffect(() => {
+    paintStyle(style);
+  }, [style]);
+
+  const setStyle = useCallback((next: ThemeStyle) => {
+    styleStore.set(next);
+  }, []);
+
+  return { style, setStyle };
 }

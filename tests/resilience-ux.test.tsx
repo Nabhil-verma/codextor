@@ -14,7 +14,9 @@ import { MemoryRouter } from "react-router-dom";
  *      counts solved questions;
  *   4. "Start a quest" leads to the next unfinished lesson, not back to the
  *      page it's already on;
- *   5. the nav theme toggle flips the palette and remembers the choice.
+ *   5. the nav theme toggle flips the palette and remembers the choice;
+ *   6. the settings modal swaps the visual style (glass ⇄ minimal gold)
+ *      and remembers the choice.
  */
 
 class NoopObserver {
@@ -74,6 +76,8 @@ import MicroPractice from "../src/components/MicroPractice";
 import QuestBoard from "../src/components/gamification/QuestBoard";
 import { PanelBoundary } from "../src/components/gamification/Pieces";
 import ThemeToggle from "../src/components/ThemeToggle";
+import AiSettingsModal from "../src/components/AiSettingsModal";
+import { useThemeStyle } from "../src/lib/theme";
 import { missingFunctionName, panelMessage } from "../src/lib/friendlyError";
 import { tracks } from "../src/data";
 
@@ -303,5 +307,55 @@ describe("the theme toggle", () => {
     fireEvent.click(screen.getByRole("button", { name: /Switch to light mode/ }));
     expect(document.documentElement.classList.contains("dark")).toBe(false);
     expect(localStorage.getItem("codexter-theme")).toBe("light");
+  });
+});
+
+/* ---------------------------- 6 · style switch ---------------------------- */
+
+function StyleHarness() {
+  const { style, setStyle } = useThemeStyle();
+  return (
+    <button
+      type="button"
+      onClick={() => setStyle(style === "minimal" ? "glass" : "minimal")}
+    >
+      {style}
+    </button>
+  );
+}
+
+describe("the style switch", () => {
+  afterEach(() => {
+    localStorage.clear();
+    document.documentElement.classList.remove("style-minimal");
+  });
+
+  it("flips the style-minimal class and remembers the choice", () => {
+    render(<StyleHarness />);
+    expect(document.documentElement.classList.contains("style-minimal")).toBe(false);
+
+    fireEvent.click(screen.getByRole("button", { name: "glass" }));
+    expect(document.documentElement.classList.contains("style-minimal")).toBe(true);
+    expect(localStorage.getItem("codexter-style")).toBe("minimal");
+
+    fireEvent.click(screen.getByRole("button", { name: "minimal" }));
+    expect(document.documentElement.classList.contains("style-minimal")).toBe(false);
+    expect(localStorage.getItem("codexter-style")).toBe("glass");
+  });
+
+  it("offers both styles in the settings modal and reports the pick", () => {
+    const onThemeStyle = vi.fn();
+    render(
+      <AiSettingsModal
+        onClose={() => {}}
+        themeStyle="glass"
+        onThemeStyle={onThemeStyle}
+      />
+    );
+    expect(
+      screen.getByRole("button", { name: /Glassmorphic/ }).getAttribute("aria-pressed")
+    ).toBe("true");
+    fireEvent.click(screen.getByRole("button", { name: /Minimal gold/ }));
+    expect(onThemeStyle).toHaveBeenCalledWith("minimal");
   });
 });
