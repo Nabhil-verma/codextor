@@ -125,6 +125,18 @@ export default defineSchema({
   })
     .index("by_user", ["userId"]),
 
+  /**
+   * One row per account: display preferences that should follow the learner
+   * across devices. Today that is the appearance style (glass ⇄ minimal),
+   * which used to be per-browser only. `themeStyle` is optional so a row can
+   * exist for future preferences without assuming every field is present.
+   */
+  preferences: defineTable({
+    userId: v.id("users"),
+    themeStyle: v.optional(v.union(v.literal("glass"), v.literal("minimal"))),
+    updatedAt: v.optional(v.number()),
+  }).index("by_user", ["userId"]),
+
   /** Guild activity feed. Written by profile sync, quest completion, join/leave. */
   clanEvents: defineTable({
     clanId: v.id("clans"),

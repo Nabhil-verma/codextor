@@ -6,6 +6,7 @@ import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 import ProfileBridge from "./components/gamification/ProfileBridge";
 import QuestBridge from "./components/gamification/QuestBridge";
+import ThemeBridge from "./components/ThemeBridge";
 import { PanelBoundary } from "./components/gamification/Pieces";
 import Nav from "./components/Nav";
 import { panelMessage } from "./lib/friendlyError";
@@ -119,6 +120,9 @@ export default function App() {
           backend can't take the whole app down). */}
       <ProfileBridge />
       <QuestBridge />
+      {/* Mirrors the appearance style to the signed-in account, so the
+          choice follows the learner across devices (not just this browser). */}
+      <ThemeBridge />
       {/* Any page-level failure degrades to an in-app card, never a blank shell.
           A failed chunk download lands here too, so an offline reload explains
           itself instead of showing an empty page. */}

@@ -111,14 +111,18 @@ html {
 
 body {
   @apply bg-paper text-ink-900 font-sans antialiased;
-  perspective: 1200px;
+  /* No `perspective` here on purpose: on body it would become the containing
+     block for every `position: fixed` descendant, pinning overlays (the modal,
+     the mobile tab bar) to the document instead of the viewport. The 3D tilt
+     effects each carry their own `transformPerspective` or section-level
+     perspective, so nothing needs it from an ancestor. */
 }
 
 /* Ambient key-light behind the whole app — barely there, never muddy.
    Painted on a real fixed pseudo-element (its own composited layer) instead
    of `background-attachment: fixed` on body, which the main thread repaints
-   in full on every scroll frame. It lives on <html>, not <body>, because
-   body's perspective makes it a containing block for fixed descendants. */
+   in full on every scroll frame. It lives on <html>, outside the animated
+   page tree, so no transformed ancestor can become its containing block. */
 html.dark::before {
   content: "";
   position: fixed;

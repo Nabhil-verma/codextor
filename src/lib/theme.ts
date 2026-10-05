@@ -98,6 +98,13 @@ const styleStore = createLocalStore<ThemeStyle | null>(
   (value) => value ?? ""
 );
 
+/**
+ * The style store, exposed for the account-sync bridge (`ThemeBridge`), which
+ * mirrors the choice to the signed-in learner's `preferences` row: it reads the
+ * stored value to seed a fresh account and subscribes to push later changes.
+ */
+export { styleStore as themeStyleStore };
+
 function paintStyle(style: ThemeStyle) {
   document.documentElement.classList.toggle("style-minimal", style === "minimal");
 }

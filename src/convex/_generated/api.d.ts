@@ -12,6 +12,7 @@ import type * as auth from "../auth.js";
 import type * as clans from "../clans.js";
 import type * as http from "../http.js";
 import type * as leaderboard from "../leaderboard.js";
+import type * as preferences from "../preferences.js";
 import type * as profiles from "../profiles.js";
 import type * as progress from "../progress.js";
 import type * as users from "../users.js";
@@ -27,6 +28,7 @@ declare const fullApi: ApiFromModules<{
   clans: typeof clans;
   http: typeof http;
   leaderboard: typeof leaderboard;
+  preferences: typeof preferences;
   profiles: typeof profiles;
   progress: typeof progress;
   users: typeof users;

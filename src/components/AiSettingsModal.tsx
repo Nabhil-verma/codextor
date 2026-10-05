@@ -61,7 +61,7 @@ export default function AiSettingsModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="ai-settings-title"
-        className="w-full max-w-lg rounded-2xl border border-paper-200 bg-paper-50 p-8 shadow-lift"
+        className="max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl border border-paper-200 bg-paper-50 p-8 shadow-lift"
       >
         <p className="eyebrow">settings</p>
         <h2

@@ -220,14 +220,17 @@ export default function Nav() {
           </div>
         </nav>
       </div>
-      {aiOpen && (
-        <AiSettingsModal
-          onClose={() => setAiOpen(false)}
-          themeStyle={themeStyle}
-          onThemeStyle={setThemeStyle}
-        />
-      )}
     </motion.header>
+    {/* Rendered outside the header on purpose: the header animates (transform)
+        and a transformed ancestor becomes the containing block for
+        `position: fixed`, which clipped the modal to the header's height. */}
+    {aiOpen && (
+      <AiSettingsModal
+        onClose={() => setAiOpen(false)}
+        themeStyle={themeStyle}
+        onThemeStyle={setThemeStyle}
+      />
+    )}
     <MobileTabBar />
     </>
   );

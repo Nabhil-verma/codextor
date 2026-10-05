@@ -371,12 +371,13 @@ src/
 ├── AccountProvider.tsx       # Convex client, auth state, progress merge/push
 ├── index.css                 # every colour token, light + dark
 ├── convex/
-│   ├── schema.ts             # progress, profiles, clans, clanQuests, clanEvents
+│   ├── schema.ts             # progress, profiles, clans, quests, preferences
 │   ├── auth.ts / auth.config.ts
 │   ├── progress.ts           # scores + milestone claims (separate mutations)
 │   ├── profiles.ts           # public player card for the leaderboard
 │   ├── leaderboard.ts        # bracketed top-N + your true rank
 │   ├── clans.ts              # membership, board, feed, quests
+│   ├── preferences.ts        # account display preferences (appearance style)
 │   ├── users.ts
 │   └── http.ts               # auth HTTP routes
 ├── data/
@@ -400,7 +401,7 @@ src/
 │   └── clan/                 # guild feed + quest panel
 └── pages/                    # Landing, Learn, Lesson, Playground, Certificate,
                              # Projects, Portfolio, Leaderboard, Clans, Auth
-tests/                        # 32 suites, 321 tests
+tests/                        # 34 suites, 329 tests
 ```
 
 ## Accounts, progress & cloud sync
@@ -427,6 +428,10 @@ frontend) and add cross-device sync on top:
 - XP, quests and ascension are all **derived** from the progress map (see
   `src/lib/gamification.ts`) — no second source of truth, and every reward is
   replayable and testable without touching the backend.
+- The appearance style (glass ⇄ minimal gold) follows the account too: a
+  `preferences` row mirrors the choice while signed in, a fresh account seeds
+  from the first device that signs in, and localStorage stays authoritative
+  while signed out — the pre-paint script reads it before the bundle loads.
 - Progress is keyed `` `${trackId}/${lessonId}!${YYYY-MM-DD}` ``. Pre-v2 keys had
   no date suffix and are migrated on load, keeping their scores but not
   fabricating streak days for a day we can't know.
@@ -463,7 +468,7 @@ you run the code to find out.
 npm test        # or: bun x vitest run
 ```
 
-**321 tests across 32 files.** The content tests are the interesting ones,
+**329 tests across 34 files.** The content tests are the interesting ones,
 because content is where bugs hide:
 
 - Every broken debug program fails its own check, every reference fix passes it,
@@ -492,6 +497,10 @@ because content is where bugs hide:
   while the rest of the page keeps working, an assembly answer only verifies in
   *runnable* order, the theme toggle flips `.dark` and remembers it, and the
   settings style switch flips `.style-minimal` and remembers that too
+- The account appearance preference: signed-out reads stay `null`, a signed-in
+  save round-trips as an update to the same row, preferences never leak across
+  accounts, and the client bridge pulls, seeds, pushes (debounced) and stays
+  silent while signed out
 - Every colour token the source uses exists in both themes *and* in the Tailwind
   config, and every opacity modifier sits on Tailwind's scale — `bg-ink-100` and
   `bg-gold-400/12` both compiled to nothing before this test existed
