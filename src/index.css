@@ -515,13 +515,12 @@ h1, h2, h3 {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Style: Minimal (paper / navy / blue). The pre-revamp design
+   Style: Minimal (gold / white / black). The pre-revamp design
    language, toggled from Settings and applied as `.style-minimal`
-   on <html>. Palette tokens swap cyan → the brand mark's navy and
-   blue and Fraunces takes over the display type; the neon effects
-   (glow shadows, mesh gradients, noise, spotlight, blurred colour
-   orbs) are retired. Every rule here is an override — the glass
-   theme is untouched.
+   on <html>. Palette tokens swap cyan → gold and Fraunces takes
+   over the display type; the neon effects (glow shadows, mesh
+   gradients, noise, spotlight, blurred colour orbs) are retired.
+   Every rule here is an override — the glass theme is untouched.
    ═══════════════════════════════════════════════════════════════ */
 
 .style-minimal {
@@ -547,15 +546,12 @@ h1, h2, h3 {
   --ink-900: 19 19 22;
   --ink-950: 11 11 12;
 
-  /* Accent — the mark's blue fold (#2563eb) and navy band (#16204a).
-     The token names stay `gold` so no class has to be rewritten; in this
-     style they resolve to navy & blue. 400 stays bright enough to keep
-     the near-black labels the design system pairs with it legible. */
-  --gold-300: 96 165 250;
-  --gold-400: 59 130 246;
-  --gold-500: 37 99 235;
-  --gold-600: 30 64 175;
-  --gold-700: 22 32 74;
+  /* gold accent */
+  --gold-300: 236 217 160;
+  --gold-400: 212 175 55;
+  --gold-500: 184 145 46;
+  --gold-600: 148 114 31;
+  --gold-700: 111 85 20;
 }
 
 .style-minimal.dark {
@@ -578,20 +574,18 @@ h1, h2, h3 {
   --ink-900: 236 234 228;
   --ink-950: 250 248 244;
 
-  /* Night: the mark turns ice-white with a pale blue tail, so the accent
-     lightens with it instead of glowing like a lamp. */
-  --gold-300: 219 231 253;
-  --gold-400: 138 174 248;
-  --gold-500: 165 196 250;
-  --gold-600: 198 216 251;
-  --gold-700: 226 236 253;
+  --gold-300: 240 227 189;
+  --gold-400: 212 175 55;
+  --gold-500: 224 190 85;
+  --gold-600: 236 217 160;
+  --gold-700: 245 233 205;
 }
 
 /* Ambient key-light follows the accent, not the old cyan/violet. */
 .style-minimal.dark::before {
   background-image:
-    radial-gradient(ellipse 70% 45% at 50% -8%, rgba(59, 130, 246, 0.1), transparent 70%),
-    radial-gradient(ellipse 45% 35% at 100% 0%, rgba(96, 165, 250, 0.07), transparent 70%);
+    radial-gradient(ellipse 70% 45% at 50% -8%, rgba(212, 175, 55, 0.06), transparent 70%),
+    radial-gradient(ellipse 45% 35% at 100% 0%, rgba(236, 217, 160, 0.05), transparent 70%);
 }
 
 /* Flatter glass: mostly opaque paper with a whisper of blur. */
@@ -616,47 +610,44 @@ h1, h2, h3 {
     0 16px 40px -24px rgba(0, 0, 0, 0.7);
 }
 
-/* Navy/blue gradient headline — the night-time mark's ice blue on obsidian,
-   the deeper navy on paper (both stop mid-way at their lightest so the
-   middle of the word, where the eye lands, keeps contrast). */
+/* Gold gradient headline (deeper gold on white for contrast). */
 .style-minimal .gradient-text {
-  background-image: linear-gradient(135deg, #8aaef8 0%, #eef2f9 50%, #8aaef8 100%);
+  background-image: linear-gradient(135deg, #d4af37 0%, #ecd9a0 50%, #d4af37 100%);
   background-size: 200% 200%;
   animation-duration: 4s;
 }
 .style-minimal:not(.dark) .gradient-text {
-  background-image: linear-gradient(135deg, #16204a 0%, #2563eb 50%, #16204a 100%);
+  background-image: linear-gradient(135deg, #b8912e 0%, #d4af37 50%, #b8912e 100%);
   background-size: 200% 200%;
 }
 
-/* Blue-tinted ambience instead of cyan/violet meshes. */
+/* Gold-tinted ambience instead of cyan/violet meshes. */
 .style-minimal .mesh-bg {
   background:
-    radial-gradient(ellipse 60% 50% at 15% 25%, rgba(59, 130, 246, 0.12) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 60% at 85% 75%, rgba(96, 165, 250, 0.16) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 40% at 50% 50%, rgba(37, 99, 235, 0.07) 0%, transparent 60%);
+    radial-gradient(ellipse 60% 50% at 15% 25%, rgba(212, 175, 55, 0.07) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 85% 75%, rgba(236, 217, 160, 0.1) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 50% 50%, rgba(212, 175, 55, 0.04) 0%, transparent 60%);
 }
-/* Dark canvases go navy rather than neutral black, lit by the same blue. */
 .style-minimal .dark-canvas {
   background:
-    radial-gradient(ellipse 80% 60% at 70% -10%, rgba(59, 130, 246, 0.22) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 10% 100%, rgba(56, 189, 248, 0.12) 0%, transparent 55%),
-    #080c18;
+    radial-gradient(ellipse 80% 60% at 70% -10%, rgba(212, 175, 55, 0.14) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 10% 100%, rgba(236, 217, 160, 0.08) 0%, transparent 55%),
+    #0b0b0c;
 }
 .style-minimal .conic-ring {
-  background: conic-gradient(from 0deg, #3b82f6, #080c18 30%, #93c5fd 55%, #3b82f6 80%, #080c18 100%);
+  background: conic-gradient(from 0deg, #d4af37, #0b0b0c 30%, #ecd9a0 55%, #d4af37 80%, #0b0b0c 100%);
 }
 .style-minimal .grid-floor {
   background-image:
-    linear-gradient(rgba(59, 130, 246, 0.2) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(59, 130, 246, 0.2) 1px, transparent 1px);
+    linear-gradient(rgba(212, 175, 55, 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212, 175, 55, 0.16) 1px, transparent 1px);
 }
 .style-minimal .neon-border::before {
   background: linear-gradient(
     140deg,
-    rgba(59, 130, 246, 0.6),
-    rgba(96, 165, 250, 0.28) 38%,
-    rgba(8, 12, 24, 0.05) 70%
+    rgba(212, 175, 55, 0.6),
+    rgba(212, 175, 55, 0.2) 38%,
+    rgba(11, 11, 12, 0.05) 70%
   );
 }
 
@@ -667,21 +658,21 @@ h1, h2, h3 {
   display: none;
 }
 
-/* Glows turn blue (or go away) instead of staying cyan. */
+/* Glows turn gold (or go away) instead of staying cyan. */
 .style-minimal .shadow-glow {
-  box-shadow: 0 0 18px rgba(59, 130, 246, 0.28);
+  box-shadow: 0 0 18px rgba(212, 175, 55, 0.18);
 }
 .style-minimal .shadow-neon {
   box-shadow:
-    0 0 24px rgba(59, 130, 246, 0.32),
-    0 0 60px -12px rgba(59, 130, 246, 0.18);
+    0 0 24px rgba(212, 175, 55, 0.2),
+    0 0 60px -12px rgba(212, 175, 55, 0.12);
 }
 .style-minimal .btn-gold {
   box-shadow: none;
 }
 .style-minimal .tilt-card:hover {
   box-shadow:
-    0 18px 44px -14px rgba(59, 130, 246, 0.28),
+    0 18px 44px -14px rgba(212, 175, 55, 0.18),
     0 4px 18px rgba(0, 0, 0, 0.28);
 }
 .style-minimal .nav-pill {

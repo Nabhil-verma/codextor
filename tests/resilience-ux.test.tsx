@@ -355,7 +355,7 @@ describe("the style switch", () => {
     expect(
       screen.getByRole("button", { name: /Glassmorphic/ }).getAttribute("aria-pressed")
     ).toBe("true");
-    fireEvent.click(screen.getByRole("button", { name: /Minimal navy/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Minimal gold/ }));
     expect(onThemeStyle).toHaveBeenCalledWith("minimal");
   });
 });

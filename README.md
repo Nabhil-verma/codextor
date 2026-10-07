@@ -117,11 +117,11 @@ A few consequences worth calling out, because they're unusual for a learning app
 - **Light & night mode, two design languages** — one `class="dark"` on `<html>`
   rethemes everything, because every color in the Tailwind config resolves
   through the CSS variables in `src/index.css`. Settings also swaps the whole
-  visual style between the current glassmorphic cyan look and the minimal
-  paper/navy/blue one (`.style-minimal` in `src/index.css` retunes the palette to
-  the same navy and blue as the logo, swaps the display face to Fraunces and
-  retires the neon glow). Both choices are applied before first paint, so night
-  mode never flashes white
+  visual style between the current glassmorphic cyan look and the original
+  minimal white/black/gold one (`.style-minimal` in `src/index.css` retunes the
+  palette to gold, swaps the display face to Fraunces and retires the neon
+  glow). Both choices are applied before first paint, so night mode never
+  flashes white
 - **Panels that fail alone** — every live-data panel renders inside its own error
   boundary, and pages inside a route-level one: a backend that is missing a
   function or unreachable costs you that panel with a plain-English explanation
