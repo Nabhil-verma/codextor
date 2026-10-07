@@ -7,7 +7,7 @@ import { PanelBoundary } from "./gamification/Pieces";
 
 /* ═══════════════════════════════════════════════════════════════
    Mounted once at the app root. Mirrors the appearance style
-   (glass ⇄ minimal gold) to the signed-in learner's account, so the
+   (glass ⇄ minimal) to the signed-in learner's account, so the
    choice follows them to another device instead of living only in
    this browser's localStorage.
 

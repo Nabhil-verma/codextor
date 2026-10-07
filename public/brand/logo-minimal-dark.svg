@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Codexter">
+  <!--
+    Codexter mark — minimal style, dark surfaces.
+
+    The monochrome cut: frost-white ribbon, the fold one tone down so the
+    interlock still reads, glyphs at full white.
+  -->
+  <g
+    transform="translate(-5.25 -4.27) scale(1.17)"
+    fill="none"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path
+      d="M30 8 L10.08 19.5 L10.08 42.5 L30 54 L43.94 45.95"
+      stroke="#eef2f9"
+      stroke-width="5.6"
+    />
+    <path
+      d="M36.97 12.03 L49.92 19.5 L49.92 40.5 L53.6 52.8"
+      stroke="#b3c0d6"
+      stroke-width="5.6"
+    />
+    <g stroke="#ffffff" stroke-width="4.6">
+      <path d="M24.8 23.5 L16.8 31 L24.8 38.5" />
+      <path d="M27.5 40.5 L33 21.5" />
+      <path d="M35.3 23.5 L43.3 31 L35.3 38.5" />
+    </g>
+  </g>
+</svg>

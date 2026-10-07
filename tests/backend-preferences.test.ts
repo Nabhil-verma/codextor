@@ -4,7 +4,7 @@ import schema from "../src/convex/schema";
 import { api } from "../src/convex/_generated/api";
 
 /*
- * The account-backed appearance preference (glass ⇄ minimal gold).
+ * The account-backed appearance preference (glass ⇄ minimal).
  *
  * The style used to be per-browser only. These tests pin the server side of
  * the fix: signed-out reads stay `null` (the client keeps using localStorage),

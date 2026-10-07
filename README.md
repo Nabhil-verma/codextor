@@ -3,7 +3,7 @@
 > **A 100% free, interactive code teacher.** Seventeen tracks, 103 hands-on lessons —
 > you write and run real code from minute one, in the browser, with easy signup.
 
-**Live:** [nnghedico.freebuff.app](https://nnghedico.freebuff.app)
+**Live:** [codextorcybo4.freebuff.app](https://codextorcybo4.freebuff.app)
 
 No paywalls, no waste of time , no code snippets you can only
 read. Every exercise runs *in your browser* and is graded by what your program
@@ -117,11 +117,11 @@ A few consequences worth calling out, because they're unusual for a learning app
 - **Light & night mode, two design languages** — one `class="dark"` on `<html>`
   rethemes everything, because every color in the Tailwind config resolves
   through the CSS variables in `src/index.css`. Settings also swaps the whole
-  visual style between the current glassmorphic cyan look and the original
-  minimal white/black/gold one (`.style-minimal` in `src/index.css` retunes the
-  palette to gold, swaps the display face to Fraunces and retires the neon
-  glow). Both choices are applied before first paint, so night mode never
-  flashes white
+  visual style between the current glassmorphic cyan look and the minimal
+  paper/navy/blue one (`.style-minimal` in `src/index.css` retunes the palette to
+  the same navy and blue as the logo, swaps the display face to Fraunces and
+  retires the neon glow). Both choices are applied before first paint, so night
+  mode never flashes white
 - **Panels that fail alone** — every live-data panel renders inside its own error
   boundary, and pages inside a route-level one: a backend that is missing a
   function or unreachable costs you that panel with a plain-English explanation
@@ -428,7 +428,7 @@ frontend) and add cross-device sync on top:
 - XP, quests and ascension are all **derived** from the progress map (see
   `src/lib/gamification.ts`) — no second source of truth, and every reward is
   replayable and testable without touching the backend.
-- The appearance style (glass ⇄ minimal gold) follows the account too: a
+- The appearance style (glass ⇄ minimal) follows the account too: a
   `preferences` row mirrors the choice while signed in, a fresh account seeds
   from the first device that signs in, and localStorage stays authoritative
   while signed out — the pre-paint script reads it before the bundle loads.

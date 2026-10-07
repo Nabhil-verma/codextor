@@ -136,7 +136,13 @@ export default function Certificate() {
                   </p>
                 </div>
                 <div className="text-center">
-                  <p className="font-display text-2xl text-gold-500">✦</p>
+                  {/* The seal is the brand mark itself, so the certificate
+                      carries the current logo instead of a stand-in glyph. */}
+                  <span
+                    className="brand-mark mx-auto block h-8 w-8"
+                    role="img"
+                    aria-label="Codexter"
+                  />
                   <p className="mt-1 font-mono text-[11px] text-ink-600">
                     Codexter
                   </p>

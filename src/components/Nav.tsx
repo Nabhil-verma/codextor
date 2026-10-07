@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { AnimatePresence, motion, useScroll, useMotionValueEvent } from "framer-motion";
 import { Settings } from "lucide-react";
 import { useAccount } from "../AccountProvider";
+import BrandLogo from "./BrandLogo";
 import AiSettingsModal from "./AiSettingsModal";
 import ThemeToggle from "./ThemeToggle";
 import MobileTabBar from "./MobileTabBar";
@@ -82,19 +83,9 @@ export default function Nav() {
     >
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-3 px-4 md:h-16 md:flex-nowrap">
         <Link to="/" className="group flex h-14 shrink-0 items-center gap-2.5 md:h-16">
-          <motion.span
-            className="flex h-8 w-8 items-center justify-center rounded-[0.65rem] border border-gold-400/30 bg-gold-400/10 font-mono text-xs font-bold text-gold-400 shadow-[0_0_20px_rgba(0,229,255,0.18)]"
-            whileHover={{
-              rotate: [0, -6, 6, 0],
-              boxShadow: "0 0 32px rgba(0,229,255,0.45)",
-            }}
-            transition={{ duration: 0.45 }}
-          >
-            &lt;/&gt;
-          </motion.span>
-          <span className="font-display text-lg font-bold tracking-tighter text-ink-950">
-            Codexter
-          </span>
+          {/* The mark swaps between glass/minimal × light/dark purely through
+              the classes on <html> — no prop, no branch. See BrandLogo. */}
+          <BrandLogo />
         </Link>
 
         <div className="flex h-14 shrink-0 items-center gap-1.5 md:order-last md:h-16">

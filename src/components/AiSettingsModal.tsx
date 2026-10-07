@@ -10,7 +10,7 @@ import type { ThemeStyle } from "../lib/theme";
 /* The two design languages, swappable from the appearance section. */
 const STYLES: { id: ThemeStyle; name: string; blurb: string }[] = [
   { id: "glass", name: "Glassmorphic", blurb: "Frosted glass · neon cyan" },
-  { id: "minimal", name: "Minimal gold", blurb: "White · black · gold serif" },
+  { id: "minimal", name: "Minimal navy", blurb: "Paper · navy · blue serif" },
 ];
 
 const inputCls =
@@ -97,8 +97,8 @@ export default function AiSettingsModal({
             ))}
           </div>
           <p className="text-[11px] text-ink-500">
-            Glass is the neon cyan look; Minimal is the original white, black and gold
-            one. Light/dark is the sun/moon button in the nav.
+            Glass is the neon cyan look; Minimal is the paper, navy and blue one — the
+            logo's palette. Light/dark is the sun/moon button in the nav.
           </p>
         </div>
 

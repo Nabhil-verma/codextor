@@ -5,7 +5,7 @@ import { v } from "convex/values";
 /*
  * Display preferences that follow the learner across devices.
  *
- * The appearance style (glass ⇄ minimal gold) was per-browser only: the local
+ * The appearance style (glass ⇄ minimal) was per-browser only: the local
  * copy is what the pre-paint script and the store read, so it stays the source
  * of truth while signed out — this table is a mirror for signed-in accounts,
  * never a requirement. One row per user; a display choice is last-write-wins

@@ -1,0 +1,7 @@
+# robots.txt — Codexter
+# https://codextorcybo4.freebuff.app
+
+User-agent: *
+Allow: /
+
+Sitemap: https://codextorcybo4.freebuff.app/sitemap.xml

@@ -15,7 +15,7 @@ import { MemoryRouter } from "react-router-dom";
  *   4. "Start a quest" leads to the next unfinished lesson, not back to the
  *      page it's already on;
  *   5. the nav theme toggle flips the palette and remembers the choice;
- *   6. the settings modal swaps the visual style (glass ⇄ minimal gold)
+ *   6. the settings modal swaps the visual style (glass ⇄ minimal)
  *      and remembers the choice.
  */
 
@@ -355,7 +355,7 @@ describe("the style switch", () => {
     expect(
       screen.getByRole("button", { name: /Glassmorphic/ }).getAttribute("aria-pressed")
     ).toBe("true");
-    fireEvent.click(screen.getByRole("button", { name: /Minimal gold/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Minimal navy/ }));
     expect(onThemeStyle).toHaveBeenCalledWith("minimal");
   });
 });

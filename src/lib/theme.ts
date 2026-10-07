@@ -79,7 +79,7 @@ export function useTheme() {
 /* ═══════════════════════════════════════════════════════════════
    Style (glass / minimal). The second axis of the theme system:
    `glass` is the current frosted, cyan-pulse design language;
-   `minimal` is the earlier white/black/gold one, with Fraunces
+   `minimal` is the calmer paper/navy/blue one, with Fraunces
    display type and no glow/noise effects. It is applied as the
    `.style-minimal` class on <html>, so src/index.css owns every
    visual difference — no component needs to branch on it.
