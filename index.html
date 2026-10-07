@@ -57,9 +57,107 @@
         }
       })();
     </script>
+    <!-- Styles for the no-JavaScript fallback in #root. With scripts on, that
+         block never renders and React clears it on mount, so none of this is
+         ever visible — it only dresses the text a crawler or a JS-less reader
+         gets instead of an empty page. With scripts off no bundle loads, so the
+         document has no other styling at all: light page, navy text. -->
+    <style>
+      .nojs {
+        max-width: 44rem;
+        margin: 0 auto;
+        padding: 3rem 1.25rem;
+        font: 16px/1.7 system-ui, -apple-system, sans-serif;
+        color: #16204a;
+        background: #fff;
+      }
+      .nojs h1 {
+        font-size: 2.2rem;
+        line-height: 1.15;
+        margin: 0 0 1.25rem;
+      }
+      .nojs h2 {
+        font-size: 1.15rem;
+        margin: 2rem 0 0.5rem;
+      }
+      .nojs ul {
+        padding-left: 1.25rem;
+      }
+      .nojs li {
+        margin-bottom: 0.6rem;
+      }
+      .nojs a {
+        color: #2563eb;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <!--
+      The app is client-rendered, so without this the raw HTML ships an empty
+      #root: no h1, a few dozen words, and a poor text-to-HTML ratio — the three
+      crawler findings. This is the landing page's own copy, verbatim from
+      src/pages/Landing.tsx, as a no-JavaScript fallback.
+
+      It is inert in every normal visit. <noscript> is not rendered while
+      scripting is enabled, so nothing flashes before the bundle loads, and
+      React 18 clears the contents of #root on first render, so no duplicate h1
+      or hidden text survives in the mounted DOM.
+    -->
+    <div id="root"><noscript>
+      <div class="nojs">
+        <h1>The code teacher that runs your code</h1>
+        <p>
+          Codexter is a 100% free code teacher. Interactive JavaScript lessons with a
+          built-in editor, console and self-checking exercises take you from your first
+          <code>console.log</code> to real programs — and every exercise runs in your
+          browser, so there is nothing to install.
+        </p>
+
+        <h2>17 tracks · 103 hands-on lessons</h2>
+        <p>
+          Start at the top if you're new: Web Development Foundations, then Modern
+          Frontend with React. Every lesson ends with code you ran yourself and a quiz
+          you passed. One free account keeps every score, streak and badge across
+          devices — no paywall, no card.
+        </p>
+        <ul>
+          <li>
+            <strong>Learn by running real code.</strong> Every lesson ships with a live
+            editor and console. No videos — you write JavaScript from minute one.
+          </li>
+          <li>
+            <strong>A Socratic tutor.</strong> Stuck? It asks the question that unsticks
+            you, and never writes your code.
+          </li>
+          <li>
+            <strong>Exercises that verify themselves.</strong> Each lesson checks your
+            output automatically, so you always know whether you actually got it.
+          </li>
+          <li>
+            <strong>Quizzes that lock it in.</strong> Short quizzes with explanations at
+            the end of every lesson; score 100% to mark it complete.
+          </li>
+          <li><strong>100% free, forever.</strong> No trial, no paywall, no ads.</li>
+        </ul>
+
+        <h2>Where to go next</h2>
+        <p>
+          Ready to write your first line? It takes about five minutes to finish your
+          first lesson — that's it, that's the pitch.
+          <a href="/auth?returnTo=%2Flearn">Create your free account</a>, or
+          <a href="/auth">sign in</a> if you already have one.
+        </p>
+        <p>
+          Further in: TypeScript for Real Projects, Data Structures &amp; Algorithms,
+          Python &amp; Data Fundamentals, Backend Systems &amp; APIs, Testing &amp;
+          Debugging, Git, GitHub &amp; Workflows, Web Security &amp; OWASP, DevOps, Linux
+          CLI &amp; Cloud, UI Engineering with Tailwind CSS, Web Performance &amp;
+          Accessibility, Advanced React State Management, API Integration &amp; Data
+          Fetching, System Design &amp; Architecture, Professional Workflow, and Working
+          with Coding Agents.
+        </p>
+      </div>
+    </noscript></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
