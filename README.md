@@ -1,4 +1,4 @@
-# Codexter
+# Codextor
 
 > **A 100% free, interactive code teacher.** Seventeen tracks, 103 hands-on lessons —
 > you write and run real code from minute one, in the browser, with easy signup.
