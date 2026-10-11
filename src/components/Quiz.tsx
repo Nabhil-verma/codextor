@@ -88,6 +88,7 @@ export default function Quiz({ questions, onScore }: Props) {
         ) : (
           <>
             <span
+              role="status"
               className={
                 "font-mono text-sm font-bold " +
                 (score === 1 ? "text-gold-600" : "text-ink-600")

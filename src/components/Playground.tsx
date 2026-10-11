@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { runUserCode, evaluateCheck, type RunResult } from "../lib/runner";
 // Type-only: erased at compile time, so the TS compiler chunk stays lazy.
 import type { TsDiagnostic } from "../lib/tsRunner";
@@ -6,6 +6,8 @@ import type { Check } from "../data/types";
 import HintLadder from "./HintLadder";
 import ErrorNote from "./ErrorNote";
 import TraceVisualizer from "./TraceVisualizer";
+import { TAB_HINT, useTabTrapEscape } from "../lib/useTabTrapEscape";
+import { summarizeRun } from "../lib/runSummary";
 
 type Props = {
   starter: string;
@@ -24,6 +26,8 @@ type Props = {
    * compiler before running; `python` executes in a Pyodide worker.
    */
   lang?: "ts" | "python";
+  /** Lesson or exercise title; becomes the editor's accessible name. */
+  label?: string;
 };
 
 type Outcome = RunResult & { typeErrors?: TsDiagnostic[] };
@@ -35,6 +39,7 @@ export default function Playground({
   onCodeChange,
   lang,
   pythonPrelude,
+  label,
 }: Props) {
   const [code, setCode] = useState(starter);
   const [result, setResult] = useState<Outcome | null>(null);
@@ -42,7 +47,9 @@ export default function Playground({
   const [passed, setPassed] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [showTrace, setShowTrace] = useState(false);
+  const [announce, setAnnounce] = useState("");
   const taRef = useRef<HTMLTextAreaElement>(null);
+  const hintId = useId();
 
   /*
    * Pyodide's first load is ~10–14 MB, so it starts when the exercise mounts
@@ -71,6 +78,7 @@ export default function Playground({
             })
           : await runUserCode(code);
     setResult(r);
+    setAnnounce(summarizeRun(r));
     if (check) {
       const ok =
         !r.error &&
@@ -91,6 +99,13 @@ export default function Playground({
     setAttempts(0);
   };
 
+  const tab = useTabTrapEscape(taRef, code, {
+    onIndent: (next, caret) => {
+      update(next);
+      requestAnimationFrame(() => taRef.current?.setSelectionRange(caret, caret));
+    },
+  });
+
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // Cmd/Ctrl+Enter runs the code
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
@@ -98,16 +113,7 @@ export default function Playground({
       void run();
       return;
     }
-    // Tab inserts two spaces instead of leaving the textarea
-    if (e.key === "Tab") {
-      e.preventDefault();
-      const ta = taRef.current;
-      if (!ta) return;
-      const { selectionStart: s, selectionEnd: end } = ta;
-      const next = code.slice(0, s) + "  " + code.slice(end);
-      update(next);
-      requestAnimationFrame(() => ta.setSelectionRange(s + 2, s + 2));
-    }
+    tab.handleKeyDown(e);
   };
 
   // Hints appear after two failed runs — struggle a little first.
@@ -153,6 +159,9 @@ export default function Playground({
           onKeyDown={onKeyDown}
           spellCheck={false}
           rows={Math.max(8, Math.min(24, code.split("\n").length + 1))}
+          aria-label={label ? `Code editor: ${label}` : "Code editor"}
+          aria-describedby={hintId}
+          onBlur={tab.onBlur}
           className="block w-full resize-y bg-ink-950 p-5 font-mono text-[13px] leading-relaxed text-paper-100 outline-none placeholder:text-ink-600"
           placeholder={
             lang === "ts"
@@ -163,6 +172,17 @@ export default function Playground({
           }
         />
       </div>
+
+      <p id={hintId} className="-mt-2 font-mono text-[11px] text-ink-500">
+        {tab.escaped
+          ? "Tab moves focus now. Press Esc to bring back Tab indenting."
+          : TAB_HINT}
+      </p>
+
+      {/* One summary per run, announced politely; console lines stay silent. */}
+      <p role="status" className="sr-only">
+        {announce}
+      </p>
 
       {/* Type errors get an editor-style problems panel of their own */}
       {lang === "python" && (
@@ -191,7 +211,12 @@ export default function Playground({
         <div className="border-b border-ink-800 px-4 py-2.5 font-mono text-xs text-ink-600">
           console
         </div>
-        <div className="max-h-72 overflow-auto p-5 font-mono text-[13px] leading-relaxed">
+        <div
+          role="log"
+          aria-label="Console output"
+          aria-live="off"
+          className="max-h-72 overflow-auto p-5 font-mono text-[13px] leading-relaxed"
+        >
           {!result && <p className="text-ink-600">// press Run to see output</p>}
           {result?.error && <ErrorNote raw={result.error} />}
           {result?.logs.map((line, i) => (
@@ -214,13 +239,14 @@ export default function Playground({
       </div>
 
       {result && lang === "ts" && (result.typeErrors?.length ?? 0) === 0 && (
-        <p className="-mt-2 font-mono text-xs text-emerald-300">
+        <p role="status" className="-mt-2 font-mono text-xs text-emerald-300">
           ✓ type check passed
         </p>
       )}
 
       {check && (
         <div
+          role="status"
           className={
             "rounded-2xl border px-5 py-4 text-sm transition-all duration-500 ease-snap " +
             (passed

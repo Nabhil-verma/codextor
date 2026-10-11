@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import {
   AnimatePresence,
   motion,
@@ -7,8 +7,10 @@ import {
 } from "framer-motion";
 import { runUserCode, evaluateCheck, type RunResult } from "../lib/runner";
 import { taxonomyEntry, type TaxonomyCode } from "../data/bug-taxonomy";
+import { summarizeRun } from "../lib/runSummary";
 import type { DebugChallenge } from "../data/types";
 import ErrorNote from "./ErrorNote";
+import { TAB_HINT, useTabTrapEscape } from "../lib/useTabTrapEscape";
 
 /* ═══════════════════════════════════════════════════════════════
    The break-and-fix lab. Unlike a quiz there are no options to
@@ -39,6 +41,8 @@ export default function DebugLab({ challenge, onPass, onScore }: Props) {
   const [showSolution, setShowSolution] = useState(false);
   const [diagPick, setDiagPick] = useState<TaxonomyCode | null>(null);
   const [diagResult, setDiagResult] = useState<"none" | "right" | "wrong">("none");
+  const [announce, setAnnounce] = useState("");
+  const hintId = useId();
 
   const shake = useAnimationControls();
   const pop = useAnimationControls();
@@ -50,6 +54,7 @@ export default function DebugLab({ challenge, onPass, onScore }: Props) {
     setRunning(true);
     const r = await runUserCode(code);
     setResult(r);
+    setAnnounce(summarizeRun(r));
     setAttempts((a) => a + 1);
     const ok = !r.error && evaluateCheck(challenge.fixCheck, r.logs.join("\n"));
     setPassed(ok);
@@ -94,20 +99,20 @@ export default function DebugLab({ challenge, onPass, onScore }: Props) {
     if (right && !passed) onScore?.(0.5);
   };
 
+  const tab = useTabTrapEscape(taRef, code, {
+    onIndent: (next, caret) => {
+      setCode(next);
+      requestAnimationFrame(() => taRef.current?.setSelectionRange(caret, caret));
+    },
+  });
+
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
       e.preventDefault();
       void run();
       return;
     }
-    if (e.key === "Tab") {
-      e.preventDefault();
-      const ta = taRef.current;
-      if (!ta) return;
-      const { selectionStart: s, selectionEnd: end } = ta;
-      setCode(code.slice(0, s) + "  " + code.slice(end));
-      requestAnimationFrame(() => ta.setSelectionRange(s + 2, s + 2));
-    }
+    tab.handleKeyDown(e);
   };
 
   const edited = code !== challenge.broken;
@@ -178,7 +183,9 @@ export default function DebugLab({ challenge, onPass, onScore }: Props) {
           onKeyDown={onKeyDown}
           spellCheck={false}
           rows={Math.max(8, Math.min(26, code.split("\n").length + 1))}
-          aria-label="Broken program — edit to fix it"
+          aria-label={`Code editor: ${challenge.title}`}
+          aria-describedby={hintId}
+          onBlur={tab.onBlur}
           className="block w-full resize-y bg-ink-950 p-5 font-mono text-[13px] leading-relaxed text-paper-100 outline-none placeholder:text-ink-600"
         />
       </div>
@@ -188,7 +195,12 @@ export default function DebugLab({ challenge, onPass, onScore }: Props) {
         <div className="border-b border-ink-800 px-4 py-2.5 font-mono text-xs text-ink-600">
           console
         </div>
-        <div className="max-h-60 overflow-auto p-5 font-mono text-[13px] leading-relaxed">
+        <div
+          role="log"
+          aria-label="Console output"
+          aria-live="off"
+          className="max-h-60 overflow-auto p-5 font-mono text-[13px] leading-relaxed"
+        >
           {!result && (
             <p className="text-ink-600">
               // run the program to see what it actually does — the bug is
@@ -213,10 +225,18 @@ export default function DebugLab({ challenge, onPass, onScore }: Props) {
         </div>
       </div>
 
+      <p id={hintId} className="px-5 pt-3 font-mono text-[11px] text-ink-500">
+        {TAB_HINT}
+      </p>
+      <p role="status" className="sr-only">
+        {announce}
+      </p>
+
       {/* Verdict */}
       <AnimatePresence mode="wait">
         {result && (
           <motion.div
+            role="status"
             key={passed ? "pass" : "fail"}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}

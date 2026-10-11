@@ -10,11 +10,26 @@ const SETTINGS_KEY = "cl_ai_settings";
 
 export type AiProvider = "gemini" | "claude" | null;
 
+type KeyedProvider = "gemini" | "claude";
+
+/** Models a student can pick per provider. The first entry is the default. */
+export const MODEL_OPTIONS: Record<KeyedProvider, { id: string; label: string }[]> = {
+  gemini: [{ id: "gemini-2.0-flash", label: "Gemini 2.0 Flash (default)" }],
+  claude: [{ id: "claude-sonnet-4-20250514", label: "Claude Sonnet 4 (default)" }],
+};
+
+export const DEFAULT_MODEL: Record<KeyedProvider, string> = {
+  gemini: MODEL_OPTIONS.gemini[0].id,
+  claude: MODEL_OPTIONS.claude[0].id,
+};
+
 export type AiSettings = {
   /** Which provider is active (null = AI disabled). */
   provider: AiProvider;
   /** API keys keyed by provider slug. */
-  keys: Partial<Record<"gemini" | "claude", string>>;
+  keys: Partial<Record<KeyedProvider, string>>;
+  /** Chosen model per provider; missing or unknown entries use the default. */
+  models: Partial<Record<KeyedProvider, string>>;
   /** Student's name for the tutor to use. */
   tutorName: string;
 };
@@ -22,8 +37,16 @@ export type AiSettings = {
 const DEFAULTS: AiSettings = {
   provider: null,
   keys: {},
+  models: {},
   tutorName: "",
 };
+
+/** The model to call for a provider: the stored choice if still offered, else the default. */
+export function modelFor(s: AiSettings, provider: KeyedProvider): string {
+  const chosen = s.models[provider];
+  const offered = MODEL_OPTIONS[provider].some((m) => m.id === chosen);
+  return offered && chosen ? chosen : DEFAULT_MODEL[provider];
+}
 
 /**
  * A stored settings blob is only trusted field by field: an unknown provider
@@ -43,9 +66,20 @@ function parseSettings(raw: string | null): AiSettings {
       }
     }
   }
+  const rawModels = stored.models;
+  const models: AiSettings["models"] = {};
+  if (rawModels && typeof rawModels === "object") {
+    for (const name of ["gemini", "claude"] as const) {
+      const value = (rawModels as Record<string, unknown>)[name];
+      if (typeof value === "string" && MODEL_OPTIONS[name].some((m) => m.id === value)) {
+        models[name] = value;
+      }
+    }
+  }
   return {
     provider,
     keys,
+    models,
     tutorName: typeof stored.tutorName === "string" ? stored.tutorName : DEFAULTS.tutorName,
   };
 }
@@ -98,12 +132,17 @@ export async function callAi(
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   try {
     if (s.provider === "gemini") {
-      return await callGemini(messages, s.keys.gemini!, controller.signal);
+      return await callGemini(messages, s.keys.gemini!, modelFor(s, "gemini"), controller.signal);
     }
-    return await callClaude(messages, s.keys.claude!, controller.signal);
+    return await callClaude(messages, s.keys.claude!, modelFor(s, "claude"), controller.signal);
   } catch (err) {
     if (controller.signal.aborted) {
       throw new Error("The AI provider didn't respond in time — try again.");
+    }
+    // fetch() rejects with a TypeError only when no response arrives at all.
+    if (err instanceof TypeError) {
+      const name = s.provider === "gemini" ? "Google Gemini" : "Anthropic Claude";
+      throw new Error(`Couldn't reach ${name}. Check your internet connection and try again.`);
     }
     throw err;
   } finally {
@@ -111,9 +150,57 @@ export async function callAi(
   }
 }
 
+/**
+ * Plain-English reason for a failed provider call. Used by the tutor and by
+ * the "Test key" button, so students see what to fix instead of a raw status.
+ */
+export function explainProviderError(
+  provider: KeyedProvider,
+  model: string,
+  status: number,
+  body = "",
+): string {
+  const name = provider === "gemini" ? "Google Gemini" : "Anthropic Claude";
+  if (status === 401 || status === 403) {
+    return `${name} rejected the API key. Check that you pasted the whole key in Settings.`;
+  }
+  if (status === 429) {
+    return `${name} is rate-limiting this key right now. Wait a minute and try again.`;
+  }
+  if (status === 404 || (status === 400 && /model/i.test(body))) {
+    return `${name} doesn't accept the model \"${model}\". Pick another model in Settings.`;
+  }
+  if (status >= 500) {
+    return `${name} is having trouble right now (error ${status}). Try again later.`;
+  }
+  return `${name} returned an error (${status}).`;
+}
+
+/**
+ * Sends a one-word ping with the given key. Resolves when the provider
+ * accepts it; rejects with a plain-English reason otherwise.
+ */
+export async function testKey(
+  provider: KeyedProvider,
+  apiKey: string,
+  model?: string,
+): Promise<void> {
+  const reply = await callAi(
+    [{ role: "user", content: "Reply with the single word OK." }],
+    {
+      provider,
+      keys: { [provider]: apiKey },
+      models: model ? { [provider]: model } : {},
+      tutorName: "",
+    },
+  );
+  if (!reply.trim()) throw new Error("The provider answered, but with an empty reply.");
+}
+
 async function callGemini(
   messages: TutorMessage[],
   apiKey: string,
+  model: string,
   signal: AbortSignal,
 ): Promise<string> {
   // Convert our message format to Gemini's API format
@@ -131,11 +218,16 @@ async function callGemini(
     body.systemInstruction = { parts: [{ text: systemInstruction.content }] };
   }
 
+  // The key travels in a header, never the URL: query strings end up in
+  // proxy logs, referrers and devtools history.
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": apiKey,
+      },
       body: JSON.stringify(body),
       signal,
     },
@@ -143,7 +235,7 @@ async function callGemini(
 
   if (!res.ok) {
     const err = await res.text().catch(() => "");
-    throw new Error(`Gemini API error (${res.status}): ${err.slice(0, 200)}`);
+    throw new Error(explainProviderError("gemini", model, res.status, err));
   }
 
   const data = await res.json();
@@ -155,6 +247,7 @@ async function callGemini(
 async function callClaude(
   messages: TutorMessage[],
   apiKey: string,
+  model: string,
   signal: AbortSignal,
 ): Promise<string> {
   const system = messages.find((m) => m.role === "system")?.content ?? "";
@@ -172,7 +265,7 @@ async function callClaude(
     },
     signal,
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
+      model,
       max_tokens: 1024,
       system,
       messages: chatMessages,
@@ -181,7 +274,7 @@ async function callClaude(
 
   if (!res.ok) {
     const err = await res.text().catch(() => "");
-    throw new Error(`Claude API error (${res.status}): ${err.slice(0, 200)}`);
+    throw new Error(explainProviderError("claude", model, res.status, err));
   }
 
   const data = await res.json();

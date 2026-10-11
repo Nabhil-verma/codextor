@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import {
   loadAiSettings,
   saveAiSettings,
+  modelFor,
+  MODEL_OPTIONS,
+  testKey,
   type AiSettings,
   type AiProvider,
 } from "../lib/ai";
@@ -27,6 +30,9 @@ export default function AiSettingsModal({
 }) {
   const [settings, setSettings] = useState<AiSettings>(loadAiSettings);
   const [saved, setSaved] = useState(false);
+  const [test, setTest] = useState<{ state: "idle" | "testing" | "ok" | "error"; message: string }>(
+    { state: "idle", message: "" },
+  );
   const firstRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -41,6 +47,22 @@ export default function AiSettingsModal({
   const update = (patch: Partial<AiSettings>) => {
     setSettings((prev) => ({ ...prev, ...patch }));
     setSaved(false);
+    setTest({ state: "idle", message: "" });
+  };
+
+  const runTest = async () => {
+    if (!settings.provider) return;
+    const provider = settings.provider;
+    setTest({ state: "testing", message: "" });
+    try {
+      await testKey(provider, settings.keys[provider]!.trim(), modelFor(settings, provider));
+      setTest({ state: "ok", message: "Key works. The tutor is ready." });
+    } catch (err) {
+      setTest({
+        state: "error",
+        message: err instanceof Error ? err.message : "Something went wrong.",
+      });
+    }
   };
 
   const handleSave = () => {
@@ -109,6 +131,12 @@ export default function AiSettingsModal({
           for Google Gemini or Anthropic Claude. Keys stay in your browser and are sent
           only to the provider you choose.
         </p>
+        <p className="mt-3 rounded-xl border border-gold-400/30 bg-gold-400/5 px-4 py-3 text-xs leading-relaxed text-ink-700">
+          <strong className="font-semibold text-ink-950">What gets sent:</strong> when you
+          ask the tutor, up to 2,000 characters of your current code, its console output
+          and the last error, plus your recent questions, go to the provider you chose.
+          Don't paste anything private into the tutor.
+        </p>
 
         {/* Provider toggle */}
         <div className="mt-6 space-y-3">
@@ -168,6 +196,46 @@ export default function AiSettingsModal({
                   ? "Get a key at aistudio.google.com"
                   : "Get a key at console.anthropic.com"}
               </p>
+              <div className="mt-2 flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => void runTest()}
+                  disabled={!hasKey(settings.provider) || test.state === "testing"}
+                  className="btn-ghost !px-4 !py-1.5 text-xs disabled:opacity-50"
+                >
+                  {test.state === "testing" ? "Testing…" : "Test key"}
+                </button>
+                <span
+                  role="status"
+                  className={`text-xs ${test.state === "ok" ? "text-green-600" : "text-red-600"}`}
+                >
+                  {test.state === "ok" || test.state === "error" ? test.message : ""}
+                </span>
+              </div>
+            </div>
+            <div>
+              <label
+                htmlFor="ai-model"
+                className="mb-1 block font-mono text-[11px] uppercase tracking-widest text-ink-500"
+              >
+                Model
+              </label>
+              <select
+                id="ai-model"
+                value={modelFor(settings, settings.provider)}
+                onChange={(e) =>
+                  update({
+                    models: { ...settings.models, [settings.provider!]: e.target.value },
+                  })
+                }
+                className={inputCls}
+              >
+                {MODEL_OPTIONS[settings.provider].map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.label}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         )}

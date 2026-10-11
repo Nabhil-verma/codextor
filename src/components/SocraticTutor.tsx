@@ -16,6 +16,8 @@ type Props = {
   logs?: string[];
   /** Lesson topic for context. */
   topic?: string;
+  /** Language of the lesson's code, used to label the code fence sent to the tutor. */
+  lang?: "js" | "ts" | "python" | "bash" | "sql";
 };
 
 const SOCRATIC_SYSTEM = `You are a Socratic programming tutor. Your ONLY job is to guide the student toward discovering the answer themselves.
@@ -35,6 +37,22 @@ CRITICAL RULES:
 const MAX_TURNS = 12;
 
 /** Clip lesson context so one huge console dump can't blow the context window. */
+/** Markdown fence label for the lesson language; unknown values fall back to javascript. */
+export function fenceLang(lang: Props["lang"]): string {
+  switch (lang) {
+    case "ts":
+      return "typescript";
+    case "python":
+      return "python";
+    case "bash":
+      return "bash";
+    case "sql":
+      return "sql";
+    default:
+      return "javascript";
+  }
+}
+
 function clip(text: string, max: number): string {
   return text.length <= max ? text : text.slice(0, max) + "\n… (truncated)";
 }
@@ -46,6 +64,7 @@ export default function SocraticTutor({
   error,
   logs,
   topic,
+  lang,
 }: Props) {
   const [messages, setMessages] = useState<TutorMessage[]>([]);
   const [input, setInput] = useState("");
@@ -65,7 +84,7 @@ export default function SocraticTutor({
       const name = settings.tutorName || "student";
       const systemMsg: TutorMessage = {
         role: "system",
-        content: `${SOCRATIC_SYSTEM}\n\nContext: The student${name ? ` (${name})` : ""} is working${topic ? ` on "${topic}"` : ""}.\n\nTheir current code:\n\`\`\`javascript\n${clip(code, 2000)}\n\`\`\`\n\n${checkExpr ? `Exercise goal (check expression): ${checkExpr}` : ""}\n${checkHint ? `Exercise hint: ${checkHint}` : ""}\n${error ? `Last error: ${error}` : ""}\n${logs?.length ? `Console output:\n${clip(logs.slice(-40).join("\n"), 1500)}` : ""}`,
+        content: `${SOCRATIC_SYSTEM}\n\nContext: The student${name ? ` (${name})` : ""} is working${topic ? ` on "${topic}"` : ""}.\n\nTheir current code:\n\`\`\`${fenceLang(lang)}\n${clip(code, 2000)}\n\`\`\`\n\n${checkExpr ? `Exercise goal (check expression): ${checkExpr}` : ""}\n${checkHint ? `Exercise hint: ${checkHint}` : ""}\n${error ? `Last error: ${error}` : ""}\n${logs?.length ? `Console output:\n${clip(logs.slice(-40).join("\n"), 1500)}` : ""}`,
       };
 
       // Sliding window: only the most recent turns go to the provider.

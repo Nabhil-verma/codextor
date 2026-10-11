@@ -203,6 +203,7 @@ export default function Lesson() {
                     check={lesson.check}
                     lang={lesson.lang}
                     pythonPrelude={lesson.pythonPrelude}
+                    label={lesson.title}
                     onPass={() => setExerciseDone(true)}
                   />
                 </section>
@@ -215,6 +216,7 @@ export default function Lesson() {
                     checkExpr={lesson.check?.expr}
                     checkHint={lesson.check?.hint}
                     topic={lesson.title}
+                    lang={lesson.lang}
                   />
                 </section>
               </Reveal>
