@@ -206,7 +206,7 @@ async function injectCompiler(): Promise<Compiler> {
     script.onload = () => resolve();
     script.onerror = () => {
       script.remove();
-      reject(new Error(`Could not load the TypeScript compiler from ${COMPILER_URL}`));
+      reject(new Error(`Could not load the TypeScript compiler from ${COMPILER_URL}. Check your connection and press Run again.`));
     };
     document.head.appendChild(script);
   });
