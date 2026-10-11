@@ -93,8 +93,15 @@ async function membersOf(
 
 export type ClanRole = "owner" | "officer" | "member";
 
+/**
+ * `profileId` is public and links to the member's profile. `userId` is only
+ * filled in for callers who are members of the same guild, because the
+ * officer actions (promote, kick) address members by account. Everyone else
+ * gets null.
+ */
 type ClanMember = {
-  userId: Id<"users">;
+  profileId: Id<"profiles">;
+  userId: Id<"users"> | null;
   name: string;
   xp: number;
   level: number;
@@ -130,6 +137,8 @@ function view(
   const sorted = [...members].sort((a, b) => b.xp - a.xp);
   const totalXp = sorted.reduce((n, m) => n + m.xp, 0);
   const mine = meId === null ? undefined : sorted.find((m) => m.userId === meId);
+  // Account ids are shown only to people who are in this guild.
+  const seesIds = mine !== undefined;
   return {
     id: c._id,
     name: c.name,
@@ -144,7 +153,8 @@ function view(
     isOwner: meId !== null && c.ownerId === meId,
     myRole: mine ? roleOf(mine, c) : "member",
     members: sorted.slice(0, 12).map((m) => ({
-      userId: m.userId,
+      profileId: m._id,
+      userId: seesIds ? m.userId : null,
       name: m.name,
       xp: m.xp,
       level: m.level,

@@ -269,3 +269,28 @@ export const setTitle = mutation({
     if (row) await ctx.db.patch(row._id, { title: clean || undefined });
   },
 });
+
+/**
+ * The public profile page. Everything it returns is already public on the
+ * leaderboard — name, level, title, XP, streak, lessons, guild name and tag —
+ * and nothing that identifies the account: no userId, no email, no sync
+ * bookkeeping, no clamp audit, no guild role. Unknown ids return null.
+ */
+export const publicCard = query({
+  args: { profileId: v.id("profiles") },
+  handler: async (ctx, { profileId }) => {
+    const p = await ctx.db.get(profileId);
+    if (!p) return null;
+    const clan = p.clanId ? await ctx.db.get(p.clanId) : null;
+    return {
+      name: p.name,
+      level: p.level,
+      ascension: p.ascension,
+      title: p.title ?? null,
+      xp: p.xp,
+      streakLongest: p.streakLongest,
+      lessonsDone: p.lessonsDone,
+      clan: clan ? { name: clan.name, tag: clan.tag } : null,
+    };
+  },
+});

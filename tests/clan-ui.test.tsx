@@ -138,9 +138,9 @@ const guild: ClanView = {
   isOwner: true,
   myRole: "owner",
   members: [
-    { userId: "u_ada" as never, name: "Ada", xp: 2200, level: 4, ascension: "adept", role: "owner", isMe: true },
-    { userId: "u_lin" as never, name: "Lin", xp: 700, level: 2, ascension: "apprentice", role: "officer", isMe: false },
-    { userId: "u_sam" as never, name: "Sam", xp: 300, level: 1, ascension: "initiate", role: "member", isMe: false },
+    { profileId: "p_ada" as never, userId: "u_ada" as never, name: "Ada", xp: 2200, level: 4, ascension: "adept", role: "owner", isMe: true },
+    { profileId: "p_lin" as never, userId: "u_lin" as never, name: "Lin", xp: 700, level: 2, ascension: "apprentice", role: "officer", isMe: false },
+    { profileId: "p_sam" as never, userId: "u_sam" as never, name: "Sam", xp: 300, level: 1, ascension: "initiate", role: "member", isMe: false },
   ],
 };
 

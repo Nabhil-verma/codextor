@@ -6,6 +6,8 @@ import { Orb, Tilt } from "../components/motion";
 import { MANIFEST_TRACKS as tracks, lessonKey } from "../data/manifest";
 import { scoreFor, useProgressState } from "../lib/progress";
 import { useAccount } from "../AccountProvider";
+import { useMutation } from "convex/react";
+import { api } from "../convex/_generated/api";
 
 /** Long date like "September 13, 2026" for the certificate line. */
 function longDate(iso: string): string {
@@ -31,6 +33,25 @@ export default function Certificate() {
       return "";
     }
   });
+
+  const issue = useMutation(api.certificates.issue);
+  const [issued, setIssued] = useState<string | null>(null);
+  const [issueError, setIssueError] = useState<string | null>(null);
+  const [issuing, setIssuing] = useState(false);
+
+  async function getVerified() {
+    if (!track) return;
+    setIssuing(true);
+    setIssueError(null);
+    try {
+      const cert = await issue({ trackId: track.id, displayName: name.trim() || undefined });
+      setIssued(cert.code);
+    } catch (e) {
+      setIssueError(e instanceof Error ? e.message.replace(/^.*?: /, "") : "Could not issue the certificate.");
+    } finally {
+      setIssuing(false);
+    }
+  }
 
   useEffect(() => {
     try {
@@ -175,6 +196,35 @@ export default function Certificate() {
                 Back to lessons
               </Link>
             </motion.div>
+
+            <div className="mx-auto mt-6 max-w-xl text-center">
+              {issued ? (
+                <p className="font-mono text-sm text-ink-700">
+                  Verified. Code <strong>{issued}</strong> ·{" "}
+                  <Link to={"/verify/" + issued} className="text-gold-600 underline">
+                    check it
+                  </Link>
+                </p>
+              ) : user ? (
+                <>
+                  <button type="button" onClick={() => void getVerified()} disabled={issuing} className="btn-gold">
+                    {issuing ? "Issuing…" : "Get a verified certificate"}
+                  </button>
+                  {issueError && (
+                    <p role="alert" className="mt-3 text-sm text-rose-700">
+                      {issueError}
+                    </p>
+                  )}
+                  <p className="mt-3 font-mono text-[11px] text-ink-600">
+                    A verified certificate gets a code anyone can check. It shows your display name and the track, and not your account.
+                  </p>
+                </>
+              ) : (
+                <Link to={"/auth?returnTo=" + encodeURIComponent("/certificate/" + track.id)} className="btn-ghost">
+                  Sign in to get a verified certificate
+                </Link>
+              )}
+            </div>
             <p className="mt-4 text-center font-mono text-xs text-ink-600">
               Printed copies include today's date. Your name is saved on this device.
             </p>

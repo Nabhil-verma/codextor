@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useState } from "react";
 import { Trophy } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -135,7 +136,7 @@ function Board({ bracket, limit }: { bracket: Bracket; limit: number }) {
         <AnimatePresence initial={false}>
           {board.map((row) => (
             <motion.li
-              key={row.userId}
+              key={row.profileId}
               layout
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
@@ -170,6 +171,8 @@ function BoardRow({
 }: {
   row: {
     rank: number;
+    /** Set for public board rows; the local fallback row has no profile yet. */
+    profileId?: string;
     name: string;
     xp: number;
     level: number;
@@ -225,9 +228,16 @@ function BoardRow({
 
       <div className="relative z-10 min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="truncate font-display text-sm font-semibold text-ink-950">
-            {row.name}
-          </span>
+          {row.profileId ? (
+            <Link
+              to={"/profile/" + row.profileId}
+              className="truncate font-display text-sm font-semibold text-ink-950 hover:underline"
+            >
+              {row.name}
+            </Link>
+          ) : (
+            <span className="truncate font-display text-sm font-semibold text-ink-950">{row.name}</span>
+          )}
           {row.isMe && (
             <span className="rounded-full bg-gold-400 px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest text-[#030305]">
               you

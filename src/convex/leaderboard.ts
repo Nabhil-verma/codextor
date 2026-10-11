@@ -64,9 +64,14 @@ function xpOf(p: Doc<"profiles">, bracket: Bracket): number {
   return p.xp;
 }
 
+/**
+ * One public board row. `profileId` is the row's identity (it links to the
+ * public profile); the account id is deliberately absent, so the board never
+ * hands out the accounts behind its rows. `isMe` is computed on the server.
+ */
 export type LeaderboardRow = {
   rank: number;
-  userId: Id<"users">;
+  profileId: Id<"profiles">;
   name: string;
   xp: number;
   level: number;
@@ -84,7 +89,7 @@ function toRow(
 ): LeaderboardRow {
   return {
     rank,
-    userId: p.userId,
+    profileId: p._id,
     name: p.name,
     xp: xpOf(p, bracket),
     level: p.level,

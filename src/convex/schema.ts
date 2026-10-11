@@ -149,6 +149,24 @@ export default defineSchema({
     updatedAt: v.optional(v.number()),
   }).index("by_user", ["userId"]),
 
+  /**
+   * A verifiable certificate of completion: one row per (user, track), issued
+   * by `certificates.issue` only after every lesson in the track is scored.
+   * `code` is the public handle that `certificates.verify` looks up. The row
+   * never carries the account: only the display name shown at issue time.
+   * Additive table, so deploying it needs no migration.
+   */
+  certificates: defineTable({
+    userId: v.id("users"),
+    trackId: v.string(),
+    trackTitle: v.string(),
+    code: v.string(),
+    displayName: v.string(),
+    issuedAt: v.number(),
+  })
+    .index("by_user_track", ["userId", "trackId"])
+    .index("by_code", ["code"]),
+
   /** Guild activity feed. Written by profile sync, quest completion, join/leave. */
   clanEvents: defineTable({
     clanId: v.id("clans"),
