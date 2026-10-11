@@ -29,9 +29,11 @@ type Props = {
    * recorded while the lesson stays incomplete until the fix passes.
    */
   onScore?: (score: number) => void;
+  /** Hand-off to the AI tutor with the error and the hint tier already open. */
+  onAskTutor?: (error: string, openHintTier?: number) => void;
 };
 
-export default function DebugLab({ challenge, onPass, onScore }: Props) {
+export default function DebugLab({ challenge, onPass, onScore, onAskTutor }: Props) {
   const [code, setCode] = useState(challenge.broken);
   const [result, setResult] = useState<RunResult | null>(null);
   const [running, setRunning] = useState(false);
@@ -207,7 +209,20 @@ export default function DebugLab({ challenge, onPass, onScore }: Props) {
               often not where you expect
             </p>
           )}
-          {result?.error && <ErrorNote raw={result.error} />}
+          {result?.error && (
+            <ErrorNote
+              raw={result.error}
+              onAskTutor={
+                onAskTutor
+                  ? () =>
+                      onAskTutor(
+                        result.error!,
+                        challenge.hints[revealed - 1]?.tier,
+                      )
+                  : undefined
+              }
+            />
+          )}
           {result?.logs.map((line, i) => (
             <div key={i} className="whitespace-pre-wrap text-paper-300">
               <span className="mr-2 select-none text-gold-500">›</span>

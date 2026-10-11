@@ -1,6 +1,6 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Sparkles } from "lucide-react";
-import { callAi, loadAiSettings, useAiSettings, type TutorMessage } from "../lib/ai";
+import { loadAiSettings, streamAi, useAiSettings, type TutorMessage } from "../lib/ai";
 import SocraticChatBubble from "./ui/SocraticChatBubble";
 
 type Props = {
@@ -18,6 +18,10 @@ type Props = {
   topic?: string;
   /** Language of the lesson's code, used to label the code fence sent to the tutor. */
   lang?: "js" | "ts" | "python" | "bash" | "sql";
+  /** Hint tier the learner has already opened, if any, so the tutor won't repeat it. */
+  openHintTier?: number;
+  /** A question to send once automatically, e.g. from the error hand-off. */
+  autoAsk?: { id: number; text: string };
 };
 
 const SOCRATIC_SYSTEM = `You are a Socratic programming tutor. Your ONLY job is to guide the student toward discovering the answer themselves.
@@ -65,6 +69,8 @@ export default function SocraticTutor({
   logs,
   topic,
   lang,
+  openHintTier,
+  autoAsk,
 }: Props) {
   const [messages, setMessages] = useState<TutorMessage[]>([]);
   const [input, setInput] = useState("");
@@ -84,7 +90,7 @@ export default function SocraticTutor({
       const name = settings.tutorName || "student";
       const systemMsg: TutorMessage = {
         role: "system",
-        content: `${SOCRATIC_SYSTEM}\n\nContext: The student${name ? ` (${name})` : ""} is working${topic ? ` on "${topic}"` : ""}.\n\nTheir current code:\n\`\`\`${fenceLang(lang)}\n${clip(code, 2000)}\n\`\`\`\n\n${checkExpr ? `Exercise goal (check expression): ${checkExpr}` : ""}\n${checkHint ? `Exercise hint: ${checkHint}` : ""}\n${error ? `Last error: ${error}` : ""}\n${logs?.length ? `Console output:\n${clip(logs.slice(-40).join("\n"), 1500)}` : ""}`,
+        content: `${SOCRATIC_SYSTEM}\n\nContext: The student${name ? ` (${name})` : ""} is working${topic ? ` on "${topic}"` : ""}.\n\nTheir current code:\n\`\`\`${fenceLang(lang)}\n${clip(code, 2000)}\n\`\`\`\n\n${checkExpr ? `Exercise goal (check expression): ${checkExpr}` : ""}\n${checkHint ? `Exercise hint: ${checkHint}` : ""}\n${openHintTier ? `They have already opened hint tier ${openHintTier} — don't repeat it.` : ""}\n${error ? `Last error: ${error}` : ""}\n${logs?.length ? `Console output:\n${clip(logs.slice(-40).join("\n"), 1500)}` : ""}`,
       };
 
       // Sliding window: only the most recent turns go to the provider.
@@ -104,27 +110,67 @@ export default function SocraticTutor({
       setInput("");
       setBusy(true);
 
+      // The reply streams in, so the bubble grows as text arrives instead of
+      // leaving the learner on a spinner for up to 45 seconds.
+      let streamed = "";
+      let appended = false;
+      const scrollToEnd = () =>
+        requestAnimationFrame(() => {
+          // jsdom and older browsers have no Element.scrollTo.
+          const el = scrollRef.current;
+          if (el && typeof el.scrollTo === "function") {
+            el.scrollTo(0, el.scrollHeight);
+          }
+        });
+
+      const fail = (content: string) =>
+        setMessages((prev) => {
+          if (!appended) return [...prev, { role: "assistant", content }];
+          const next = prev.slice();
+          next[next.length - 1] = { role: "assistant", content };
+          return next;
+        });
+
       try {
-        const reply = await callAi(newMessages, settings);
-        setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
+        await streamAi(
+          newMessages,
+          (delta) => {
+            streamed += delta;
+            if (!appended) {
+              appended = true;
+              setMessages((prev) => [...prev, { role: "assistant", content: streamed }]);
+            } else {
+              const text = streamed;
+              setMessages((prev) => {
+                const next = prev.slice();
+                next[next.length - 1] = { role: "assistant", content: text };
+                return next;
+              });
+            }
+            scrollToEnd();
+          },
+          settings,
+        );
       } catch (err) {
         const errMsg = err instanceof Error ? err.message : "AI call failed";
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content: `[${errMsg.includes("API") ? "API Error" : "Error"}] ${errMsg}. Check your API key in Settings.`,
-          },
-        ]);
+        fail(
+          `[${errMsg.includes("API") ? "API Error" : "Error"}] ${errMsg}. Check your API key in Settings.`,
+        );
       } finally {
         setBusy(false);
-        requestAnimationFrame(() => {
-          scrollRef.current?.scrollTo(0, scrollRef.current.scrollHeight);
-        });
+        scrollToEnd();
       }
     },
-    [code, checkExpr, checkHint, error, logs, messages, topic],
+    [code, checkExpr, checkHint, error, logs, messages, topic, lang, openHintTier],
   );
+
+  // The error hand-off asks a question for the learner; fire it exactly once.
+  const handledAutoAsk = useRef<number | null>(null);
+  useEffect(() => {
+    if (!autoAsk || handledAutoAsk.current === autoAsk.id) return;
+    handledAutoAsk.current = autoAsk.id;
+    void askTutor(autoAsk.text);
+  }, [autoAsk, askTutor]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {

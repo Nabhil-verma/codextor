@@ -28,6 +28,11 @@ type Props = {
   lang?: "ts" | "python";
   /** Lesson or exercise title; becomes the editor's accessible name. */
   label?: string;
+  /**
+   * Hand-off to the AI tutor, called with the raw error and the hint tier the
+   * learner has already opened (if any).
+   */
+  onAskTutor?: (error: string, openHintTier?: number) => void;
 };
 
 type Outcome = RunResult & { typeErrors?: TsDiagnostic[] };
@@ -40,6 +45,7 @@ export default function Playground({
   lang,
   pythonPrelude,
   label,
+  onAskTutor,
 }: Props) {
   const [code, setCode] = useState(starter);
   const [result, setResult] = useState<Outcome | null>(null);
@@ -48,6 +54,7 @@ export default function Playground({
   const [attempts, setAttempts] = useState(0);
   const [showTrace, setShowTrace] = useState(false);
   const [announce, setAnnounce] = useState("");
+  const [openHintTier, setOpenHintTier] = useState<number | undefined>(undefined);
   const taRef = useRef<HTMLTextAreaElement>(null);
   const hintId = useId();
 
@@ -218,7 +225,16 @@ export default function Playground({
           className="max-h-72 overflow-auto p-5 font-mono text-[13px] leading-relaxed"
         >
           {!result && <p className="text-ink-600">// press Run to see output</p>}
-          {result?.error && <ErrorNote raw={result.error} />}
+          {result?.error && (
+            <ErrorNote
+              raw={result.error}
+              onAskTutor={
+                onAskTutor
+                  ? () => onAskTutor(result.error!, openHintTier)
+                  : undefined
+              }
+            />
+          )}
           {result?.logs.map((line, i) => (
             <div key={i} className="whitespace-pre-wrap text-paper-300">
               <span className="mr-2 select-none text-gold-500">›</span>
@@ -285,7 +301,7 @@ export default function Playground({
 
       {check?.hints?.length ? (
         showHints ? (
-          <HintLadder hints={check.hints} />
+          <HintLadder hints={check.hints} onTierChange={setOpenHintTier} />
         ) : (
           !passed && (
             <p className="text-center font-mono text-xs text-ink-600">

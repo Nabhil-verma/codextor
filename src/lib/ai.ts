@@ -197,12 +197,17 @@ export async function testKey(
   if (!reply.trim()) throw new Error("The provider answered, but with an empty reply.");
 }
 
-async function callGemini(
+/* ------------------------------------------------------------------ */
+/* Request builders — shared by the one-shot and streaming paths       */
+/* ------------------------------------------------------------------ */
+
+function geminiRequest(
   messages: TutorMessage[],
   apiKey: string,
   model: string,
   signal: AbortSignal,
-): Promise<string> {
+  stream: boolean,
+): Promise<Response> {
   // Convert our message format to Gemini's API format
   const contents = messages
     .filter((m) => m.role !== "system")
@@ -218,10 +223,14 @@ async function callGemini(
     body.systemInstruction = { parts: [{ text: systemInstruction.content }] };
   }
 
+  const endpoint = stream
+    ? "streamGenerateContent?alt=sse"
+    : "generateContent";
+
   // The key travels in a header, never the URL: query strings end up in
   // proxy logs, referrers and devtools history.
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
+  return fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:${endpoint}`,
     {
       method: "POST",
       headers: {
@@ -232,6 +241,46 @@ async function callGemini(
       signal,
     },
   );
+}
+
+function claudeRequest(
+  messages: TutorMessage[],
+  apiKey: string,
+  model: string,
+  signal: AbortSignal,
+  stream: boolean,
+): Promise<Response> {
+  const system = messages.find((m) => m.role === "system")?.content ?? "";
+  const chatMessages = messages
+    .filter((m) => m.role !== "system")
+    .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
+
+  return fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true",
+    },
+    signal,
+    body: JSON.stringify({
+      model,
+      max_tokens: 1024,
+      system,
+      messages: chatMessages,
+      ...(stream ? { stream: true } : {}),
+    }),
+  });
+}
+
+async function callGemini(
+  messages: TutorMessage[],
+  apiKey: string,
+  model: string,
+  signal: AbortSignal,
+): Promise<string> {
+  const res = await geminiRequest(messages, apiKey, model, signal, false);
 
   if (!res.ok) {
     const err = await res.text().catch(() => "");
@@ -250,27 +299,7 @@ async function callClaude(
   model: string,
   signal: AbortSignal,
 ): Promise<string> {
-  const system = messages.find((m) => m.role === "system")?.content ?? "";
-  const chatMessages = messages
-    .filter((m) => m.role !== "system")
-    .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
-
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-      "anthropic-dangerous-direct-browser-access": "true",
-    },
-    signal,
-    body: JSON.stringify({
-      model,
-      max_tokens: 1024,
-      system,
-      messages: chatMessages,
-    }),
-  });
+  const res = await claudeRequest(messages, apiKey, model, signal, false);
 
   if (!res.ok) {
     const err = await res.text().catch(() => "");
@@ -281,4 +310,127 @@ async function callClaude(
   const text = data?.content?.[0]?.text;
   if (!text) throw new Error("Claude returned an empty response.");
   return text;
+}
+
+/* ------------------------------------------------------------------ */
+/* Streaming (SSE)                                                     */
+/* ------------------------------------------------------------------ */
+
+/**
+ * A streaming reply may legitimately run longer than the one-shot timeout, so
+ * the watchdog measures silence instead: no new bytes for this long aborts.
+ */
+const STREAM_IDLE_TIMEOUT_MS = 30_000;
+
+/** Reads an SSE body, handing each `data:` payload to `onData`. */
+async function readSse(res: Response, onData: (data: string) => void): Promise<void> {
+  if (!res.body) throw new Error("The provider returned no response stream.");
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    // Events are separated by a blank line; keep the trailing partial event.
+    const events = buffer.split(/\r?\n\r?\n/);
+    buffer = events.pop() ?? "";
+    for (const event of events) {
+      for (const line of event.split(/\r?\n/)) {
+        if (!line.startsWith("data:")) continue;
+        const data = line.slice(5).trim();
+        if (data && data !== "[DONE]") onData(data);
+      }
+    }
+  }
+}
+
+/** Text carried by one Gemini SSE chunk. */
+export function geminiDelta(payload: string): string {
+  try {
+    const parsed = JSON.parse(payload);
+    const parts = parsed?.candidates?.[0]?.content?.parts;
+    if (!Array.isArray(parts)) return "";
+    return parts.map((p: { text?: string }) => p.text ?? "").join("");
+  } catch {
+    return ""; // keepalives and partial frames are not text
+  }
+}
+
+/** Text carried by one Anthropic SSE chunk. */
+export function claudeDelta(payload: string): string {
+  try {
+    const parsed = JSON.parse(payload);
+    if (parsed?.type !== "content_block_delta") return "";
+    if (parsed?.delta?.type !== "text_delta") return "";
+    return typeof parsed.delta.text === "string" ? parsed.delta.text : "";
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * Streams a reply, invoking `onDelta` as text arrives, and resolves with the
+ * full text so callers can store it once at the end.
+ */
+export async function streamAi(
+  messages: TutorMessage[],
+  onDelta: (text: string) => void,
+  settings?: AiSettings,
+): Promise<string> {
+  const s = settings ?? loadAiSettings();
+  if (!s.provider || !s.keys[s.provider]) {
+    throw new Error("No AI provider configured. Add your API key in Settings.");
+  }
+  const provider = s.provider;
+  const model = modelFor(s, provider);
+  const controller = new AbortController();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const armIdle = () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => controller.abort(), STREAM_IDLE_TIMEOUT_MS);
+  };
+  armIdle();
+
+  try {
+    const res =
+      provider === "gemini"
+        ? await geminiRequest(messages, s.keys.gemini!, model, controller.signal, true)
+        : await claudeRequest(messages, s.keys.claude!, model, controller.signal, true);
+
+    if (!res.ok) {
+      const err = await res.text().catch(() => "");
+      throw new Error(explainProviderError(provider, model, res.status, err));
+    }
+
+    let full = "";
+    await readSse(res, (data) => {
+      armIdle();
+      const piece = provider === "gemini" ? geminiDelta(data) : claudeDelta(data);
+      if (piece) {
+        full += piece;
+        onDelta(piece);
+      }
+    });
+
+    if (!full) {
+      throw new Error(
+        provider === "gemini"
+          ? "Gemini returned an empty response."
+          : "Claude returned an empty response.",
+      );
+    }
+    return full;
+  } catch (err) {
+    if (controller.signal.aborted) {
+      throw new Error("The AI provider stopped responding — try again.");
+    }
+    if (err instanceof TypeError) {
+      const name = provider === "gemini" ? "Google Gemini" : "Anthropic Claude";
+      throw new Error(`Couldn't reach ${name}. Check your internet connection and try again.`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
 }

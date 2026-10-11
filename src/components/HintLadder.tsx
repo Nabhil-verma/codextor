@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Hint } from "../data/types";
 
 const TIER_META: Record<number, { label: string; icon: string }> = {
@@ -12,8 +12,21 @@ const TIER_META: Record<number, { label: string; icon: string }> = {
  * (syntax), tier 3 (skeleton — never the full solution). Rungs reveal one
  * at a time so learners can stop at the level that un-sticks them.
  */
-export default function HintLadder({ hints }: { hints: Hint[] }) {
+export default function HintLadder({
+  hints,
+  onTierChange,
+}: {
+  hints: Hint[];
+  /** Reports the tier currently on screen, so the tutor doesn't repeat it. */
+  onTierChange?: (tier: number) => void;
+}) {
   const [revealed, setRevealed] = useState(0);
+  const openTier = hints[revealed]?.tier;
+
+  useEffect(() => {
+    if (openTier !== undefined) onTierChange?.(openTier);
+  }, [openTier, onTierChange]);
+
   if (!hints.length) return null;
 
   const next = hints[revealed];

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import Nav from "../components/Nav";
@@ -35,6 +35,25 @@ export default function Lesson() {
   const { record } = useProgress();
   const progressState = useProgressState();
   const [exerciseDone, setExerciseDone] = useState(false);
+  const tutorRef = useRef<HTMLElement>(null);
+  const [autoAsk, setAutoAsk] = useState<{ id: number; text: string } | null>(null);
+  const [tutorError, setTutorError] = useState<string | null>(null);
+  const [openHintTier, setOpenHintTier] = useState<number | undefined>(undefined);
+
+  /*
+   * "Ask the tutor about this error": hand the raw error and the hint tier
+   * already open to the tutor, send a first question, and bring the panel
+   * into view — the learner never has to retype the error.
+   */
+  const askAboutError = useCallback((raw: string, tier?: number) => {
+    setTutorError(raw);
+    setOpenHintTier(tier);
+    setAutoAsk({
+      id: Date.now(),
+      text: `I got this error: ${raw.split("\n")[0].slice(0, 200)} — what should I look at first?`,
+    });
+    tutorRef.current?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+  }, []);
   const [rapid, setRapid] = useState(false);
   const key = track && lesson ? lessonKey(track.id, lesson.id) : "";
 
@@ -205,11 +224,12 @@ export default function Lesson() {
                     pythonPrelude={lesson.pythonPrelude}
                     label={lesson.title}
                     onPass={() => setExerciseDone(true)}
+                    onAskTutor={askAboutError}
                   />
                 </section>
               </Reveal>
               <Reveal className="mt-10">
-                <section>
+                <section ref={tutorRef} className="scroll-mt-24">
                   <h2 className="eyebrow mb-4">Ask the Tutor</h2>
                   <SocraticTutor
                     code={lesson.starter}
@@ -217,6 +237,9 @@ export default function Lesson() {
                     checkHint={lesson.check?.hint}
                     topic={lesson.title}
                     lang={lesson.lang}
+                    error={tutorError}
+                    openHintTier={openHintTier}
+                    autoAsk={autoAsk ?? undefined}
                   />
                 </section>
               </Reveal>
@@ -274,6 +297,7 @@ export default function Lesson() {
                 challenge={lesson.debug}
                 onPass={() => setExerciseDone(true)}
                 onScore={scorers.debug}
+                onAskTutor={askAboutError}
               />
             </section>
           </Reveal>
