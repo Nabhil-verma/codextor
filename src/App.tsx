@@ -9,6 +9,7 @@ import QuestBridge from "./components/gamification/QuestBridge";
 import ThemeBridge from "./components/ThemeBridge";
 import { PanelBoundary } from "./components/gamification/Pieces";
 import Nav from "./components/Nav";
+import CommandPalette from "./components/CommandPalette";
 import { panelMessage } from "./lib/friendlyError";
 import { useAccount } from "./AccountProvider";
 import { Skeleton } from "./components/ui";
@@ -123,6 +124,9 @@ export default function App() {
       {/* Mirrors the appearance style to the signed-in account, so the
           choice follows the learner across devices (not just this browser). */}
       <ThemeBridge />
+      {/* One search surface for the whole app: Cmd/Ctrl+K, or the search
+          button in the nav and the phone tab bar. */}
+      <CommandPalette />
       {/* Any page-level failure degrades to an in-app card, never a blank shell.
           A failed chunk download lands here too, so an offline reload explains
           itself instead of showing an empty page. */}

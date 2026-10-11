@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { AnimatePresence, motion, useScroll, useMotionValueEvent } from "framer-motion";
-import { Settings } from "lucide-react";
+import { Search, Settings } from "lucide-react";
 import { useAccount } from "../AccountProvider";
 import BrandLogo from "./BrandLogo";
 import AiSettingsModal from "./AiSettingsModal";
@@ -9,6 +9,7 @@ import ThemeToggle from "./ThemeToggle";
 import MobileTabBar from "./MobileTabBar";
 import { lessonIdOf, useProgressState } from "../lib/progress";
 import { useThemeStyle } from "../lib/theme";
+import { onOpenAiSettings, openPalette } from "../lib/paletteBus";
 import { TOTAL_LESSONS } from "../data/manifest";
 
 const syncLabel: Record<string, string> = {
@@ -53,6 +54,10 @@ export default function Nav() {
   const { scrollY } = useScroll();
   useMotionValueEvent(scrollY, "change", (v) => setScrolled(v > 12));
 
+  // The command palette can't reach this modal directly, so it announces
+  // itself and the owner of the modal opens it.
+  useEffect(() => onOpenAiSettings(() => setAiOpen(true)), []);
+
   useEffect(() => {
     if (!menuOpen) return;
     const onDown = (e: MouseEvent) => {
@@ -90,6 +95,16 @@ export default function Nav() {
 
         <div className="flex h-14 shrink-0 items-center gap-1.5 md:order-last md:h-16">
           <ThemeToggle />
+
+          <button
+            type="button"
+            onClick={openPalette}
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-paper-200/70 text-ink-600 transition-all duration-300 ease-snap hover:scale-105 hover:border-gold-400/50 hover:text-gold-600 hover:shadow-glow active:scale-95"
+            aria-label="Search lessons and commands"
+            title="Search — Cmd/Ctrl+K"
+          >
+            <Search className="h-4 w-4" aria-hidden />
+          </button>
 
           <button
             type="button"

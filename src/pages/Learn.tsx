@@ -1,6 +1,7 @@
+import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowUpRight, Hammer, Swords, Trophy } from "lucide-react";
+import { ArrowUpRight, Hammer, Search, Swords, Trophy } from "lucide-react";
 import Nav from "../components/Nav";
 import {
   MANIFEST_TRACKS as tracks,
@@ -72,6 +73,55 @@ export default function Learn() {
       }
     }
   }
+
+  /* ---------------- search and filters ---------------- */
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "todo" | "done">("all");
+  const [trackFilter, setTrackFilter] = useState("all");
+  const [kindFilter, setKindFilter] = useState<
+    "all" | "labs" | "interactive" | "terminal" | "visual" | "reading"
+  >("all");
+
+  /*
+   * The manifest carries the interaction kind, so filtering never touches a
+   * lesson body: "break-and-fix labs" is `hasDebug`, and the rest is one of
+   * the four interaction kinds the catalog already prints.
+   */
+  const filtering =
+    query.trim() !== "" || statusFilter !== "all" || trackFilter !== "all" || kindFilter !== "all";
+
+  const groups = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const matched = tracks
+      .filter((t) => trackFilter === "all" || t.id === trackFilter)
+      .map((track) => ({
+        track,
+        lessons: track.lessons.filter((lesson) => {
+          const score = scoreFor(progress, lessonKey(track.id, lesson.id));
+          if (statusFilter === "done" && score < 1) return false;
+          if (statusFilter === "todo" && score >= 1) return false;
+          if (kindFilter === "labs" && !lesson.hasDebug) return false;
+          if (
+            kindFilter !== "all" &&
+            kindFilter !== "labs" &&
+            lesson.interaction !== kindFilter
+          ) {
+            return false;
+          }
+          if (!q) return true;
+          return (lesson.title + " " + track.title).toLowerCase().includes(q);
+        }),
+      }))
+      .filter((group) => group.lessons.length > 0);
+
+    // Core path first, optional material second — same order as the catalog.
+    return [
+      ...matched.filter((g) => !g.track.optional),
+      ...matched.filter((g) => g.track.optional),
+    ];
+  }, [query, statusFilter, trackFilter, kindFilter, progress]);
+
+  const shown = groups.reduce((n, g) => n + g.lessons.length, 0);
 
   return (
     <div className="min-h-screen">
@@ -310,11 +360,120 @@ export default function Learn() {
            * on the track (Tier 2), not a demotion: optional tracks are fully
            * playable and still count for XP, ranks and certificates.
            */}
-          <div className="mt-24 space-y-20">
-            {[...tracks.filter((t) => !t.optional), ...tracks.filter((t) => t.optional)].map((track, ti) => {
+          {/* Search + filters: status, track, interaction kind. */}
+          <section className="mt-24" aria-label="Find a lesson">
+            <label htmlFor="learn-search" className="eyebrow">
+              find a lesson
+            </label>
+            <div className="mt-3 flex items-center gap-2 rounded-2xl border border-paper-200 bg-paper-50 px-4 py-2.5">
+              <Search className="h-4 w-4 shrink-0 text-ink-400" aria-hidden />
+              <input
+                id="learn-search"
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={`Search ${totalLessonCount} lessons — 'hooks', 'flexbox', 'async'…`}
+                className="w-full bg-transparent text-sm text-ink-950 outline-none placeholder:text-ink-400"
+              />
+              {filtering && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery("");
+                    setStatusFilter("all");
+                    setTrackFilter("all");
+                    setKindFilter("all");
+                  }}
+                  className="shrink-0 rounded-full px-3 py-1 font-mono text-[11px] text-ink-600 transition hover:bg-paper-100 hover:text-ink-950"
+                >
+                  clear
+                </button>
+              )}
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <div role="group" aria-label="Filter by status" className="flex flex-wrap gap-1.5">
+                {(["all", "todo", "done"] as const).map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    aria-pressed={statusFilter === value}
+                    onClick={() => setStatusFilter(value)}
+                    className={
+                      "rounded-full border px-3.5 py-1 font-mono text-[11px] uppercase tracking-wider transition " +
+                      (statusFilter === value
+                        ? "border-gold-400 bg-gold-400/15 text-ink-950"
+                        : "border-paper-200 text-ink-600 hover:border-gold-400/60")
+                    }
+                  >
+                    {value === "all" ? "any status" : value === "todo" ? "to do" : "done"}
+                  </button>
+                ))}
+              </div>
+              <div role="group" aria-label="Filter by kind" className="flex flex-wrap gap-1.5">
+                {(
+                  [
+                    ["all", "all kinds"],
+                    ["labs", "break-and-fix labs"],
+                    ["interactive", "interactive"],
+                    ["terminal", "terminal"],
+                    ["visual", "visual"],
+                    ["reading", "reading"],
+                  ] as const
+                ).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    aria-pressed={kindFilter === value}
+                    onClick={() => setKindFilter(value)}
+                    className={
+                      "rounded-full border px-3.5 py-1 font-mono text-[11px] uppercase tracking-wider transition " +
+                      (kindFilter === value
+                        ? "border-gold-400 bg-gold-400/15 text-ink-950"
+                        : "border-paper-200 text-ink-600 hover:border-gold-400/60")
+                    }
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <label className="sr-only" htmlFor="learn-track-filter">
+                Filter by track
+              </label>
+              <select
+                id="learn-track-filter"
+                value={trackFilter}
+                onChange={(e) => setTrackFilter(e.target.value)}
+                className="rounded-full border border-paper-200 bg-paper-50 px-3.5 py-1 font-mono text-[11px] uppercase tracking-wider text-ink-600"
+              >
+                <option value="all">all tracks</option>
+                {tracks.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {filtering && (
+              <p role="status" className="mt-3 font-mono text-xs text-ink-500">
+                {shown} {shown === 1 ? "lesson" : "lessons"} match
+                {groups.length === 0 ? " — try clearing a filter" : ""}
+              </p>
+            )}
+          </section>
+
+          <div className="mt-14 space-y-20">
+            {groups.length === 0 && (
+              <p className="rounded-2xl border border-dashed border-paper-300 px-6 py-10 text-center text-sm text-ink-600">
+                No lessons match those filters yet.
+              </p>
+            )}
+            {groups.map(({ track, lessons }, ti) => {
               const trackDone = track.lessons.filter((l) => scoreFor(progress, lessonKey(track.id, l.id)) >= 1).length;
               const trackPct = Math.round((trackDone / track.lessons.length) * 100);
-              const firstOptional = track.optional && ti > 0 && !tracks[ti - 1]?.optional;
+              const firstOptional =
+                track.optional && ti > 0 && !groups[ti - 1]?.track.optional;
               return (
               <Reveal key={track.id}>
                 <section>
@@ -361,7 +520,7 @@ export default function Learn() {
                     </span>
                   </div>
                   <ol className="space-y-1">
-                    {track.lessons.map((lesson, i) => {
+                    {lessons.map((lesson, i) => {
                       const key = lessonKey(track.id, lesson.id);
                       const score = scoreFor(progress, key);
                       const done = score >= 1;

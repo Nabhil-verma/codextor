@@ -1,9 +1,10 @@
 import { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { BookOpen, Code2, Swords, Trophy, UserRound } from "lucide-react";
+import { BookOpen, Code2, Search, Swords, Trophy, UserRound } from "lucide-react";
 import { useAccount } from "../AccountProvider";
 import { useIsMobile } from "../lib/useMediaQuery";
+import { openPalette } from "../lib/paletteBus";
 
 /*
  * The phone shell's primary navigation: a fixed bottom bar, thumb-reachable,
@@ -53,6 +54,10 @@ export default function MobileTabBar() {
    * Tag <html> while the bar is on screen so CSS can reserve scroll room at
    * the bottom of every page — otherwise the bar covers the last row.
    */
+  // The palette is an action, so it renders as a button between the
+  // destinations rather than a link.
+  const withSearch = [...tabs.slice(0, 1), null, ...tabs.slice(1)];
+
   useEffect(() => {
     if (!visible) return;
     const root = document.documentElement;
@@ -71,11 +76,28 @@ export default function MobileTabBar() {
       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
     >
       <ul className="mx-auto flex max-w-md items-stretch justify-between px-2">
-        {tabs.map((tab) => {
+        {withSearch.map((tab, index) => {
+          if (!tab) {
+            return (
+              <li key="search" className="flex-1">
+                <button
+                  type="button"
+                  onClick={openPalette}
+                  aria-label="Search lessons and commands"
+                  className="relative flex w-full flex-col items-center gap-0.5 rounded-2xl px-1 py-2.5"
+                >
+                  <Search className="h-5 w-5 text-ink-500" aria-hidden />
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-ink-500">
+                    Search
+                  </span>
+                </button>
+              </li>
+            );
+          }
           const active = tab.match(pathname);
           const Icon = tab.icon;
           return (
-            <li key={tab.to} className="flex-1">
+            <li key={tab.to ?? index} className="flex-1">
               <Link
                 to={tab.to}
                 aria-current={active ? "page" : undefined}
