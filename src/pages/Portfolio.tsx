@@ -477,7 +477,7 @@ export default function Portfolio() {
   }, 0);
   const totalLessons = tracks.reduce((sum, t) => sum + t.lessons.length, 0);
 
-  const initials = (user?.displayName || user?.email || "?")
+  const initials = (user?.displayName || user?.username || "?")
     .split(" ")
     .map((w) => w.charAt(0).toUpperCase())
     .slice(0, 2)
@@ -527,8 +527,8 @@ export default function Portfolio() {
             <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight text-ink-950 sm:text-5xl">
               {user?.displayName || "Learner"}
             </h1>
-            {user?.email && (
-              <p className="mt-2 font-mono text-sm text-ink-600">{user.email}</p>
+            {user?.username && (
+              <p className="mt-2 font-mono text-sm text-ink-600">{user.username}</p>
             )}
           </Reveal>
 

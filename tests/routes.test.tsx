@@ -105,7 +105,7 @@ describe("every route renders", () => {
     auth.signedIn = false;
     open("#/auth");
     expect(await screen.findByRole("heading", { name: /Welcome back/ }, CHUNK)).toBeTruthy();
-    expect(screen.getByLabelText("Email address")).toBeTruthy();
+    expect(screen.getByLabelText("Username or email")).toBeTruthy();
     expect(screen.getByLabelText(/Password/)).toBeTruthy();
   });
 

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { convexTest } from "convex-test";
 import schema from "../src/convex/schema";
 import { api } from "../src/convex/_generated/api";
@@ -7,10 +7,9 @@ import { TOTAL_LESSONS } from "../src/convex/curriculum";
 
 /*
  * #5: the player card is recomputed on the client and pushed, so the server
- * bounds what a forged payload can claim. Clamping ships in LOG-ONLY mode
- * first (violations recorded, values untouched) because a legitimate
- * multi-device merge can look impossible before there is evidence to tune
- * against. CODEXTOR_XP_CLAMPS=enforce turns the clamps on.
+ * bounds what a forged payload can claim. Clamps are ENFORCED by default.
+ * CODEXTOR_XP_CLAMPS=log turns them back to log-only (violations recorded,
+ * values untouched).
  */
 
 const modules = import.meta.glob("../src/convex/**/*.ts");
@@ -142,7 +141,11 @@ describe("clampProfile (pure)", () => {
   });
 });
 
-describe("profiles.sync in log-only mode (the default)", () => {
+describe("profiles.sync in log-only mode (CODEXTOR_XP_CLAMPS=log)", () => {
+  beforeEach(() => {
+    process.env.CODEXTOR_XP_CLAMPS = "log";
+  });
+
   it("records the violation but stores what the client sent", async () => {
     const t = convexTest(schema, modules);
     const userId = await makeUser(t);
@@ -196,6 +199,19 @@ describe("profiles.sync in log-only mode (the default)", () => {
     expect(card.lessonsDone).toBe(20);
     expect(card.level).toBe(levelForXp(1_500));
     expect(card.clampLog).toBeUndefined();
+  });
+});
+
+describe("profiles.sync with the default (enforce)", () => {
+  it("clamps a forged payload when the variable is unset", async () => {
+    delete process.env.CODEXTOR_XP_CLAMPS;
+    const t = convexTest(schema, modules);
+    const userId = await makeUser(t);
+    await t.withIdentity({ subject: userId }).mutation(api.profiles.sync, forged);
+
+    const [card] = await readCard(t);
+    expect(card.xp).toBeLessThanOrEqual(maxXpFor(TOTAL_LESSONS));
+    expect(card.level).toBe(levelForXp(card.xp));
   });
 });
 

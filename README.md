@@ -339,7 +339,7 @@ Worth a section, because this is the part most learning apps fake.
 | Animation | Framer Motion 13 |
 | Icons | lucide-react |
 | Backend | Convex 1.45 (queries, mutations, HTTP routes) |
-| Auth | Convex Auth (`@convex-dev/auth`) — email/password, no API keys in the frontend |
+| Auth | Convex Auth (`@convex-dev/auth`) — username/password, optional recovery email (Resend for reset codes) |
 | Tests | Vitest 2 + convex-test + Testing Library + jsdom |
 | CI | GitHub Actions |
 
@@ -409,8 +409,14 @@ tests/                        # 34 suites, 329 tests
 The app works **fully without a backend** — progress lives in `localStorage`.
 That's deliberate: the product is free and should never be gated on an account.
 
-Accounts are built on **Convex Auth** (email/password, zero API keys in the
-frontend) and add cross-device sync on top:
+Accounts are built on **Convex Auth** (username/password, zero API keys in the
+frontend) and add cross-device sync on top. A username is the sign-in key (3–24
+letters, numbers or underscores). A **recovery email** is optional and receives
+only password-reset codes; it is never shown publicly. Reset codes are sent with
+Resend and need two deployment variables: `RESEND_API_KEY` and `RESEND_FROM` (an
+address on a domain verified in Resend). Without them, no reset email is sent.
+Accounts created before usernames still sign in with their email, which doubles
+as their recovery address.
 
 - On sign-in the cloud copy is merged with local, **best score per key wins**;
   local changes debounce-push to the cloud while signed in.
@@ -459,12 +465,11 @@ capped per hour, and each user may push only a limited number of times per
 minute. Violations are **clamped, never rejected**, so a legitimate merge from a
 second device is bounded rather than dropped.
 
-The clamps ship in **log-only mode**: violations are recorded on the row
-(`clampedAt`, `clampLog`) and logged, but the client's numbers are stored
-unchanged. Set `CODEXTOR_XP_CLAMPS=enforce` on the deployment to store the
-clamped values; unset it to roll back. The reason for the staging is that a
-real multi-device merge can look impossible (a phone that was offline for a
-week), and the log is what says how often that actually happens.
+The clamps are **enforced by default**: an implausible value is stored clamped,
+and the violation is recorded on the row (`clampedAt`, `clampLog`). To go back
+to **log-only** (violations recorded, client numbers stored unchanged), set
+`CODEXTOR_XP_CLAMPS=log` on the deployment. The `clampLog` rows show how often
+a real multi-device merge trips a clamp, so use log mode if that looks common.
 
 **Known limit:** because scoring happens in the browser, a determined learner
 can still forge `progress.save` scores through the API, and those forged scores

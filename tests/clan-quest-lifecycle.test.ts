@@ -198,10 +198,12 @@ describe("clan quest lifecycle", () => {
     expect(feed.find((e) => e.text === "Sam joined the guild")!.isMe).toBe(false);
 
     // Profile syncs land in the feed as level-ups, for guild members only.
+    // 500 XP is level 3 on the curve (XP_PER_LEVEL = 250); the card has to agree
+    // with the curve, or the clamp correctly rewrites the level.
     await as(t, ada).mutation(api.profiles.sync, {
-      xp: 420,
-      xpWeek: 420,
-      xpMonth: 420,
+      xp: 500,
+      xpWeek: 500,
+      xpMonth: 500,
       level: 3,
       ascension: "apprentice",
       streakCurrent: 2,

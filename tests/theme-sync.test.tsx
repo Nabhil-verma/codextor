@@ -19,7 +19,7 @@ const h = vi.hoisted(() => ({
   /** What `api.preferences.get` currently returns (undefined = loading). */
   query: undefined as { themeStyle: "glass" | "minimal" | null } | null | undefined,
   save: vi.fn(() => Promise.resolve()),
-  user: null as { displayName: string; email: string } | null,
+  user: null as { displayName: string; username: string; recoveryEmail: string | null } | null,
 }));
 
 vi.mock("convex/react", async (importOriginal) => {
@@ -54,7 +54,7 @@ beforeEach(() => {
   document.documentElement.className = "";
   h.query = undefined;
   h.save.mockClear();
-  h.user = { displayName: "Ada", email: "ada@example.com" };
+  h.user = { displayName: "Ada", username: "ada", recoveryEmail: null };
 });
 
 afterEach(cleanup);

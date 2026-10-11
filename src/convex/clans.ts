@@ -2,6 +2,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
+import { publicDisplayName } from "../lib/accountIdentity";
 import {
   MAX_GUILD_MEMBERS,
   guildTierFor,
@@ -60,9 +61,8 @@ async function ensureProfile(
     .unique();
   if (existing) return existing;
   const user = await ctx.db.get(userId);
-  const name =
-    ((user?.name as string | undefined) || (user?.email as string | undefined) || "Learner")
-      .slice(0, 40);
+  // Never an email address: a legacy account's email is private.
+  const name = publicDisplayName(user ?? {}, 40);
   const id = await ctx.db.insert("profiles", {
     userId,
     name,
