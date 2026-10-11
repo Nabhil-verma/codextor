@@ -4,6 +4,7 @@ import schema from "../src/convex/schema";
 import { api } from "../src/convex/_generated/api";
 import { TRACK_LESSON_KEYS, TRACK_TITLES } from "../src/convex/curriculum";
 import { missingLessons } from "../src/convex/certificates";
+import type { Id } from "../src/convex/_generated/dataModel";
 
 /*
  * #11 access control. Certificates prove completion and are public by code;
@@ -29,7 +30,12 @@ function passed(trackId: string) {
   return data;
 }
 
-async function makeProfile(t: ReturnType<typeof setup>, userId: any, name: string, clanId?: any) {
+async function makeProfile(
+  t: ReturnType<typeof setup>,
+  userId: Id<"users">,
+  name: string,
+  clanId?: Id<"clans">,
+) {
   return t.run((ctx) =>
     ctx.db.insert("profiles", {
       userId,
