@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { tracks } from "../data";
+import { MANIFEST_TRACKS as tracks } from "../data/manifest";
 import { scoreFor, useProgressState } from "../lib/progress";
 
 type TrackNode = {

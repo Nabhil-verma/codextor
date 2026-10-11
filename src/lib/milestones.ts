@@ -6,7 +6,7 @@
 /* it can be — graded by actually running the learner's own code.      */
 /* ------------------------------------------------------------------ */
 
-import { findLesson, lessonKey } from "../data";
+import { findLessonMeta as findLesson, lessonKey } from "../data/manifest";
 import type { Check, PreviewSpec, RubricExercise } from "../data/types";
 import { taxonomyEntry, type TaxonomyCode } from "../data/bug-taxonomy";
 import { scoreFor, type Progress } from "./progress";

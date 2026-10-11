@@ -9,7 +9,7 @@ import ThemeToggle from "./ThemeToggle";
 import MobileTabBar from "./MobileTabBar";
 import { lessonIdOf, useProgressState } from "../lib/progress";
 import { useThemeStyle } from "../lib/theme";
-import { totalLessonCount } from "../data";
+import { TOTAL_LESSONS } from "../data/manifest";
 
 const syncLabel: Record<string, string> = {
   idle: "local only",
@@ -206,7 +206,7 @@ export default function Nav() {
             ))}
 
             <span className="hidden shrink-0 items-center gap-1.5 rounded-full border border-paper-200/70 bg-white/[0.03] px-3 py-1.5 font-mono text-[0.7rem] uppercase tracking-widest text-ink-500 sm:flex">
-              <span className="font-bold text-gold-400">{done}</span>/{totalLessonCount} done
+              <span className="font-bold text-gold-400">{done}</span>/{TOTAL_LESSONS} done
             </span>
           </div>
         </nav>

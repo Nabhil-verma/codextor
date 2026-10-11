@@ -31,7 +31,11 @@ import {
   SocraticChatBubble,
   TypingCode,
 } from "../components/ui";
-import { tracks, totalLessonCount, findTrack } from "../data";
+import {
+  MANIFEST_TRACKS as tracks,
+  TOTAL_LESSONS as totalLessonCount,
+  findTrackMeta as findTrack,
+} from "../data/manifest";
 import { scoreFor, useProgressState } from "../lib/progress";
 import { useAccount } from "../AccountProvider";
 
@@ -41,7 +45,7 @@ import { useAccount } from "../AccountProvider";
    ═══════════════════════════════════════════════════════════════ */
 
 const allLessons = tracks.flatMap((t) => t.lessons);
-const QUIZ_TOTAL = allLessons.reduce((n, l) => n + l.quiz.length, 0);
+const QUIZ_TOTAL = allLessons.reduce((n, l) => n + l.quizCount, 0);
 const HOURS_TOTAL = Math.max(
   1,
   Math.round(allLessons.reduce((n, l) => n + l.minutes, 0) / 60)

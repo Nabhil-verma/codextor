@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import Nav from "../components/Nav";
 import { Orb, Tilt } from "../components/motion";
-import { tracks, lessonKey } from "../data";
+import { MANIFEST_TRACKS as tracks, lessonKey } from "../data/manifest";
 import { scoreFor, useProgressState } from "../lib/progress";
 import { useAccount } from "../AccountProvider";
 

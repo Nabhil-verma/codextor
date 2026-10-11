@@ -18,20 +18,38 @@ import SolutionFeed from "../components/SolutionFeed";
 import SocraticTutor from "../components/SocraticTutor";
 import RapidFire from "../components/gamification/RapidFire";
 import DragSort from "../components/gamification/DragSort";
-import {
-  findTrack,
-  findLesson,
-  lessonKey,
-  type QuizQuestion,
-} from "../data";
+import { findTrackMeta, findLessonMeta, lessonKey } from "../data/manifest";
+import { loadTrack, prefetchNextLesson } from "../data/loadTrack";
+import type { QuizQuestion, Track } from "../data/types";
+import { Skeleton } from "../components/ui/Skeleton";
 import { useProgress, useProgressState, scoreFor } from "../lib/progress";
 import { recordAttempt, type AttemptElement } from "../lib/telemetry";
 import { todayKey } from "../lib/gamification";
 
 export default function Lesson() {
   const { trackId, lessonId } = useParams();
-  const track = findTrack(trackId ?? "");
-  const lesson = findLesson(trackId ?? "", lessonId ?? "");
+
+  /*
+   * The manifest knows every id and title, so a bad URL is still answered
+   * instantly; the lesson body itself arrives one track at a time instead of
+   * putting all seventeen tracks (and their bodies) in the entry chunk.
+   */
+  const metaTrack = findTrackMeta(trackId ?? "");
+  const metaLesson = findLessonMeta(trackId ?? "", lessonId ?? "");
+  const [loaded, setLoaded] = useState<{ id: string; track: Track | null } | null>(null);
+  const track = loaded && loaded.id === trackId ? loaded.track : null;
+  const lesson = track?.lessons.find((l) => l.id === lessonId) ?? null;
+
+  useEffect(() => {
+    if (!trackId || !metaTrack) return;
+    let alive = true;
+    void loadTrack(trackId).then((next) => {
+      if (alive) setLoaded({ id: trackId, track: next });
+    });
+    return () => {
+      alive = false;
+    };
+  }, [trackId, metaTrack]);
   const { record } = useProgress();
   const progressState = useProgressState();
   const [exerciseDone, setExerciseDone] = useState(false);
@@ -85,7 +103,15 @@ export default function Lesson() {
     setRapid(false);
   }, [trackId, lessonId]);
 
-  if (!track || !lesson) {
+  // Once the lesson is on screen, warm what the learner will need next: the
+  // following track's chunk, and the TypeScript compiler when it is a TS one.
+  useEffect(() => {
+    if (trackId && lessonId) prefetchNextLesson(trackId, lessonId);
+  }, [trackId, lessonId]);
+
+  // Unknown ids are answered from the manifest; a track that is still loading
+  // shows a placeholder instead of "not found".
+  if ((!metaTrack || !metaLesson) || (track && !lesson)) {
     return (
       <div className="min-h-screen">
         <Nav />
@@ -96,6 +122,29 @@ export default function Lesson() {
           <Link to="/learn" className="btn-primary mt-8">
             Back to lessons
           </Link>
+        </main>
+      </div>
+    );
+  }
+
+  if (!track || !lesson) {
+    return (
+      <div className="min-h-screen">
+        <Nav />
+        <main className="mx-auto max-w-3xl px-4 py-24">
+          <p className="eyebrow">loading</p>
+          <h1 className="font-display text-4xl font-bold tracking-tighter text-ink-950">
+            Opening the lesson…
+          </h1>
+          <p className="mt-3 text-ink-600">
+            Fetching just this track. The rest of the curriculum stays out of your
+            way.
+          </p>
+          <div className="mt-8 space-y-3">
+            <Skeleton className="h-4 w-2/3" />
+            <Skeleton className="h-4 w-5/6" />
+            <Skeleton className="h-4 w-1/2" />
+          </div>
         </main>
       </div>
     );

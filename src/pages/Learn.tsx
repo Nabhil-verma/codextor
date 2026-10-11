@@ -2,7 +2,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowUpRight, Hammer, Swords, Trophy } from "lucide-react";
 import Nav from "../components/Nav";
-import { tracks, lessonKey, totalLessonCount } from "../data";
+import {
+  MANIFEST_TRACKS as tracks,
+  lessonKey,
+  TOTAL_LESSONS as totalLessonCount,
+} from "../data/manifest";
 import { scoreFor, useProgressState } from "../lib/progress";
 import {
   activeDays,
@@ -392,15 +396,9 @@ export default function Learn() {
                               </span>
                               <span className="mt-0.5 block font-mono text-[0.68rem] uppercase tracking-widest text-ink-500">
                                 {lesson.minutes} min ·{" "}
-                                {lesson.starter
-                                  ? "interactive"
-                                  : lesson.gitSim
-                                    ? "terminal"
-                                    : lesson.sandbox
-                                      ? "visual"
-                                      : "reading"}
-                                {lesson.predict?.length ? " · predict" : ""} ·{" "}
-                                {lesson.quiz.length} quiz questions
+                                {lesson.interaction}
+                                {lesson.hasPredict ? " · predict" : ""} ·{" "}
+                                {lesson.quizCount} quiz questions
                               </span>
                             </span>
                             <span className="font-mono text-sm text-gold-400 opacity-0 transition-all duration-300 ease-snap group-hover:translate-x-1 group-hover:opacity-100">

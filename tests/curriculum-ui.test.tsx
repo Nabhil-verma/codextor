@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 
 /*
@@ -77,14 +77,21 @@ vi.mock("../src/AccountProvider", async (importOriginal) => {
 import App from "../src/App";
 import Lesson from "../src/pages/Lesson";
 
-function renderLesson(trackId: string, lessonId: string) {
-  return render(
+async function renderLesson(trackId: string, lessonId: string) {
+  const utils = render(
     <MemoryRouter initialEntries={[`/learn/${trackId}/${lessonId}`]}>
       <Routes>
         <Route path="/learn/:trackId/:lessonId" element={<Lesson />} />
       </Routes>
     </MemoryRouter>
   );
+  // Lesson bodies load one track at a time now, so wait for the real content
+  // to replace the loading placeholder before the test queries the page.
+  await waitFor(() => {
+    expect(screen.queryByText(/Opening the lesson/)).toBeNull();
+    expect(screen.getByRole("heading", { level: 1 })).toBeTruthy();
+  });
+  return utils;
 }
 
 afterEach(() => {
@@ -93,8 +100,8 @@ afterEach(() => {
 });
 
 describe("the lesson step flow", () => {
-  it("renders the break-and-fix lab for a `debug` lesson", () => {
-    renderLesson("state", "state-shapes");
+  it("renders the break-and-fix lab for a `debug` lesson", async () => {
+    await renderLesson("state", "state-shapes");
 
     expect(screen.getByRole("heading", { name: /·\s*Debug/ })).toBeTruthy();
     expect(screen.getByText(/debug lab/i)).toBeTruthy();
@@ -103,16 +110,16 @@ describe("the lesson step flow", () => {
     expect(screen.getByRole("button", { name: /Run & verify/ })).toBeTruthy();
   });
 
-  it("renders the live sandbox for a `preview` lesson", () => {
-    renderLesson("tailwind", "utility-first");
+  it("renders the live sandbox for a `preview` lesson", async () => {
+    await renderLesson("tailwind", "utility-first");
 
     expect(screen.getByRole("heading", { name: /·\s*Build/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: "index.html" })).toBeTruthy();
     expect(screen.getByTitle("Live preview")).toBeTruthy();
   });
 
-  it("only numbers the steps that actually render", () => {
-    renderLesson("state", "state-shapes");
+  it("only numbers the steps that actually render", async () => {
+    await renderLesson("state", "state-shapes");
 
     // Read is always first; a break-and-fix lesson has no preview, so there is
     // no Build section and no skipped numeral standing in for one.

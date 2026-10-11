@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 
 /*
@@ -66,28 +66,35 @@ vi.mock("../src/AccountProvider", async (importOriginal) => {
 
 import Lesson from "../src/pages/Lesson";
 
-function renderLesson(trackId: string, lessonId: string) {
-  return render(
+async function renderLesson(trackId: string, lessonId: string) {
+  const utils = render(
     <MemoryRouter initialEntries={[`/learn/${trackId}/${lessonId}`]}>
       <Routes>
         <Route path="/learn/:trackId/:lessonId" element={<Lesson />} />
       </Routes>
     </MemoryRouter>
   );
+  // Lesson bodies load one track at a time now, so wait for the real content
+  // to replace the loading placeholder before the test queries the page.
+  await waitFor(() => {
+    expect(screen.queryByText(/Opening the lesson/)).toBeNull();
+    expect(screen.getByRole("heading", { level: 1 })).toBeTruthy();
+  });
+  return utils;
 }
 
 afterEach(cleanup);
 
 describe("Track XVI labs render through the lesson page", () => {
-  it("renders the diff review with its submit control", () => {
-    renderLesson("agents", "verifying-agent-output");
+  it("renders the diff review with its submit control", async () => {
+    await renderLesson("agents", "verifying-agent-output");
 
     expect(screen.getByRole("heading", { name: /·\s*Review/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: /Submit review/ })).toBeTruthy();
   });
 
-  it("renders the repo trace with its submit control", () => {
-    renderLesson("agents", "codebase-archaeology");
+  it("renders the repo trace with its submit control", async () => {
+    await renderLesson("agents", "codebase-archaeology");
 
     expect(screen.getByRole("heading", { name: /·\s*Trace/ })).toBeTruthy();
     // One submit control per question — the trace lab renders several.
@@ -96,16 +103,16 @@ describe("Track XVI labs render through the lesson page", () => {
     ).toBeGreaterThan(0);
   });
 
-  it("renders the rubric write-up with its draft box", () => {
-    renderLesson("agents", "specs-and-prompts");
+  it("renders the rubric write-up with its draft box", async () => {
+    await renderLesson("agents", "specs-and-prompts");
 
     expect(screen.getByRole("heading", { name: /·\s*Write/ })).toBeTruthy();
     expect(screen.getByRole("textbox")).toBeTruthy();
     expect(screen.getByRole("button", { name: /Submit draft/ })).toBeTruthy();
   });
 
-  it("opens a lesson that has both a lab and a quiz (the capstone)", () => {
-    renderLesson("agents", "capstone-agent-loop");
+  it("opens a lesson that has both a lab and a quiz (the capstone)", async () => {
+    await renderLesson("agents", "capstone-agent-loop");
 
     expect(screen.getByRole("heading", { name: /·\s*Debug/ })).toBeTruthy();
     expect(screen.getByRole("heading", { name: /·\s*Prove it/ })).toBeTruthy();
@@ -113,8 +120,8 @@ describe("Track XVI labs render through the lesson page", () => {
 });
 
 describe("the Wave 1 additions render", () => {
-  it("renders the Python lesson with its own editor and runtime note", () => {
-    renderLesson("python", "python-llm-api");
+  it("renders the Python lesson with its own editor and runtime note", async () => {
+    await renderLesson("python", "python-llm-api");
 
     expect(screen.getByRole("heading", { name: /·\s*Run/ })).toBeTruthy();
     expect(screen.getByText(/editor\.py/)).toBeTruthy();
@@ -123,15 +130,15 @@ describe("the Wave 1 additions render", () => {
     expect(screen.queryByText(/visual execution trace/)).toBeNull();
   });
 
-  it("renders the workflow diff review with its submit control", () => {
-    renderLesson("workflow", "reviewing-diffs");
+  it("renders the workflow diff review with its submit control", async () => {
+    await renderLesson("workflow", "reviewing-diffs");
 
     expect(screen.getByRole("heading", { name: /·\s*Review/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: /Submit review/ })).toBeTruthy();
   });
 
-  it("renders the testing station's diff alongside its own repair lab", () => {
-    renderLesson("testing", "debug-the-bug");
+  it("renders the testing station's diff alongside its own repair lab", async () => {
+    await renderLesson("testing", "debug-the-bug");
 
     expect(screen.getByRole("heading", { name: /·\s*Run/ })).toBeTruthy();
     expect(screen.getByRole("heading", { name: /·\s*Review/ })).toBeTruthy();

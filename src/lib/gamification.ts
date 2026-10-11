@@ -3,7 +3,7 @@
 /* so nothing new needs to be persisted.                               */
 /* ------------------------------------------------------------------ */
 
-import { tracks } from "../data";
+import { MANIFEST_TRACKS as tracks } from "../data/manifest";
 /* The level curve lives with the backend rules so client and server agree. */
 import { XP_PER_LEVEL, levelForXp } from "../convex/xpRules";
 import { lessonIdOf, scoreFor, type Progress } from "./progress";

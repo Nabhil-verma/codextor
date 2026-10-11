@@ -1,21 +1,24 @@
 import { Link } from "react-router-dom";
-import { tracks, type Track } from "../data";
+import {
+  MANIFEST_TRACKS as tracks,
+  type ManifestTrack,
+} from "../data/manifest";
 import { scoreFor, useProgressState, type Progress } from "../lib/progress";
 import { PrecisionRing, useSpotlight } from "./ui";
 
-function trackProgress(track: Track, progress: Progress) {
+function trackProgress(track: ManifestTrack, progress: Progress) {
   const done = track.lessons.filter(
     (l) => scoreFor(progress, track.id + "/" + l.id) >= 1
   ).length;
   return { done, total: track.lessons.length };
 }
 
-export default function TrackCard({ track }: { track: Track }) {
+export default function TrackCard({ track }: { track: ManifestTrack }) {
   const progress = useProgressState();
   const { done, total } = trackProgress(track, progress);
   const pct = total === 0 ? 0 : Math.round((done / total) * 100);
   const { ref, onPointerMove } = useSpotlight<HTMLAnchorElement>();
-  const index = String(tracks.indexOf(track) + 1).padStart(2, "0");
+  const index = String(tracks.findIndex((t) => t.id === track.id) + 1).padStart(2, "0");
   const cta = done === 0 ? "Begin quest" : done >= total ? "Review" : "Continue quest";
 
   return (

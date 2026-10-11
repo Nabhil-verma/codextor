@@ -18,7 +18,7 @@ import {
 } from "../lib/gamification";
 import { guildTierFor } from "../lib/guild";
 import { useClanRole } from "../lib/guildState";
-import { tracks } from "../data";
+import { MANIFEST_TRACKS as tracks } from "../data/manifest";
 import { scoreFor } from "../lib/progress";
 import Nav from "../components/Nav";
 import { Orb, Reveal, Tilt } from "../components/motion";
