@@ -30,17 +30,40 @@ function Inline({ text }: { text: string }) {
   );
 }
 
+type Segment = { kind: "prose"; text: string } | { kind: "code"; text: string; lang: string };
+
+/**
+ * Splits lesson markdown into prose and fenced code, keeping the fence's
+ * language so CodeBlock can label and colour it.
+ */
+export function parseLessonBody(body: string): Segment[] {
+  const fence = /```(\w*)\n?([\s\S]*?)```/g;
+  const segments: Segment[] = [];
+  let cursor = 0;
+  let m: RegExpExecArray | null;
+  while ((m = fence.exec(body))) {
+    if (m.index > cursor) {
+      segments.push({ kind: "prose", text: body.slice(cursor, m.index) });
+    }
+    segments.push({ kind: "code", lang: m[1], text: m[2].replace(/\n$/, "") });
+    cursor = m.index + m[0].length;
+  }
+  if (cursor < body.length) {
+    segments.push({ kind: "prose", text: body.slice(cursor) });
+  }
+  return segments;
+}
+
 export default function LessonBody({ lesson }: { lesson: Lesson }) {
-  // Fenced ``` blocks render as code; other paragraphs render as prose.
-  const segments = lesson.body.split(/```(?:\w*\n)?([\s\S]*?)```/g);
+  const segments = parseLessonBody(lesson.body);
 
   return (
     <div className="space-y-5 text-[17px] leading-relaxed text-ink-700">
       {segments.map((seg, i) =>
-        i % 2 === 1 ? (
-          <CodeBlock key={i} code={seg.replace(/\n$/, "")} />
+        seg.kind === "code" ? (
+          <CodeBlock key={i} code={seg.text} lang={seg.lang} />
         ) : (
-          seg
+          seg.text
             .split(/\n\n+/)
             .filter((p) => p.trim())
             .map((para, j) => (

@@ -208,6 +208,29 @@ h1, h2, h3 {
   .dark .code-window {
     background: #07070c;
   }
+  /*
+   * Syntax token colours. Code windows are dark in both themes, so structural
+   * hues reuse the existing scales (which already flip per theme and per
+   * visual style) and only the accent hues are fixed.
+   */
+  .code-window {
+    --tok-keyword: var(--gold-300);
+    --tok-comment: var(--ink-400);
+    --tok-operator: var(--ink-300);
+    --tok-string: 110 231 183; /* emerald-300 */
+    --tok-number: 252 211 77; /* amber-300 */
+    --tok-function: 165 243 252; /* cyan-200 */
+    --tok-property: 125 211 252; /* sky-300 */
+    --tok-tag: 253 164 175; /* rose-300 */
+  }
+  .tok-keyword { color: rgb(var(--tok-keyword)); font-weight: 600; }
+  .tok-string { color: rgb(var(--tok-string)); }
+  .tok-number { color: rgb(var(--tok-number)); }
+  .tok-comment { color: rgb(var(--tok-comment)); font-style: italic; }
+  .tok-function { color: rgb(var(--tok-function)); }
+  .tok-property { color: rgb(var(--tok-property)); }
+  .tok-tag { color: rgb(var(--tok-tag)); }
+  .tok-operator { color: rgb(var(--tok-operator)); }
   .eyebrow {
     @apply font-mono text-[0.72rem] uppercase tracking-[0.22em] text-gold-600;
   }
