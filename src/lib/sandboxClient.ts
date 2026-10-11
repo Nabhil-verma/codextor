@@ -24,9 +24,11 @@ type WorkerLike = {
 };
 
 function createSandboxWorker(): WorkerLike | null {
-  const Ctor = (globalThis as { Worker?: new (url: URL, opts: WorkerOptions) => WorkerLike }).Worker;
-  if (typeof Ctor !== "function") return null;
-  return new Ctor(new URL("./jsWorker.ts", import.meta.url), { type: "module" });
+  if (typeof globalThis.Worker !== "function") return null;
+  // Written as `new Worker(new URL(…), …)` so Vite bundles jsWorker.ts as a real
+  // JavaScript chunk. A small worker written any other way is inlined as a
+  // data:video/mp2t URL, which browsers refuse to run.
+  return new Worker(new URL("./jsWorker.ts", import.meta.url), { type: "module" }) as unknown as WorkerLike;
 }
 
 function failure(request: SandboxRequest, message: string): RunResult | TraceResult {

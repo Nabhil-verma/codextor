@@ -16,9 +16,12 @@ import type { TraceResult } from "./stepper";
 const reply = (self as unknown as { postMessage: (m: RunResult | TraceResult) => void }).postMessage.bind(self);
 const close = (self as unknown as { close: () => void }).close.bind(self);
 
+// hardenGlobals wipes `self` itself, so keep the scope object to attach the handler.
+const scope = self as unknown as { onmessage: ((event: MessageEvent<SandboxRequest>) => void) | null };
+
 hardenGlobals(self as unknown as Record<string, unknown>);
 
-self.onmessage = (event: MessageEvent<SandboxRequest>) => {
+scope.onmessage = (event: MessageEvent<SandboxRequest>) => {
   void handleSandboxRequest(event.data).then(
     (result) => {
       reply(result);
