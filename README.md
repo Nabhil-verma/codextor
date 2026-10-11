@@ -447,6 +447,32 @@ constant in `src/AccountProvider.tsx` — change it there to target a different
 deployment. A `VITE_CONVEX_URL` env var is deliberately **not** consulted, so a
 `convex dev` localhost URL can never leak into a production build.
 
+### What the server trusts (and what it doesn't)
+
+Grading happens in the browser, so the client computes XP, level, streak and
+lesson counts and pushes them with `profiles.sync`. The server bounds that
+payload against what the curriculum can plausibly produce (`src/convex/xpRules.ts`):
+lessons never exceed the registry size, XP never exceeds
+`lessonsDone × 75 + quest/milestone ceiling`, `xpWeek ≤ xpMonth ≤ xp`, the level
+must sit on the shared curve, a streak can't outlive the account, gains are
+capped per hour, and each user may push only a limited number of times per
+minute. Violations are **clamped, never rejected**, so a legitimate merge from a
+second device is bounded rather than dropped.
+
+The clamps ship in **log-only mode**: violations are recorded on the row
+(`clampedAt`, `clampLog`) and logged, but the client's numbers are stored
+unchanged. Set `CODEXTOR_XP_CLAMPS=enforce` on the deployment to store the
+clamped values; unset it to roll back. The reason for the staging is that a
+real multi-device merge can look impossible (a phone that was offline for a
+week), and the log is what says how often that actually happens.
+
+**Known limit:** because scoring happens in the browser, a determined learner
+can still forge `progress.save` scores through the API, and those forged scores
+feed the same XP math. The clamps bound the *shape* of a forged card, not its
+existence. The real fix is server-verified grading — running the check
+expressions in Convex against submitted code — which is deliberately out of
+scope here.
+
 ## AI tutor (BYOK)
 
 Optional, and entirely client-side. Add a Gemini or Claude key in

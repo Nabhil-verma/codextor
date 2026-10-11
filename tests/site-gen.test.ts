@@ -19,6 +19,14 @@ const pngSize = (rel: string) => {
   return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) };
 };
 
+describe("generated Convex constants", () => {
+  it("match the curriculum registry", async () => {
+    const mod = await import("../src/convex/curriculum");
+    expect(mod.TRACK_COUNT).toBe(tracks.length);
+    expect(mod.TOTAL_LESSONS).toBe(totalLessonCount);
+  });
+});
+
 describe("sitemap.xml", () => {
   const sitemap = read("public/sitemap.xml");
 

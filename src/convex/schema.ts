@@ -59,6 +59,18 @@ export default defineSchema({
     lessonsDone: v.number(),
     clanId: v.optional(v.id("clans")),
     updatedAt: v.number(),
+    /**
+     * When the last sync tripped a plausibility ceiling (see convex/xpRules.ts).
+     * Optional, so rows written before the clamps existed keep working with no
+     * migration — the same trick `claims` uses.
+     */
+    clampedAt: v.optional(v.number()),
+    /** Which ceilings were hit, e.g. ["xp>curriculum"], for auditing. */
+    clampLog: v.optional(v.array(v.string())),
+    /** Start of the current sync-rate window (epoch ms). */
+    syncWindowStart: v.optional(v.number()),
+    /** Syncs accepted in the current window. */
+    syncCount: v.optional(v.number()),
   })
     .index("by_user", ["userId"])
     .index("by_xp", ["xp"])

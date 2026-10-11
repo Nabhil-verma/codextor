@@ -1,6 +1,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { MAX_SYNCS_PER_MINUTE, clampProfile } from "./xpRules";
 
 /**
  * The public "player card". The client recomputes every number from its
@@ -10,6 +11,21 @@ import { v } from "convex/values";
 
 const MAX_NAME = 40;
 const MAX_TITLE = 24;
+
+/**
+ * The plausibility clamps start in LOG-ONLY mode: violations are recorded on
+ * the card (`clampedAt` / `clampLog`) and logged, but the client's numbers are
+ * stored unchanged, because a legitimate multi-device merge can look odd
+ * before there is any evidence to tune against. Setting the deployment
+ * environment variable CODEXTOR_XP_CLAMPS=enforce switches to clamping the
+ * values themselves; unset (or anything else) rolls straight back.
+ */
+function clampsEnforced(): boolean {
+  return process.env.CODEXTOR_XP_CLAMPS === "enforce";
+}
+
+/** The sync rate-limit window. */
+const SYNC_WINDOW_MS = 60_000;
 
 /** Coerce anything to a finite, non-negative integer the DB can sort on. */
 function count(raw: unknown, hi = 10_000_000): number {
@@ -40,6 +56,8 @@ export const sync = mutation({
     const userId = await getAuthUserId(ctx);
     if (!userId) return null;
 
+    const now = Date.now();
+
     // The display name is owned by the auth user so a rename propagates.
     const user = await ctx.db.get(userId);
     const name =
@@ -47,12 +65,40 @@ export const sync = mutation({
       shortString(user?.email, MAX_NAME) ||
       "Learner";
 
-    // NOTE: `memberRole` is deliberately absent from this payload. Officer
-    // status is granted server-side by `clans.setRole`; letting a progress
-    // push carry the field would either clear a real officer (when omitted)
-    // or let any client mint one (when spoofed), so sync never touches it.
-    const next = {
-      name,
+    const existing = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .unique();
+
+    const enforce = clampsEnforced();
+
+    /* ---------------- per-user sync rate limit ---------------- */
+    const inWindow =
+      existing?.syncWindowStart !== undefined &&
+      now - existing.syncWindowStart < SYNC_WINDOW_MS;
+    const syncCount = inWindow ? (existing?.syncCount ?? 0) + 1 : 1;
+    const rateLimited = inWindow && syncCount > MAX_SYNCS_PER_MINUTE;
+
+    if (rateLimited) {
+      console.warn(
+        `profiles.sync: rate limit hit for ${userId} (${syncCount}/${MAX_SYNCS_PER_MINUTE} per minute)`,
+      );
+      if (enforce && existing) {
+        // The attempt is recorded so the client can be told, but the push is
+        // dropped: a runaway loop must not overwrite a good card.
+        await ctx.db.patch(existing._id, {
+          syncWindowStart: existing.syncWindowStart,
+          syncCount,
+          clampedAt: now,
+          clampLog: ["rate-limit"],
+        });
+        return existing._id;
+      }
+    }
+    const syncWindowStart = inWindow ? existing!.syncWindowStart! : now;
+
+    /* ---------------- plausibility clamps ---------------- */
+    const raw = {
       xp: count(args.xp),
       xpWeek: count(args.xpWeek),
       xpMonth: count(args.xpMonth),
@@ -62,13 +108,65 @@ export const sync = mutation({
       streakLongest: count(args.streakLongest, 10_000),
       lastActiveDay: args.lastActiveDay?.slice(0, 10),
       lessonsDone: count(args.lessonsDone, 100_000),
-      updatedAt: Date.now(),
     };
 
-    const existing = await ctx.db
-      .query("profiles")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .unique();
+    const clamped = clampProfile({
+      ...raw,
+      accountAgeDays: Math.max(0, (now - (user?._creationTime ?? now)) / 86_400_000),
+      previous: existing
+        ? {
+            xp: existing.xp,
+            xpWeek: existing.xpWeek,
+            xpMonth: existing.xpMonth,
+            updatedAt: existing.updatedAt,
+          }
+        : undefined,
+      now,
+    });
+
+    if (clamped.reasons.length) {
+      console.warn(
+        `profiles.sync: ${enforce ? "clamped" : "would clamp"} [${clamped.reasons.join(", ")}] for ${userId}`,
+      );
+    }
+
+    const stored = enforce
+      ? {
+          xp: clamped.xp,
+          xpWeek: clamped.xpWeek,
+          xpMonth: clamped.xpMonth,
+          level: clamped.level,
+          streakCurrent: clamped.streakCurrent,
+          streakLongest: clamped.streakLongest,
+          lessonsDone: clamped.lessonsDone,
+        }
+      : {
+          xp: raw.xp,
+          xpWeek: raw.xpWeek,
+          xpMonth: raw.xpMonth,
+          level: raw.level,
+          streakCurrent: raw.streakCurrent,
+          streakLongest: raw.streakLongest,
+          lessonsDone: raw.lessonsDone,
+        };
+
+    // NOTE: `memberRole` is deliberately absent from this payload. Officer
+    // status is granted server-side by `clans.setRole`; letting a progress
+    // push carry the field would either clear a real officer (when omitted)
+    // or let any client mint one (when spoofed), so sync never touches it.
+    const next = {
+      name,
+      ...stored,
+      ascension: raw.ascension,
+      lastActiveDay: raw.lastActiveDay,
+      syncWindowStart,
+      syncCount,
+      updatedAt: now,
+      // The audit trail is written in both modes: in log-only mode this is
+      // exactly the evidence needed to decide whether to turn clamping on.
+      clampedAt: clamped.reasons.length ? now : undefined,
+      clampLog: clamped.reasons.length ? clamped.reasons : undefined,
+    };
 
     if (!existing) {
       // Only create a card once the learner has actually earned something —
@@ -111,7 +209,7 @@ export const sync = mutation({
       existing.lastActiveDay === next.lastActiveDay &&
       existing.lessonsDone === next.lessonsDone &&
       existing.name === next.name;
-    if (unchanged) return existing._id;
+    if (unchanged && !clamped.reasons.length) return existing._id;
 
     await ctx.db.patch(existing._id, next);
     return existing._id;

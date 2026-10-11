@@ -4,6 +4,8 @@
 /* ------------------------------------------------------------------ */
 
 import { tracks } from "../data";
+/* The level curve lives with the backend rules so client and server agree. */
+import { XP_PER_LEVEL, levelForXp } from "../convex/xpRules";
 import { lessonIdOf, scoreFor, type Progress } from "./progress";
 
 /* ---------------------------- XP ---------------------------- */
@@ -262,11 +264,10 @@ export function monthStartKey(today: string): string {
   return today.slice(0, 8) + "01";
 }
 
-/** 250 XP ≈ 4 lessons — one level. */
-export const XP_PER_LEVEL = 250;
+export { XP_PER_LEVEL };
 
 export function levelFor(xp: number) {
-  const level = Math.floor(xp / XP_PER_LEVEL) + 1;
+  const level = levelForXp(xp);
   const intoLevel = xp % XP_PER_LEVEL;
   return {
     level,
