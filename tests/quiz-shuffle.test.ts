@@ -219,3 +219,22 @@ describe("review-queue keys stay on the authored question", () => {
     expect(itemAfter.snapshot?.answer).toBe(quiz.answer);
   });
 });
+
+describe("pinned options never hold an authored correct answer", () => {
+  // A pinned option stays at the end, so a correct answer that is pinned would
+  // always show in the last slot: a position cue. Keep referential options as
+  // distractors, and write the correct option out in plain words.
+  it("has no quiz whose correct option refers to other options", () => {
+    const offenders: string[] = [];
+    for (const track of tracks) {
+      for (const lesson of track.lessons) {
+        for (const quiz of lesson.quiz ?? []) {
+          if (isPinnedOption(quiz.options[quiz.answer])) {
+            offenders.push(`${track.id}/${lesson.id}: ${quiz.options[quiz.answer]}`);
+          }
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+});
