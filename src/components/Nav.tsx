@@ -36,6 +36,7 @@ const links = [
   { to: "/playground", label: "Playground", active: (p: string) => p.startsWith("/playground") },
   { to: "/projects", label: "Projects", active: (p: string) => p.startsWith("/projects") },
   { to: "/leaderboard", label: "Leaderboard", active: (p: string) => p.startsWith("/leaderboard") },
+  { to: "/ascent", label: "Ascent", active: (p: string) => p.startsWith("/ascent") },
   { to: "/clans", label: "Guilds", active: (p: string) => p.startsWith("/clans") },
   { to: "/portfolio", label: "Profile", active: (p: string) => p.startsWith("/portfolio") },
 ];

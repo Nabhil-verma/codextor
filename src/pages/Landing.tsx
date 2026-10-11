@@ -528,6 +528,9 @@ function GameLayer() {
             <NeonPulseButton to="/clans" variant="glass" size="lg" trailingIcon={false}>
               Found a guild
             </NeonPulseButton>
+            <NeonPulseButton to="/ascent" variant="glass" size="lg" trailingIcon={false}>
+              See the ascent
+            </NeonPulseButton>
           </div>
         </Reveal>
       </div>

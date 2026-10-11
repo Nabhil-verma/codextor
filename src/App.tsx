@@ -7,6 +7,7 @@ import NotFound from "./pages/NotFound";
 import ProfileBridge from "./components/gamification/ProfileBridge";
 import QuestBridge from "./components/gamification/QuestBridge";
 import ThemeBridge from "./components/ThemeBridge";
+import Ceremony from "./components/gamification/Ceremony";
 import { PanelBoundary } from "./components/gamification/Pieces";
 import Nav from "./components/Nav";
 import CommandPalette from "./components/CommandPalette";
@@ -22,6 +23,7 @@ import { AlertTriangle } from "lucide-react";
  * fetched only when its route is actually opened.
  */
 const Learn = lazy(() => import("./pages/Learn"));
+const Ascent = lazy(() => import("./pages/Ascent"));
 const Lesson = lazy(() => import("./pages/Lesson"));
 const PlaygroundPage = lazy(() => import("./pages/PlaygroundPage"));
 const Certificate = lazy(() => import("./pages/Certificate"));
@@ -127,6 +129,8 @@ export default function App() {
       {/* One search surface for the whole app: Cmd/Ctrl+K, or the search
           button in the nav and the phone tab bar. */}
       <CommandPalette />
+      {/* The completion ceremony: fires once per new tier or finished track. */}
+      <Ceremony />
       {/* Any page-level failure degrades to an in-app card, never a blank shell.
           A failed chunk download lands here too, so an offline reload explains
           itself instead of showing an empty page. */}
@@ -198,6 +202,7 @@ export default function App() {
                 </RequireAuth>
               }
             />
+            <Route path="/ascent" element={<Ascent />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

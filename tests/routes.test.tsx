@@ -164,6 +164,14 @@ describe("every route renders", () => {
     ).toBeTruthy();
   });
 
+  it("/ascent — the public ladder page", async () => {
+    open("#/ascent");
+    expect(
+      await screen.findByRole("heading", { name: /One ladder/i }, CHUNK)
+    ).toBeTruthy();
+    expect(screen.getByText(/you are here/)).toBeTruthy();
+  });
+
   it("/clans — the guild hall", async () => {
     open("#/clans");
     expect(
