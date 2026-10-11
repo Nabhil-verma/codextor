@@ -35,27 +35,30 @@ async function topProfiles(
   return ctx.db.query("profiles").withIndex("by_xp").order("desc").take(cap);
 }
 
-/** How many players sit strictly above this XP total in the bracket. */
-async function aheadOf(ctx: QueryCtx, bracket: Bracket, xp: number): Promise<number> {
+/**
+ * How many players sit strictly above this XP total in the bracket, or null
+ * when there are SCAN_CAP or more: the scan stops there, so the exact rank is
+ * unknown. A capped count must never be reported as a rank.
+ */
+async function aheadOf(ctx: QueryCtx, bracket: Bracket, xp: number): Promise<number | null> {
+  let rows: Doc<"profiles">[];
   if (bracket === "week") {
-    const rows = await ctx.db
+    rows = await ctx.db
       .query("profiles")
       .withIndex("by_xpWeek", (q) => q.gt("xpWeek", xp))
       .take(SCAN_CAP);
-    return rows.length;
-  }
-  if (bracket === "month") {
-    const rows = await ctx.db
+  } else if (bracket === "month") {
+    rows = await ctx.db
       .query("profiles")
       .withIndex("by_xpMonth", (q) => q.gt("xpMonth", xp))
       .take(SCAN_CAP);
-    return rows.length;
+  } else {
+    rows = await ctx.db
+      .query("profiles")
+      .withIndex("by_xp", (q) => q.gt("xp", xp))
+      .take(SCAN_CAP);
   }
-  const rows = await ctx.db
-    .query("profiles")
-    .withIndex("by_xp", (q) => q.gt("xp", xp))
-    .take(SCAN_CAP);
-  return rows.length;
+  return rows.length < SCAN_CAP ? rows.length : null;
 }
 
 function xpOf(p: Doc<"profiles">, bracket: Bracket): number {
@@ -64,9 +67,15 @@ function xpOf(p: Doc<"profiles">, bracket: Bracket): number {
   return p.xp;
 }
 
+/**
+ * One public board row. `profileId` is the row's identity (it links to the
+ * public profile); the account id is deliberately absent, so the board never
+ * hands out the accounts behind its rows. `isMe` is computed on the server.
+ * `rank` is null only for a pinned row beyond the scan cap (see aheadOf).
+ */
 export type LeaderboardRow = {
-  rank: number;
-  userId: Id<"users">;
+  rank: number | null;
+  profileId: Id<"profiles">;
   name: string;
   xp: number;
   level: number;
@@ -78,13 +87,13 @@ export type LeaderboardRow = {
 
 function toRow(
   p: Doc<"profiles">,
-  rank: number,
+  rank: number | null,
   bracket: Bracket,
   meId: Id<"users"> | null
 ): LeaderboardRow {
   return {
     rank,
-    userId: p.userId,
+    profileId: p._id,
     name: p.name,
     xp: xpOf(p, bracket),
     level: p.level,
@@ -120,7 +129,8 @@ export const top = query({
           .withIndex("by_user", (q) => q.eq("userId", meId))
           .unique();
         if (profile) {
-          const rank = (await aheadOf(ctx, bracket, xpOf(profile, bracket))) + 1;
+          const ahead = await aheadOf(ctx, bracket, xpOf(profile, bracket));
+          const rank = ahead === null ? null : ahead + 1;
           me = toRow(profile, rank, bracket, meId);
         }
       }

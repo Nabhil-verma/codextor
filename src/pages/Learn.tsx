@@ -21,6 +21,7 @@ import {
 } from "../lib/gamification";
 import { useAccount } from "../AccountProvider";
 import { Reveal, PageFade } from "../components/motion";
+import OfflinePackButton from "../components/OfflinePackButton";
 import {
   CyberBadge,
   MinimalGlassCard,
@@ -524,6 +525,7 @@ export default function Learn() {
                     <span className="hidden font-mono text-[0.7rem] uppercase tracking-widest text-ink-500 sm:block">
                       {trackDone}/{track.lessons.length}
                     </span>
+                    <OfflinePackButton trackId={track.id} />
                   </div>
                   <ol className="space-y-1">
                     {lessons.map((lesson, i) => {

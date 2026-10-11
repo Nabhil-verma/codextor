@@ -9,6 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as certificates from "../certificates.js";
 import type * as clans from "../clans.js";
 import type * as http from "../http.js";
 import type * as leaderboard from "../leaderboard.js";
@@ -25,6 +26,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  certificates: typeof certificates;
   clans: typeof clans;
   http: typeof http;
   leaderboard: typeof leaderboard;

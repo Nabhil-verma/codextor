@@ -105,6 +105,7 @@ export function MyGuild({ guild }: { guild: Guild }) {
   const kick = useMutation(api.clans.kick);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // Member UI state is keyed by profile (public); account ids are only used by actions.
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [confirmKickFor, setConfirmKickFor] = useState<string | null>(null);
   const [menuBusy, setMenuBusy] = useState(false);
@@ -205,15 +206,17 @@ export function MyGuild({ guild }: { guild: Guild }) {
             </p>
             <ul className="mt-3 grid gap-2 sm:grid-cols-2">
               {guild.members.map((m, i) => {
-                const menuOpen = menuFor === m.userId;
-                const kickPrimed = confirmKickFor === m.userId;
+                const menuOpen = menuFor === m.profileId;
+                const kickPrimed = confirmKickFor === m.profileId;
+                // Only members of this guild receive an account id; the actions below need one.
+                const accountId = m.userId;
                 const canPromote = guild.isOwner && !m.isMe;
                 const canKickTarget =
                   !m.isMe &&
                   (guild.isOwner || (guild.myRole === "officer" && m.role === "member"));
                 return (
                   <motion.li
-                    key={m.userId}
+                    key={m.profileId}
                     className={
                       "flex items-center gap-3 rounded-xl border px-3 py-2 " +
                       (m.isMe
@@ -248,7 +251,7 @@ export function MyGuild({ guild }: { guild: Guild }) {
                         type="button"
                         aria-label={"Manage " + m.name}
                         onClick={() => {
-                          setMenuFor(m.userId);
+                          setMenuFor(m.profileId);
                           setConfirmKickFor(null);
                         }}
                         className="shrink-0 rounded-lg border border-paper-100/20 p-1.5 text-paper-300/70 transition hover:border-gold-400/60 hover:text-gold-300"
@@ -264,7 +267,8 @@ export function MyGuild({ guild }: { guild: Guild }) {
                             type="button"
                             disabled={menuBusy}
                             onClick={() =>
-                              runMenuAction(() => setRole({ userId: m.userId, officer: true }))
+                              accountId &&
+                              runMenuAction(() => setRole({ userId: accountId, officer: true }))
                             }
                             className="rounded-lg border border-sky-400/50 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-sky-300 transition hover:bg-sky-400/10 disabled:opacity-50"
                           >
@@ -276,7 +280,8 @@ export function MyGuild({ guild }: { guild: Guild }) {
                             type="button"
                             disabled={menuBusy}
                             onClick={() =>
-                              runMenuAction(() => setRole({ userId: m.userId, officer: false }))
+                              accountId &&
+                              runMenuAction(() => setRole({ userId: accountId, officer: false }))
                             }
                             className="rounded-lg border border-paper-100/20 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-paper-300 transition hover:bg-paper-100/5 disabled:opacity-50"
                           >
@@ -288,9 +293,11 @@ export function MyGuild({ guild }: { guild: Guild }) {
                             type="button"
                             disabled={menuBusy}
                             onClick={() =>
-                              kickPrimed
-                                ? runMenuAction(() => kick({ userId: m.userId }))
-                                : primeKick(m.userId)
+                              accountId === null
+                                ? undefined
+                                : kickPrimed
+                                  ? runMenuAction(() => kick({ userId: accountId }))
+                                  : primeKick(m.profileId)
                             }
                             className={
                               "rounded-lg border px-2 py-1 font-mono text-[10px] uppercase tracking-widest transition disabled:opacity-50 " +

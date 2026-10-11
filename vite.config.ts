@@ -1,6 +1,8 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { visualizer } from "rollup-plugin-visualizer";
+import { offlinePacksPlugin } from "./scripts/offline-packs.mjs";
 
 /*
  * `bun run build:analyze` (vite build --mode analyze) also writes
@@ -11,6 +13,8 @@ import { visualizer } from "rollup-plugin-visualizer";
 export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
+    // Writes offline-packs.json so the Learn page can save tracks for offline use.
+    offlinePacksPlugin(),
     ...(mode === "analyze"
       ? [
           visualizer({
@@ -29,5 +33,10 @@ export default defineConfig(({ mode }) => ({
   preview: {
     host: "0.0.0.0",
     port: Number(process.env.PORT) || 4173,
+  },
+  test: {
+    // Gives Node a browser-shaped Worker for the JS sandbox (see the file).
+    globalSetup: ["./tests/global-setup-js-worker.ts"],
+    setupFiles: ["./tests/setup-js-worker.ts"],
   },
 }));

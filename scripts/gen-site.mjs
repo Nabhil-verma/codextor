@@ -784,6 +784,27 @@ writeFile(
  */
 export const TRACK_COUNT = ${tracks.length};
 export const TOTAL_LESSONS = ${total};
+
+/**
+ * Track titles, so a certificate records what it certifies.
+ */
+export const TRACK_TITLES: Record<string, string> = ${JSON.stringify(
+  Object.fromEntries(tracks.map((t) => [t.id, t.title])),
+  null,
+  2,
+)};
+
+/**
+ * Every lesson key per track, as stored in a learner's progress map
+ * (\`${"${track}"}/${"${lesson}"}\`). A certificate is only issued when the
+ * server finds all of them scored, so the list must come from here, not from
+ * the client.
+ */
+export const TRACK_LESSON_KEYS: Record<string, string[]> = ${JSON.stringify(
+  Object.fromEntries(tracks.map((t) => [t.id, t.lessons.map((l) => t.id + "/" + l.id)])),
+  null,
+  2,
+)};
 `,
 );
 

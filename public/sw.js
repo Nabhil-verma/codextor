@@ -18,6 +18,8 @@
    cache has to go — otherwise the first load after this deploy shows the
    previous logo from stale-while-revalidate. */
 const CACHE_NAME = "codexter-v4";
+/** Offline track packs (src/lib/offlinePacks.ts). Kept across activations. */
+const PACK_CACHE_NAME = "codexter-packs";
 const SHELL = "/index.html";
 const PRECACHE_URLS = ["/", SHELL];
 
@@ -45,7 +47,9 @@ self.addEventListener("activate", (event) => {
       .keys()
       .then((keys) =>
         Promise.all(
-          keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
+          keys
+            .filter((k) => k !== CACHE_NAME && k !== PACK_CACHE_NAME)
+            .map((k) => caches.delete(k))
         )
       )
   );
