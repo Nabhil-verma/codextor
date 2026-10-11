@@ -1,0 +1,468 @@
+{
+  "tracks": {
+    "web": {
+      "quiz": {
+        "n": 50,
+        "indexShares": [
+          0.1,
+          0.8,
+          0.1,
+          0
+        ],
+        "maxIndexShare": 0.8,
+        "longestShare": 0.72,
+        "longestOrTiedCount": 40,
+        "longestOrTiedShare": 0.8
+      },
+      "predict": {
+        "n": 7,
+        "indexShares": [
+          0,
+          0.7143,
+          0.2857,
+          0
+        ],
+        "maxIndexShare": 0.7143,
+        "longestShare": 0.5714,
+        "longestOrTiedCount": 4,
+        "longestOrTiedShare": 0.5714
+      }
+    },
+    "react": {
+      "quiz": {
+        "n": 20,
+        "indexShares": [
+          0.05,
+          0.9,
+          0.05,
+          0
+        ],
+        "maxIndexShare": 0.9,
+        "longestShare": 0.85,
+        "longestOrTiedCount": 17,
+        "longestOrTiedShare": 0.85
+      },
+      "predict": {
+        "n": 0,
+        "indexShares": [],
+        "maxIndexShare": 0,
+        "longestShare": 0,
+        "longestOrTiedCount": 0,
+        "longestOrTiedShare": 0
+      }
+    },
+    "backend": {
+      "quiz": {
+        "n": 25,
+        "indexShares": [
+          0.12,
+          0.84,
+          0.04,
+          0
+        ],
+        "maxIndexShare": 0.84,
+        "longestShare": 0.8,
+        "longestOrTiedCount": 21,
+        "longestOrTiedShare": 0.84
+      },
+      "predict": {
+        "n": 2,
+        "indexShares": [
+          0.5,
+          0.5,
+          0,
+          0
+        ],
+        "maxIndexShare": 0.5,
+        "longestShare": 1,
+        "longestOrTiedCount": 2,
+        "longestOrTiedShare": 1
+      }
+    },
+    "dsa": {
+      "quiz": {
+        "n": 40,
+        "indexShares": [
+          0.05,
+          0.875,
+          0.075,
+          0
+        ],
+        "maxIndexShare": 0.875,
+        "longestShare": 0.625,
+        "longestOrTiedCount": 28,
+        "longestOrTiedShare": 0.7
+      },
+      "predict": {
+        "n": 2,
+        "indexShares": [
+          0.5,
+          0.5,
+          0,
+          0
+        ],
+        "maxIndexShare": 0.5,
+        "longestShare": 1,
+        "longestOrTiedCount": 2,
+        "longestOrTiedShare": 1
+      }
+    },
+    "python": {
+      "quiz": {
+        "n": 20,
+        "indexShares": [
+          0.1,
+          0.85,
+          0.05,
+          0
+        ],
+        "maxIndexShare": 0.85,
+        "longestShare": 0.9,
+        "longestOrTiedCount": 18,
+        "longestOrTiedShare": 0.9
+      },
+      "predict": {
+        "n": 3,
+        "indexShares": [
+          0,
+          1,
+          0,
+          0
+        ],
+        "maxIndexShare": 1,
+        "longestShare": 0.6667,
+        "longestOrTiedCount": 2,
+        "longestOrTiedShare": 0.6667
+      }
+    },
+    "git": {
+      "quiz": {
+        "n": 20,
+        "indexShares": [
+          0.1,
+          0.8,
+          0.05,
+          0.05
+        ],
+        "maxIndexShare": 0.8,
+        "longestShare": 0.9,
+        "longestOrTiedCount": 18,
+        "longestOrTiedShare": 0.9
+      },
+      "predict": {
+        "n": 0,
+        "indexShares": [],
+        "maxIndexShare": 0,
+        "longestShare": 0,
+        "longestOrTiedCount": 0,
+        "longestOrTiedShare": 0
+      }
+    },
+    "testing": {
+      "quiz": {
+        "n": 32,
+        "indexShares": [
+          0.0625,
+          0.875,
+          0.0625,
+          0
+        ],
+        "maxIndexShare": 0.875,
+        "longestShare": 0.9063,
+        "longestOrTiedCount": 29,
+        "longestOrTiedShare": 0.9063
+      },
+      "predict": {
+        "n": 2,
+        "indexShares": [
+          0.5,
+          0.5,
+          0,
+          0
+        ],
+        "maxIndexShare": 0.5,
+        "longestShare": 0.5,
+        "longestOrTiedCount": 1,
+        "longestOrTiedShare": 0.5
+      }
+    },
+    "devops": {
+      "quiz": {
+        "n": 30,
+        "indexShares": [
+          0.1,
+          0.8667,
+          0.0333,
+          0
+        ],
+        "maxIndexShare": 0.8667,
+        "longestShare": 0.8333,
+        "longestOrTiedCount": 27,
+        "longestOrTiedShare": 0.9
+      },
+      "predict": {
+        "n": 3,
+        "indexShares": [
+          0,
+          1,
+          0,
+          0
+        ],
+        "maxIndexShare": 1,
+        "longestShare": 1,
+        "longestOrTiedCount": 3,
+        "longestOrTiedShare": 1
+      }
+    },
+    "security": {
+      "quiz": {
+        "n": 35,
+        "indexShares": [
+          0.3143,
+          0.6857,
+          0,
+          0
+        ],
+        "maxIndexShare": 0.6857,
+        "longestShare": 0.9143,
+        "longestOrTiedCount": 32,
+        "longestOrTiedShare": 0.9143
+      },
+      "predict": {
+        "n": 3,
+        "indexShares": [
+          0,
+          1,
+          0,
+          0
+        ],
+        "maxIndexShare": 1,
+        "longestShare": 1,
+        "longestOrTiedCount": 3,
+        "longestOrTiedShare": 1
+      }
+    },
+    "architecture": {
+      "quiz": {
+        "n": 30,
+        "indexShares": [
+          0.0333,
+          0.9667,
+          0,
+          0
+        ],
+        "maxIndexShare": 0.9667,
+        "longestShare": 0.9667,
+        "longestOrTiedCount": 29,
+        "longestOrTiedShare": 0.9667
+      },
+      "predict": {
+        "n": 2,
+        "indexShares": [
+          0,
+          1,
+          0,
+          0
+        ],
+        "maxIndexShare": 1,
+        "longestShare": 0.5,
+        "longestOrTiedCount": 1,
+        "longestOrTiedShare": 0.5
+      }
+    },
+    "tailwind": {
+      "quiz": {
+        "n": 24,
+        "indexShares": [
+          0.125,
+          0.8333,
+          0.0417,
+          0
+        ],
+        "maxIndexShare": 0.8333,
+        "longestShare": 0.9167,
+        "longestOrTiedCount": 22,
+        "longestOrTiedShare": 0.9167
+      },
+      "predict": {
+        "n": 0,
+        "indexShares": [],
+        "maxIndexShare": 0,
+        "longestShare": 0,
+        "longestOrTiedCount": 0,
+        "longestOrTiedShare": 0
+      }
+    },
+    "state": {
+      "quiz": {
+        "n": 24,
+        "indexShares": [
+          0,
+          0.9167,
+          0.0833,
+          0
+        ],
+        "maxIndexShare": 0.9167,
+        "longestShare": 1,
+        "longestOrTiedCount": 24,
+        "longestOrTiedShare": 1
+      },
+      "predict": {
+        "n": 1,
+        "indexShares": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "maxIndexShare": 1,
+        "longestShare": 0,
+        "longestOrTiedCount": 0,
+        "longestOrTiedShare": 0
+      }
+    },
+    "api": {
+      "quiz": {
+        "n": 25,
+        "indexShares": [
+          0,
+          0.8,
+          0.2,
+          0
+        ],
+        "maxIndexShare": 0.8,
+        "longestShare": 0.8,
+        "longestOrTiedCount": 21,
+        "longestOrTiedShare": 0.84
+      },
+      "predict": {
+        "n": 0,
+        "indexShares": [],
+        "maxIndexShare": 0,
+        "longestShare": 0,
+        "longestOrTiedCount": 0,
+        "longestOrTiedShare": 0
+      }
+    },
+    "typescript": {
+      "quiz": {
+        "n": 30,
+        "indexShares": [
+          0.1667,
+          0.7,
+          0.1333,
+          0
+        ],
+        "maxIndexShare": 0.7,
+        "longestShare": 0.9667,
+        "longestOrTiedCount": 29,
+        "longestOrTiedShare": 0.9667
+      },
+      "predict": {
+        "n": 0,
+        "indexShares": [],
+        "maxIndexShare": 0,
+        "longestShare": 0,
+        "longestOrTiedCount": 0,
+        "longestOrTiedShare": 0
+      }
+    },
+    "performance": {
+      "quiz": {
+        "n": 30,
+        "indexShares": [
+          0.3,
+          0.6667,
+          0.0333,
+          0
+        ],
+        "maxIndexShare": 0.6667,
+        "longestShare": 0.8667,
+        "longestOrTiedCount": 26,
+        "longestOrTiedShare": 0.8667
+      },
+      "predict": {
+        "n": 0,
+        "indexShares": [],
+        "maxIndexShare": 0,
+        "longestShare": 0,
+        "longestOrTiedCount": 0,
+        "longestOrTiedShare": 0
+      }
+    },
+    "agents": {
+      "quiz": {
+        "n": 42,
+        "indexShares": [
+          0.2857,
+          0.4762,
+          0.1905,
+          0.0476
+        ],
+        "maxIndexShare": 0.4762,
+        "longestShare": 0.5952,
+        "longestOrTiedCount": 25,
+        "longestOrTiedShare": 0.5952
+      },
+      "predict": {
+        "n": 0,
+        "indexShares": [],
+        "maxIndexShare": 0,
+        "longestShare": 0,
+        "longestOrTiedCount": 0,
+        "longestOrTiedShare": 0
+      }
+    },
+    "workflow": {
+      "quiz": {
+        "n": 17,
+        "indexShares": [
+          0,
+          0.8824,
+          0.1176,
+          0
+        ],
+        "maxIndexShare": 0.8824,
+        "longestShare": 1,
+        "longestOrTiedCount": 17,
+        "longestOrTiedShare": 1
+      },
+      "predict": {
+        "n": 0,
+        "indexShares": [],
+        "maxIndexShare": 0,
+        "longestShare": 0,
+        "longestOrTiedCount": 0,
+        "longestOrTiedShare": 0
+      }
+    }
+  },
+  "global": {
+    "quiz": {
+      "n": 494,
+      "indexShares": [
+        0.1235,
+        0.7935,
+        0.0769,
+        0.0061
+      ],
+      "maxIndexShare": 0.7935,
+      "longestShare": 0.834,
+      "longestOrTiedCount": 423,
+      "longestOrTiedShare": 0.8563
+    },
+    "predict": {
+      "n": 25,
+      "indexShares": [
+        0.16,
+        0.76,
+        0.08,
+        0
+      ],
+      "maxIndexShare": 0.76,
+      "longestShare": 0.72,
+      "longestOrTiedCount": 18,
+      "longestOrTiedShare": 0.72
+    }
+  }
+}

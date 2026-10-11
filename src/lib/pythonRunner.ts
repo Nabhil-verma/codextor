@@ -165,13 +165,13 @@ async function runInProcess(
  * the test on purpose: Bun and Node both expose a `Worker`, but neither can
  * resolve the `/pyodide/...` origin path the worker imports.
  */
-function useWorker(): boolean {
+function hasWorkerSupport(): boolean {
   return typeof window !== "undefined" && typeof Worker !== "undefined";
 }
 
 /** True when this environment can run Python at all. */
 export function pythonAvailable(): boolean {
-  return useWorker() || typeof process !== "undefined";
+  return hasWorkerSupport() || typeof process !== "undefined";
 }
 
 /**
@@ -180,7 +180,7 @@ export function pythonAvailable(): boolean {
  * where the learner discovers that.
  */
 export function preloadPython(): void {
-  if (useWorker()) {
+  if (hasWorkerSupport()) {
     try {
       getWorker();
     } catch {
@@ -197,6 +197,6 @@ export async function runPython(
   code: string,
   opts: PythonRunOptions = {}
 ): Promise<PythonRunResult> {
-  if (useWorker()) return runInWorker(code, opts);
+  if (hasWorkerSupport()) return runInWorker(code, opts);
   return runInProcess(code, opts);
 }

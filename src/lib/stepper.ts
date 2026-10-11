@@ -64,7 +64,7 @@ function rewriteLine(raw: string, line: number): string {
   // Split into code prefix and trailing comment (naive but safe for echoes:
   // we only use it to detect comment positions, never to transform them).
   let echo = "";
-  let body = raw;
+  const body = raw;
 
   // Skip pure comment/blank lines.
   const t = body.trim();

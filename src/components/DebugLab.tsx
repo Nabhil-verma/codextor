@@ -11,6 +11,7 @@ import { summarizeRun } from "../lib/runSummary";
 import type { DebugChallenge } from "../data/types";
 import ErrorNote from "./ErrorNote";
 import { TAB_HINT } from "../lib/useTabTrapEscape";
+import { shuffleOrder } from "../lib/shuffle";
 import CodeEditor from "./CodeEditor";
 
 /* ═══════════════════════════════════════════════════════════════
@@ -274,28 +275,13 @@ export default function DebugLab({ challenge, onPass, onScore, onAskTutor }: Pro
           </p>
           <p className="mt-1 text-sm text-ink-600">{challenge.diagnosis.prompt}</p>
           <div className="mt-3 flex flex-wrap gap-2">
-            {challenge.diagnosis.codes.map((code) => {
-              const entry = taxonomyEntry(code);
-              const on = diagPick === code;
-              return (
-                <button
-                  key={code}
-                  type="button"
-                  aria-pressed={on}
-                  disabled={diagResult === "right"}
-                  onClick={() => setDiagPick(code)}
-                  className={
-                    "rounded-xl border px-3.5 py-2 text-left text-sm transition disabled:opacity-60 " +
-                    (on
-                      ? "border-gold-400 bg-gold-400/10"
-                      : "border-paper-200 hover:border-gold-400/60 hover:bg-paper-100")
-                  }
-                >
-                  <span className="font-mono text-xs font-bold text-gold-600">{code}</span>
-                  <span className="ml-2 text-ink-800">{entry.label}</span>
-                </button>
-              );
-            })}
+            <DiagnosisOptions
+              key={challenge.id}
+              codes={challenge.diagnosis.codes}
+              picked={diagPick}
+              disabled={diagResult === "right"}
+              onPick={setDiagPick}
+            />
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <button
@@ -393,5 +379,50 @@ export default function DebugLab({ challenge, onPass, onScore, onAskTutor }: Pro
         )}
       </div>
     </motion.div>
+  );
+}
+
+/**
+ * The diagnosis codes in a shuffled order, drawn once per challenge (the key on
+ * the call site). Picks are codes, not positions, so scoring is unchanged.
+ */
+function DiagnosisOptions({
+  codes,
+  picked,
+  disabled,
+  onPick,
+}: {
+  codes: TaxonomyCode[];
+  picked: TaxonomyCode | null;
+  disabled: boolean;
+  onPick: (code: TaxonomyCode) => void;
+}) {
+  const [order] = useState(() => shuffleOrder(codes));
+  return (
+    <>
+      {order.map((i) => {
+        const code = codes[i];
+        const entry = taxonomyEntry(code);
+        const on = picked === code;
+        return (
+          <button
+            key={code}
+            type="button"
+            aria-pressed={on}
+            disabled={disabled}
+            onClick={() => onPick(code)}
+            className={
+              "rounded-xl border px-3.5 py-2 text-left text-sm transition disabled:opacity-60 " +
+              (on
+                ? "border-gold-400 bg-gold-400/10"
+                : "border-paper-200 hover:border-gold-400/60 hover:bg-paper-100")
+            }
+          >
+            <span className="font-mono text-xs font-bold text-gold-600">{code}</span>
+            <span className="ml-2 text-ink-800">{entry.label}</span>
+          </button>
+        );
+      })}
+    </>
   );
 }

@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import MultiFile from "./MultiFile";
 import { scoreLocate, scoreSelect } from "../lib/labGrade";
+import { shuffleOrder } from "../lib/shuffle";
 import type { RepoExercise } from "../data/types";
 
 /* ═══════════════════════════════════════════════════════════════
@@ -97,12 +98,7 @@ export default function RepoLab({ exercise, onScore, onPass }: Props) {
         {exercise.questions.map((q, i) => {
           const s = scores[i];
           const done = s !== undefined;
-          const files = Array.from(new Set(q.kind === "locate" ? q.choices.map((c) => c.file) : []));
           const picked = locate[i];
-          const symbols =
-            q.kind === "locate" && picked
-              ? q.choices.filter((c) => c.file === picked.file).map((c) => c.symbol)
-              : [];
 
           return (
             <div
@@ -120,72 +116,24 @@ export default function RepoLab({ exercise, onScore, onPass }: Props) {
               <p className="mt-1 text-sm font-medium text-ink-900">{q.prompt}</p>
 
               {q.kind === "locate" ? (
-                <div className="mt-3 flex flex-wrap items-end gap-3">
-                  <label className="text-xs text-ink-600">
-                    file
-                    <select
-                      className="mt-1 block rounded-lg border border-paper-200 bg-paper-50 px-3 py-2 font-mono text-xs text-ink-900 outline-none focus:border-gold-400"
-                      value={picked?.file ?? ""}
-                      onChange={(e) =>
-                        setLocate((l) => ({ ...l, [i]: { file: e.target.value, symbol: "" } }))
-                      }
-                    >
-                      <option value="">choose a file…</option>
-                      {files.map((f) => (
-                        <option key={f} value={f}>
-                          {f}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="text-xs text-ink-600">
-                    function
-                    <select
-                      className="mt-1 block rounded-lg border border-paper-200 bg-paper-50 px-3 py-2 font-mono text-xs text-ink-900 outline-none focus:border-gold-400 disabled:opacity-50"
-                      value={picked?.symbol ?? ""}
-                      disabled={!picked}
-                      onChange={(e) =>
-                        setLocate((l) => ({
-                          ...l,
-                          [i]: { file: l[i]?.file ?? "", symbol: e.target.value },
-                        }))
-                      }
-                    >
-                      <option value="">choose a symbol…</option>
-                      {symbols.map((sym) => (
-                        <option key={sym} value={sym}>
-                          {sym}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                </div>
+                <LocatePicker
+                  key={exercise.id + ":" + i}
+                  choices={q.choices}
+                  picked={picked}
+                  onFile={(file) => setLocate((l) => ({ ...l, [i]: { file, symbol: "" } }))}
+                  onSymbol={(symbol) =>
+                    setLocate((l) => ({ ...l, [i]: { file: l[i]?.file ?? "", symbol } }))
+                  }
+                />
               ) : (
-                <div className="mt-3 space-y-2">
-                  {q.options.map((o, oi) => {
-                    const on = (selected[i] ?? []).includes(oi);
-                    return (
-                      <label
-                        key={oi}
-                        className={
-                          "flex cursor-pointer items-start gap-3 rounded-xl border px-4 py-2.5 text-sm transition " +
-                          (on
-                            ? "border-gold-400 bg-gold-400/10"
-                            : "border-paper-200 hover:border-gold-400/60 hover:bg-paper-100")
-                        }
-                      >
-                        <input
-                          type={q.single ? "radio" : "checkbox"}
-                          name={q.single ? `repo-q${i}` : undefined}
-                          checked={on}
-                          onChange={() => toggleOption(i, oi)}
-                          className="mt-1 accent-gold-500"
-                        />
-                        <span className="font-mono text-xs text-ink-800">{o.label}</span>
-                      </label>
-                    );
-                  })}
-                </div>
+                <SelectOptions
+                  key={exercise.id + ":" + i}
+                  options={q.options}
+                  single={Boolean(q.single)}
+                  radioName={q.single ? `repo-q${i}` : undefined}
+                  selected={selected[i] ?? []}
+                  onToggle={(oi) => toggleOption(i, oi)}
+                />
               )}
 
               <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -228,6 +176,119 @@ export default function RepoLab({ exercise, onScore, onPass }: Props) {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+/**
+ * A select question's options in a shuffled order, drawn once per question
+ * (the key on the call site). Selections are authored indices, and scoring
+ * reads the per-option `correct` flags, so the shuffle changes only what is
+ * shown.
+ */
+function SelectOptions({
+  options,
+  single,
+  radioName,
+  selected,
+  onToggle,
+}: {
+  options: { label: string; correct: boolean }[];
+  single: boolean;
+  radioName: string | undefined;
+  selected: number[];
+  onToggle: (authoredIndex: number) => void;
+}) {
+  const [order] = useState(() => shuffleOrder(options.map((o) => o.label)));
+  return (
+    <div className="mt-3 space-y-2">
+      {order.map((oi) => {
+        const on = selected.includes(oi);
+        return (
+          <label
+            key={oi}
+            className={
+              "flex cursor-pointer items-start gap-3 rounded-xl border px-4 py-2.5 text-sm transition " +
+              (on
+                ? "border-gold-400 bg-gold-400/10"
+                : "border-paper-200 hover:border-gold-400/60 hover:bg-paper-100")
+            }
+          >
+            <input
+              type={single ? "radio" : "checkbox"}
+              name={radioName}
+              checked={on}
+              onChange={() => onToggle(oi)}
+              className="mt-1 accent-gold-500"
+            />
+            <span className="font-mono text-xs text-ink-800">{options[oi].label}</span>
+          </label>
+        );
+      })}
+    </div>
+  );
+}
+
+/**
+ * The file → function dropdowns for a locate question. The file list and each
+ * file's function list are shuffled once per question (the key on the call
+ * site). Picks are file and function names, and scoring compares those names,
+ * so the order only changes what is shown.
+ */
+function LocatePicker({
+  choices,
+  picked,
+  onFile,
+  onSymbol,
+}: {
+  choices: { file: string; symbol: string }[];
+  picked: LocatePick | undefined;
+  onFile: (file: string) => void;
+  onSymbol: (symbol: string) => void;
+}) {
+  const [layout] = useState(() => {
+    const files = Array.from(new Set(choices.map((c) => c.file)));
+    const symbolsByFile: Record<string, string[]> = {};
+    for (const file of files) {
+      const symbols = choices.filter((c) => c.file === file).map((c) => c.symbol);
+      symbolsByFile[file] = shuffleOrder(symbols).map((j) => symbols[j]);
+    }
+    return { files: shuffleOrder(files).map((j) => files[j]), symbolsByFile };
+  });
+  const symbols = picked ? (layout.symbolsByFile[picked.file] ?? []) : [];
+  return (
+    <div className="mt-3 flex flex-wrap items-end gap-3">
+      <label className="text-xs text-ink-600">
+        file
+        <select
+          className="mt-1 block rounded-lg border border-paper-200 bg-paper-50 px-3 py-2 font-mono text-xs text-ink-900 outline-none focus:border-gold-400"
+          value={picked?.file ?? ""}
+          onChange={(e) => onFile(e.target.value)}
+        >
+          <option value="">choose a file…</option>
+          {layout.files.map((f) => (
+            <option key={f} value={f}>
+              {f}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="text-xs text-ink-600">
+        function
+        <select
+          className="mt-1 block rounded-lg border border-paper-200 bg-paper-50 px-3 py-2 font-mono text-xs text-ink-900 outline-none focus:border-gold-400 disabled:opacity-50"
+          value={picked?.symbol ?? ""}
+          disabled={!picked}
+          onChange={(e) => onSymbol(e.target.value)}
+        >
+          <option value="">choose a symbol…</option>
+          {symbols.map((sym) => (
+            <option key={sym} value={sym}>
+              {sym}
+            </option>
+          ))}
+        </select>
+      </label>
     </div>
   );
 }

@@ -12,9 +12,11 @@ import {
   reviewXp,
   shakyLessons,
   type ReviewItem,
+  type ReviewSnapshot,
 } from "../../lib/review";
 import { queuedLessons, seededItems, shakyRefs } from "../../lib/reviewQueue";
 import { todayKey } from "../../lib/gamification";
+import { isAnswerIndex, useShuffledOptions } from "../../lib/shuffle";
 
 /* ═══════════════════════════════════════════════════════════════
    Spaced review — the "Review 5" card.
@@ -132,18 +134,23 @@ export default function ReviewCard() {
               {current.snapshot.prompt}
             </p>
             <ul className="mt-3 grid gap-2">
-              {current.snapshot.options.map((option, i) => (
-                <li key={option + i}>
-                  <button
-                    type="button"
+              {isAnswerIndex(current.snapshot.answer, current.snapshot.options.length) ? (
+                <ShuffledReviewOptions
+                  key={current.id}
+                  snapshot={current.snapshot}
+                  disabled={Boolean(feedback)}
+                  onPick={answer}
+                />
+              ) : (
+                current.snapshot.options.map((option, i) => (
+                  <ReviewOption
+                    key={option + i}
+                    option={option}
                     disabled={Boolean(feedback)}
                     onClick={() => answer(i)}
-                    className="w-full rounded-lg border border-paper-200 px-3 py-2 text-left text-sm text-ink-800 transition hover:border-gold-400/60 hover:bg-gold-400/5 disabled:opacity-60"
-                  >
-                    {option}
-                  </button>
-                </li>
-              ))}
+                  />
+                ))
+              )}
             </ul>
           </div>
         )}
@@ -204,5 +211,60 @@ export default function ReviewCard() {
         )}
       </div>
     </div>
+  );
+}
+
+/**
+ * The item's options in a shuffled order, redrawn per queue item (the key on
+ * the call site). Picks are reported as authored indices, which is what the
+ * stored snapshot's `answer` and the recall grading compare against.
+ */
+function ShuffledReviewOptions({
+  snapshot,
+  disabled,
+  onPick,
+}: {
+  snapshot: ReviewSnapshot;
+  disabled: boolean;
+  onPick: (authoredIndex: number) => void;
+}) {
+  const { view } = useShuffledOptions(snapshot.options, snapshot.answer);
+  return (
+    <>
+      {view.options.map((option, oi) => {
+        const authored = view.order[oi];
+        return (
+          <ReviewOption
+            key={authored}
+            option={option}
+            disabled={disabled}
+            onClick={() => onPick(authored)}
+          />
+        );
+      })}
+    </>
+  );
+}
+
+function ReviewOption({
+  option,
+  disabled,
+  onClick,
+}: {
+  option: string;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <li>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={onClick}
+        className="w-full rounded-lg border border-paper-200 px-3 py-2 text-left text-sm text-ink-800 transition hover:border-gold-400/60 hover:bg-gold-400/5 disabled:opacity-60"
+      >
+        {option}
+      </button>
+    </li>
   );
 }

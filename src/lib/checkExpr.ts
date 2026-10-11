@@ -282,6 +282,8 @@ function evaluate(node: Node, output: string): CheckValue {
           return left >= right;
         case "<=":
           return left <= right;
+        default:
+          throw new Error("unknown comparison operator");
       }
     }
     case "equal": {

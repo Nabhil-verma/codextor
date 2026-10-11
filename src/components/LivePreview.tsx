@@ -35,7 +35,7 @@ function buildDoc(
   const tailwind =
     spec.framework === "none"
       ? ""
-      : '<script src="https://cdn.tailwindcss.com"><\/script>';
+      : '<script src="https://cdn.tailwindcss.com"></script>';
 
   // Probing runs immediately (the markup above is already parsed) and again
   // after the CDN settles, so an unreachable CDN can never block grading.
@@ -85,8 +85,8 @@ ${html}
       message: (err && err.message) ? err.message : String(err)
     }, "*");
   }
-<\/script>
-<script>${probe}<\/script>
+</script>
+<script>${probe}</script>
 </body>
 </html>`;
 }
