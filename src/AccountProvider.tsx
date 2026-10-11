@@ -38,6 +38,7 @@ import {
   type AttemptAggs,
 } from "./lib/telemetry";
 import { mergeClaims, type Claims } from "./lib/milestones";
+import { loadReviewDays } from "./lib/reviewStore";
 import { toAbsoluteUrl } from "./lib/url";
 import { authMessage } from "./lib/friendlyError";
 import {
@@ -237,16 +238,17 @@ function ConvexAccount({ children }: { children: ReactNode }) {
       const p = loadProgress();
       const today = todayKey();
       const streak = computeStreak(p, today, previousDayKeys());
-      const level = levelFor(totalXp(p));
+      const reviewDays = loadReviewDays();
+      const level = levelFor(totalXp(p, reviewDays));
       const lessonsDone = new Set(
         Object.entries(p.completed)
           .filter(([, score]) => score >= 1)
           .map(([key]) => lessonIdOf(key))
       ).size;
       void saveProfile({
-        xp: playerXp(p, clanRewardXp() + currentMilestoneXp()),
-        xpWeek: xpInRange(p, weekStartKey(today), today),
-        xpMonth: xpInRange(p, monthStartKey(today), today),
+        xp: playerXp(p, clanRewardXp() + currentMilestoneXp(), reviewDays),
+        xpWeek: xpInRange(p, weekStartKey(today), today, reviewDays),
+        xpMonth: xpInRange(p, monthStartKey(today), today, reviewDays),
         level: level.level,
         ascension: ascensionFor(level.level).current.id,
         streakCurrent: streak.current,

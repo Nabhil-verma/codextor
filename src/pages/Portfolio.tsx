@@ -30,6 +30,7 @@ import {
 } from "../components/gamification/Pieces";
 import { useAccount } from "../AccountProvider";
 import { useClaims } from "../lib/milestoneStore";
+import { useReviewDays } from "../lib/reviewStore";
 import { MILESTONES, judgmentCardMarkdown } from "../lib/milestones";
 import { taxonomyEntry } from "../data/bug-taxonomy";
 
@@ -189,9 +190,10 @@ function HeatMap() {
 
 function BadgeGrid() {
   const progress = useProgressState();
+  const reviewDays = useReviewDays();
   const clanRole = useClanRole();
   const streak = computeStreak(progress, todayKey(), previousDayKeys(new Date()));
-  const level = levelFor(totalXp(progress));
+  const level = levelFor(totalXp(progress, reviewDays));
   const badges = computeBadges(progress, streak, {
     level: level.level,
     clanRole,
@@ -300,12 +302,13 @@ function RevealSection({
 
 function TitlesAndFrames() {
   const progress = useProgressState();
+  const reviewDays = useReviewDays();
   const profile = useQuery(api.profiles.me);
   const setTitle = useMutation(api.profiles.setTitle);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const level = levelFor(totalXp(progress));
+  const level = levelFor(totalXp(progress, reviewDays));
   const tier = ascensionFor(level.level);
   const unlocked = unlockedTitles(level.level);
   const nextLocked = TITLES.find((t) => t.minLevel > level.level);
@@ -459,8 +462,9 @@ function GuildCard() {
 
 export default function Portfolio() {
   const progress = useProgressState();
+  const reviewDays = useReviewDays();
   const { user } = useAccount();
-  const xp = totalXp(progress);
+  const xp = totalXp(progress, reviewDays);
   const level = levelFor(xp);
   const streak = computeStreak(progress, todayKey(), previousDayKeys(new Date()));
   const completedTracks = tracks.filter((t) =>

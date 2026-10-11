@@ -14,6 +14,7 @@ import {
   totalXp,
 } from "../../lib/gamification";
 import { useProgressState } from "../../lib/progress";
+import { useReviewDays } from "../../lib/reviewStore";
 import { useAccount } from "../../AccountProvider";
 import { Skeleton } from "../ui";
 import {
@@ -276,7 +277,8 @@ function BoardRow({
 function LocalBoard() {
   const progress = useProgressState();
   const { user } = useAccount();
-  const xp = totalXp(progress);
+  const reviewDays = useReviewDays();
+  const xp = totalXp(progress, reviewDays);
   const level = levelFor(xp);
   const streak = computeStreak(progress, todayKey(), previousDayKeys());
 

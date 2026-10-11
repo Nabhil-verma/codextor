@@ -7,6 +7,7 @@ import { MANIFEST_TRACKS as tracks } from "../data/manifest";
 /* The level curve lives with the backend rules so client and server agree. */
 import { XP_PER_LEVEL, levelForXp } from "../convex/xpRules";
 import { lessonIdOf, scoreFor, type Progress } from "./progress";
+import { reviewXp, type ReviewDays } from "./review";
 
 /* ---------------------------- XP ---------------------------- */
 
@@ -84,8 +85,12 @@ type QuestDef = {
   title: string;
   detail: string;
   target: number;
-  /** which per-day counter the target is measured against */
-  metric: "lessons" | "xp" | "flawless";
+  /**
+   * Which per-day counter the target is measured against. `reviews` is the one
+   * metric the progress map cannot answer — correct recalls live in the review
+   * store's day log, so it is passed in (and defaults to zero).
+   */
+  metric: "lessons" | "xp" | "flawless" | "reviews";
   bonus: number;
 };
 
@@ -126,23 +131,43 @@ export const DAILY_QUESTS: QuestDef[] = [
     metric: "flawless",
     bonus: 75,
   },
+  {
+    id: "review-5",
+    icon: "↻",
+    title: "Review 5",
+    detail: "Recall 5 items from your review queue",
+    target: 5,
+    metric: "reviews",
+    bonus: 50,
+  },
 ];
+
+/**
+ * Quests the progress map alone can score. The review quest is excluded: its
+ * evidence lives in the review store, and every surface (badges, boards, the
+ * server push) has to agree on what "all quests cleared" means.
+ */
+const PROGRESS_QUESTS = DAILY_QUESTS.filter((q) => q.metric !== "reviews");
+
+/** Bonus for clearing every progress-scorable quest in one day. */
+export const PERFECT_DAY_BONUS = PROGRESS_QUESTS.reduce((n, q) => n + q.bonus, 0);
 
 /** Bonus XP paid for whatever is left open on the day's quest list. */
 export const STREAK_BONUS = 25;
 
-function metricValue(b: DayBucket, metric: QuestDef["metric"]): number {
+function metricValue(b: DayBucket, metric: QuestDef["metric"], reviewsToday: number): number {
   if (metric === "lessons") return b.lessons;
   if (metric === "xp") return b.xp;
+  if (metric === "reviews") return reviewsToday;
   return b.flawless;
 }
 
 /** Bonus from the daily quests on one day (quest completion only). */
-export function dayQuestBonus(bucket: DayBucket | undefined): number {
+export function dayQuestBonus(bucket: DayBucket | undefined, reviewsToday = 0): number {
   if (!bucket) return 0;
   let bonus = 0;
   for (const q of DAILY_QUESTS) {
-    if (metricValue(bucket, q.metric) >= q.target) bonus += q.bonus;
+    if (metricValue(bucket, q.metric, reviewsToday) >= q.target) bonus += q.bonus;
   }
   return bonus;
 }
@@ -163,43 +188,72 @@ function activeSet(buckets: Map<string, DayBucket>): Set<string> {
   return new Set([...buckets.keys()].filter((d) => d !== ""));
 }
 
-/** Every XP source on a single day: lessons + quests + consistency. */
-function dayXp(buckets: Map<string, DayBucket>, days: Set<string>, day: string): number {
+/**
+ * Every XP source on a single day: lessons + quests + consistency + reviews.
+ * A review-only day has no bucket, so it contributes its review XP (and its
+ * `Review 5` bonus) without earning the consistency bonus, which stays tied to
+ * completed lessons.
+ */
+function dayXp(
+  buckets: Map<string, DayBucket>,
+  days: Set<string>,
+  day: string,
+  reviewDays: ReviewDays,
+): number {
   const b = buckets.get(day);
-  if (!b) return 0;
-  return b.xp + dayQuestBonus(b) + consistencyBonus(days, day);
+  const reviews = reviewDays[day] ?? 0;
+  if (!b && reviews === 0) return 0;
+  const quests = b ? dayQuestBonus(b, reviews) : 0;
+  return (b?.xp ?? 0) + quests + consistencyBonus(days, day) + reviewXp(reviews);
+}
+
+/** Every day the learner earned anything on: lessons plus reviews. */
+function xpDays(buckets: Map<string, DayBucket>, reviewDays: ReviewDays): string[] {
+  return [...new Set([...buckets.keys(), ...Object.keys(reviewDays)])];
 }
 
 /**
  * XP earned between two `YYYY-MM-DD` days inclusive — the engine behind the
  * weekly and monthly leaderboard brackets.
  */
-export function xpInRange(progress: Progress, fromDay: string, toDay: string): number {
+export function xpInRange(
+  progress: Progress,
+  fromDay: string,
+  toDay: string,
+  reviewDays: ReviewDays = {},
+): number {
   const buckets = dayBuckets(progress);
   const days = activeSet(buckets);
   let xp = 0;
-  for (const key of days) {
+  for (const key of xpDays(buckets, reviewDays)) {
     if (key < fromDay || key > toDay) continue;
-    xp += dayXp(buckets, days, key);
+    xp += dayXp(buckets, days, key, reviewDays);
   }
   return xp;
 }
 
-/** Lesson XP + quests + consistency, across all of history. */
-export function totalXp(progress: Progress): number {
+/**
+ * Lesson XP + quests + consistency + review XP, across all of history.
+ * `reviewDays` is the review store's per-day tally of correct recalls; without
+ * it the total is lessons-only, which is what a caller with no review store
+ * (a server-side push, a test) should get.
+ */
+export function totalXp(progress: Progress, reviewDays: ReviewDays = {}): number {
   const buckets = dayBuckets(progress);
   const days = activeSet(buckets);
   let xp = 0;
-  for (const [key, b] of buckets) {
+  for (const key of xpDays(buckets, reviewDays)) {
     // Legacy keys carry no date, so they only contribute their lesson XP.
-    xp += key === "" ? b.xp : dayXp(buckets, days, key);
+    const b = buckets.get(key);
+    if (!b) xp += dayXp(buckets, days, key, reviewDays);
+    else xp += key === "" ? b.xp : dayXp(buckets, days, key, reviewDays);
   }
   return xp;
 }
 
 /** Quest bonuses + consistency XP, lifetime. Shown as its own stat. */
-export function bonusXpTotal(progress: Progress): number {
-  return totalXp(progress) - lessonXpTotal(progress);
+export function bonusXpTotal(progress: Progress, reviewDays: ReviewDays = {}): number {
+  return totalXp(progress, reviewDays) - lessonXpTotal(progress);
 }
 
 /**
@@ -208,8 +262,8 @@ export function bonusXpTotal(progress: Progress): number {
  * The leaderboard ranks on this number, so it lives behind one helper instead
  * of being re-derived at every call site.
  */
-export function playerXp(progress: Progress, bonusXp = 0): number {
-  return totalXp(progress) + Math.max(0, Math.floor(bonusXp));
+export function playerXp(progress: Progress, bonusXp = 0, reviewDays: ReviewDays = {}): number {
+  return totalXp(progress, reviewDays) + Math.max(0, Math.floor(bonusXp));
 }
 
 /* ------------------ Daily quest board (today's view) ------------------ */
@@ -226,11 +280,11 @@ type QuestView = {
 };
 
 /** Today's quests with live progress — drives the quest board UI. */
-export function dailyQuests(progress: Progress, today: string): QuestView[] {
+export function dailyQuests(progress: Progress, today: string, reviewsToday = 0): QuestView[] {
   const buckets = dayBuckets(progress);
   const bucket = buckets.get(today);
   return DAILY_QUESTS.map((q) => {
-    const raw = bucket ? metricValue(bucket, q.metric) : 0;
+    const raw = q.metric === "reviews" ? reviewsToday : bucket ? metricValue(bucket, q.metric, 0) : 0;
     return {
       id: q.id,
       icon: q.icon,
@@ -245,8 +299,8 @@ export function dailyQuests(progress: Progress, today: string): QuestView[] {
 }
 
 /** Quests finished today, out of the total — the "2/4" pill. */
-export function questsDoneToday(progress: Progress, today: string): number {
-  return dailyQuests(progress, today).filter((q) => q.done).length;
+export function questsDoneToday(progress: Progress, today: string, reviewsToday = 0): number {
+  return dailyQuests(progress, today, reviewsToday).filter((q) => q.done).length;
 }
 
 /* ------------------------- Bracket windows ------------------------- */
@@ -535,7 +589,9 @@ export function computeBadges(
     const days = activeSet(buckets);
     for (const day of days) {
       // Consistency XP is deliberately excluded — a Perfect Day is quests only.
-      if (dayQuestBonus(buckets.get(day)) === DAILY_QUESTS.reduce((n, q) => n + q.bonus, 0)) return true;
+      // Reviews are not part of a Perfect Day: the badge is scored from the
+      // progress map so it reads the same on every surface.
+      if (dayQuestBonus(buckets.get(day)) === PERFECT_DAY_BONUS) return true;
     }
     return false;
   })();

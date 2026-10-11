@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useProgressState } from "../../lib/progress";
+import { useReviewDays } from "../../lib/reviewStore";
 import {
   ASCENSIONS,
   STREAK_BONUS,
@@ -76,7 +77,8 @@ function LevelRing({ level, pct }: { level: number; pct: number }) {
 export default function AscensionPanel() {
   const progress = useProgressState();
   const today = todayKey();
-  const xp = totalXp(progress);
+  const reviewDays = useReviewDays();
+  const xp = totalXp(progress, reviewDays);
   const level = levelFor(xp);
   const ascension = ascensionFor(level.level);
   const streak = computeStreak(progress, today, previousDayKeys());

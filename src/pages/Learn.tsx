@@ -32,6 +32,8 @@ import SkillTree from "../components/SkillTree";
 import MicroPractice from "../components/MicroPractice";
 import AscensionPanel from "../components/gamification/AscensionPanel";
 import QuestBoard from "../components/gamification/QuestBoard";
+import ReviewCard from "../components/gamification/ReviewCard";
+import { useReviewDays } from "../lib/reviewStore";
 import { useClanRole } from "../lib/guildState";
 import { MILESTONES, milestonesClaimed } from "../lib/milestones";
 import { useClaims } from "../lib/milestoneStore";
@@ -53,7 +55,8 @@ export default function Learn() {
   const pct = Math.round((doneCount / totalLessonCount) * 100);
   const today = todayKey();
   const streak = computeStreak(progress, today, previousDayKeys());
-  const xp = totalXp(progress);
+  const reviewDays = useReviewDays();
+  const xp = totalXp(progress, reviewDays);
   const level = levelFor(xp);
   const badges = computeBadges(progress, streak, {
     level: level.level,
@@ -284,6 +287,9 @@ export default function Learn() {
           <Reveal className="mt-20">
             <h2 className="eyebrow mb-5">quests</h2>
             <QuestBoard />
+            <div className="mt-4">
+              <ReviewCard />
+            </div>
           </Reveal>
 
           {/* Compete & ship — leaderboard, guild hall, project board */}

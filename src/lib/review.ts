@@ -112,7 +112,7 @@ export function dueDayFor(box: number, today: string): string {
   return addDaysKey(today, interval);
 }
 
-type NewItemInput = Omit<ReviewItem, "box" | "dueDay" | "lastAt" | "shaky"> & {
+export type NewItemInput = Omit<ReviewItem, "box" | "dueDay" | "lastAt" | "shaky"> & {
   /** A brand-new item is due tomorrow, not today. */
   dueToday?: string;
 };
@@ -163,6 +163,50 @@ export function shakyLessons(state: ReviewState): ReviewItem[] {
 /** Reviews are paid from the same thin wallet every day, and capped. */
 export function reviewXp(correctToday: number): number {
   return Math.min(Math.max(0, correctToday) * REVIEW_XP, DAILY_REVIEW_XP_CAP);
+}
+
+/**
+ * Correct recalls per day — `YYYY-MM-DD` → count. Reviews are not lessons, so
+ * they are stored beside the progress map rather than inside it, but the XP
+ * they pay feeds the same derived totals (see `gamification.totalXp`).
+ */
+export type ReviewDays = Record<string, number>;
+
+/** Lifetime review XP: the daily cap applies per day, not per lifetime. */
+export function reviewXpTotal(days: ReviewDays): number {
+  let total = 0;
+  for (const count of Object.values(days)) total += reviewXp(count);
+  return total;
+}
+
+/** Review XP inside an inclusive day range — the bracket leaderboards. */
+export function reviewXpInRange(days: ReviewDays, fromDay: string, toDay: string): number {
+  let total = 0;
+  for (const [day, count] of Object.entries(days)) {
+    if (day < fromDay || day > toDay) continue;
+    total += reviewXp(count);
+  }
+  return total;
+}
+
+/** The soonest day anything on the queue comes back, or null when it is empty. */
+export function nextDueDay(state: ReviewState, today: string): string | null {
+  let soonest: string | null = null;
+  for (const item of Object.values(state)) {
+    if (item.dueDay <= today) continue;
+    if (soonest === null || item.dueDay < soonest) soonest = item.dueDay;
+  }
+  return soonest;
+}
+
+/**
+ * A fresh miss, queued for *today*. `newReviewItem` schedules a box-0 item for
+ * tomorrow, which is right for a scheduled recall but wrong for the miss that
+ * just happened in front of the learner — they should be able to clear it in
+ * the same session. Once graded, the normal intervals take over.
+ */
+export function seedItem(input: NewItemInput, today: string, now: number): ReviewItem {
+  return { ...newReviewItem(input, today, now), dueDay: today };
 }
 
 /* ------------------------------------------------------------------ */

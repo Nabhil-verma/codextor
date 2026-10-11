@@ -23,6 +23,7 @@ import {
   totalXp,
 } from "../lib/gamification";
 import { useProgressState } from "../lib/progress";
+import { useReviewDays } from "../lib/reviewStore";
 import type { LeaderboardRow } from "../convex/leaderboard";
 
 type PodiumRow = LeaderboardRow;
@@ -296,8 +297,9 @@ function Podium() {
 
 function YourStanding() {
   const progress = useProgressState();
+  const reviewDays = useReviewDays();
   const profile = useQuery(api.profiles.me);
-  const xp = totalXp(progress);
+  const xp = totalXp(progress, reviewDays);
   const level = levelFor(xp);
   const tier = ascensionFor(level.level).current;
 

@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   DAILY_QUESTS,
+  PERFECT_DAY_BONUS,
   STREAK_BONUS,
   TITLES,
   ascensionFor,
@@ -168,8 +169,12 @@ describe("badges with context", () => {
   const streak = computeStreak(fourLessons, D1, previousDayKeys(new Date(D1)));
 
   it("awards Perfect Day only when every quest lands in one day", () => {
-    expect(ALL_QUEST_BONUS).toBe(385);
-    expect(dayQuestBonus(dayBuckets(fourLessons).get(D1))).toBe(ALL_QUEST_BONUS);
+    // Five quests exist, but only four can be scored from the progress map: the
+    // Review 5 quest is paid from the review store's day log instead.
+    expect(ALL_QUEST_BONUS).toBe(435);
+    expect(PERFECT_DAY_BONUS).toBe(385);
+    expect(dayQuestBonus(dayBuckets(fourLessons).get(D1))).toBe(PERFECT_DAY_BONUS);
+    expect(dayQuestBonus(dayBuckets(fourLessons).get(D1), 5)).toBe(ALL_QUEST_BONUS);
     expect(
       computeBadges(fourLessons, streak).find((b) => b.id === "perfect-day")?.earned
     ).toBe(true);

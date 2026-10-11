@@ -1,6 +1,6 @@
 import { createLocalStore, useLocalStore } from "./localStore";
-import type { ReviewItem, ReviewState } from "./review";
-import { MAX_BOX, mergeReviews } from "./review";
+import type { ReviewDays, ReviewItem, ReviewState } from "./review";
+import { MAX_BOX, gradeReview, mergeReviews } from "./review";
 
 /*
  * The review queue lives beside the other local-first stores and merges with
@@ -91,4 +91,90 @@ export function mergeRemoteReviews(remote: ReviewState): void {
 
 export function useReviews(): ReviewState {
   return useLocalStore(reviewStore);
+}
+
+/* ------------------------------------------------------------------ */
+/* Day log                                                             */
+/*                                                                     */
+/* The daily cap on review XP is per calendar day, so the count of     */
+/* correct recalls has to survive a reload — otherwise every visit     */
+/* would pay the cap again. Same store contract as the queue: parse,   */
+/* validate, ignore anything that is not a sane count.                 */
+/* ------------------------------------------------------------------ */
+
+/** Bounded: 400 days of history is more than any learner accumulates. */
+export const MAX_REVIEW_DAYS = 400;
+
+function parseDays(raw: string | null): ReviewDays {
+  if (raw === null || raw === "") return {};
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    const out: ReviewDays = {};
+    for (const [day, count] of Object.entries(parsed as Record<string, unknown>)) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) continue;
+      if (typeof count !== "number" || !Number.isFinite(count) || count <= 0) continue;
+      out[day] = Math.floor(count);
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+export const reviewDayStore = createLocalStore<ReviewDays>("cl_codextor_review_days", parseDays);
+
+export function loadReviewDays(): ReviewDays {
+  return reviewDayStore.get();
+}
+
+export function saveReviewDays(days: ReviewDays): void {
+  const kept = Object.entries(days)
+    .sort((a, b) => (a[0] < b[0] ? 1 : -1))
+    .slice(0, MAX_REVIEW_DAYS);
+  reviewDayStore.set(Object.fromEntries(kept));
+}
+
+export function useReviewDays(): ReviewDays {
+  return useLocalStore(reviewDayStore);
+}
+
+/** Adds one graded answer to today's tally; returns the lifetime review XP. */
+export function logReviewAnswer(correct: boolean, today: string): void {
+  if (!correct) return;
+  const days = loadReviewDays();
+  saveReviewDays({ ...days, [today]: (days[today] ?? 0) + 1 });
+}
+
+export type GradedReview = { xp: number; dueDay: string; box: number };
+
+/**
+ * The one path that mutates the queue: grade an answer, persist the new box,
+ * and pay the XP. Everything else reads.
+ */
+export function recordReviewAnswer(
+  item: ReviewItem,
+  correct: boolean,
+  today: string,
+  now: number = Date.now(),
+): GradedReview {
+  const graded = gradeReview(item, correct, today, now);
+  upsertReview(graded.item);
+  logReviewAnswer(correct, today);
+  return { xp: graded.xp, dueDay: graded.item.dueDay, box: graded.item.box };
+}
+
+/** Inserts seeded items without clobbering boxes already earned. */
+export function addReviewItems(items: ReviewItem[]): void {
+  if (items.length === 0) return;
+  const current = loadReviews();
+  const next = { ...current };
+  let changed = false;
+  for (const item of items) {
+    // An item already on the queue keeps the box it earned (and its due day).
+    if (next[item.id]) continue;
+    next[item.id] = item;
+    changed = true;
+  }
+  if (changed) saveReviews(next);
 }

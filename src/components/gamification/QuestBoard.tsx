@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { scoreFor, useProgressState } from "../../lib/progress";
 import { tracks } from "../../data";
+import { useReviewDays } from "../../lib/reviewStore";
 import {
   bonusXpTotal,
   dailyQuests,
@@ -22,11 +23,22 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 export default function QuestBoard() {
   const progress = useProgressState();
   const today = todayKey();
-  const quests = dailyQuests(progress, today);
-  const doneToday = questsDoneToday(progress, today);
-  const bonusXp = bonusXpTotal(progress);
+  /*
+   * The review quest is the one metric the progress map cannot answer, so the
+   * review store's day log is passed in: `dailyQuests` scores it against the
+   * correct recalls logged today.
+   */
+  const reviewDays = useReviewDays();
+  const reviewsToday = reviewDays[today] ?? 0;
+  const quests = dailyQuests(progress, today, reviewsToday);
+  const doneToday = questsDoneToday(progress, today, reviewsToday);
+  const bonusXp = bonusXpTotal(progress, reviewDays);
   const earnedToday = dayBuckets(progress).get(today);
-  const next = quests.find((q) => !q.done);
+  /*
+   * "Start a quest" points at a lesson, so the review quest is skipped here —
+   * the review card below the board is where that one is cleared.
+   */
+  const next = quests.find((q) => !q.done && q.id !== "review-5") ?? quests.find((q) => !q.done);
 
   /*
    * "Start a quest" used to link at /learn — the page this board already sits
