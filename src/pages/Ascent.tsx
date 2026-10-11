@@ -190,7 +190,7 @@ export default function Ascent() {
               </div>
               <Link
                 to={user ? "/learn" : "/auth?returnTo=%2Flearn"}
-                className="inline-flex items-center gap-2 rounded-full border border-gold-400/60 bg-gold-400/10 px-6 py-3 font-mono text-xs font-bold uppercase tracking-widest text-gold-200 transition hover:bg-gold-400/20"
+                className="inline-flex items-center gap-2 rounded-full border border-gold-400/60 bg-gold-400/10 px-6 py-3 font-mono text-xs font-bold uppercase tracking-widest text-gold-300 transition hover:bg-gold-400/20"
               >
                 {user ? "back to lessons" : "start free"}
                 <ArrowRight className="h-4 w-4" />

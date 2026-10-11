@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { runUserCode, evaluateCheck, type RunResult } from "../lib/runner";
 // Type-only: erased at compile time, so the TS compiler chunk stays lazy.
 import type { TsDiagnostic } from "../lib/tsRunner";
@@ -6,7 +6,8 @@ import type { Check } from "../data/types";
 import HintLadder from "./HintLadder";
 import ErrorNote from "./ErrorNote";
 import TraceVisualizer from "./TraceVisualizer";
-import { TAB_HINT, useTabTrapEscape } from "../lib/useTabTrapEscape";
+import { TAB_HINT } from "../lib/useTabTrapEscape";
+import CodeEditor, { EditorToggle } from "./CodeEditor";
 import { summarizeRun } from "../lib/runSummary";
 
 type Props = {
@@ -55,7 +56,6 @@ export default function Playground({
   const [showTrace, setShowTrace] = useState(false);
   const [announce, setAnnounce] = useState("");
   const [openHintTier, setOpenHintTier] = useState<number | undefined>(undefined);
-  const taRef = useRef<HTMLTextAreaElement>(null);
   const hintId = useId();
 
   /*
@@ -106,23 +106,6 @@ export default function Playground({
     setAttempts(0);
   };
 
-  const tab = useTabTrapEscape(taRef, code, {
-    onIndent: (next, caret) => {
-      update(next);
-      requestAnimationFrame(() => taRef.current?.setSelectionRange(caret, caret));
-    },
-  });
-
-  const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // Cmd/Ctrl+Enter runs the code
-    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-      e.preventDefault();
-      void run();
-      return;
-    }
-    tab.handleKeyDown(e);
-  };
-
   // Hints appear after two failed runs — struggle a little first.
   const showHints = !passed && attempts >= 2;
 
@@ -159,17 +142,15 @@ export default function Playground({
             </button>
           </div>
         </div>
-        <textarea
-          ref={taRef}
+        <CodeEditor
           value={code}
-          onChange={(e) => update(e.target.value)}
-          onKeyDown={onKeyDown}
-          spellCheck={false}
-          rows={Math.max(8, Math.min(24, code.split("\n").length + 1))}
-          aria-label={label ? `Code editor: ${label}` : "Code editor"}
-          aria-describedby={hintId}
-          onBlur={tab.onBlur}
-          className="block w-full resize-y bg-ink-950 p-5 font-mono text-[13px] leading-relaxed text-paper-100 outline-none placeholder:text-ink-600"
+          onChange={update}
+          onRun={() => void run()}
+          lang={lang}
+          label={label ? `Code editor: ${label}` : "Code editor"}
+          describedBy={hintId}
+          minRows={8}
+          maxRows={24}
           placeholder={
             lang === "ts"
               ? "Write some TypeScript…"
@@ -177,14 +158,18 @@ export default function Playground({
                 ? "Write some Python…"
                 : "Write some JavaScript…"
           }
+          hint={(escaped) => (
+            <div className="-mt-2 flex flex-wrap items-center justify-between gap-2">
+              <p id={hintId} className="font-mono text-[11px] text-ink-500">
+                {escaped
+                  ? "Tab moves focus now. Press Esc to bring back Tab indenting."
+                  : TAB_HINT}
+              </p>
+              <EditorToggle />
+            </div>
+          )}
         />
       </div>
-
-      <p id={hintId} className="-mt-2 font-mono text-[11px] text-ink-500">
-        {tab.escaped
-          ? "Tab moves focus now. Press Esc to bring back Tab indenting."
-          : TAB_HINT}
-      </p>
 
       {/* One summary per run, announced politely; console lines stay silent. */}
       <p role="status" className="sr-only">

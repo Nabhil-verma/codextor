@@ -10,7 +10,8 @@ import { taxonomyEntry, type TaxonomyCode } from "../data/bug-taxonomy";
 import { summarizeRun } from "../lib/runSummary";
 import type { DebugChallenge } from "../data/types";
 import ErrorNote from "./ErrorNote";
-import { TAB_HINT, useTabTrapEscape } from "../lib/useTabTrapEscape";
+import { TAB_HINT } from "../lib/useTabTrapEscape";
+import CodeEditor from "./CodeEditor";
 
 /* ═══════════════════════════════════════════════════════════════
    The break-and-fix lab. Unlike a quiz there are no options to
@@ -49,7 +50,6 @@ export default function DebugLab({ challenge, onPass, onScore, onAskTutor }: Pro
   const shake = useAnimationControls();
   const pop = useAnimationControls();
   const reduceMotion = useReducedMotion();
-  const taRef = useRef<HTMLTextAreaElement>(null);
   const passedOnce = useRef(false);
 
   const run = async () => {
@@ -99,22 +99,6 @@ export default function DebugLab({ challenge, onPass, onScore, onAskTutor }: Pro
     const right = diagPick === challenge.diagnosis.answer;
     setDiagResult(right ? "right" : "wrong");
     if (right && !passed) onScore?.(0.5);
-  };
-
-  const tab = useTabTrapEscape(taRef, code, {
-    onIndent: (next, caret) => {
-      setCode(next);
-      requestAnimationFrame(() => taRef.current?.setSelectionRange(caret, caret));
-    },
-  });
-
-  const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-      e.preventDefault();
-      void run();
-      return;
-    }
-    tab.handleKeyDown(e);
   };
 
   const edited = code !== challenge.broken;
@@ -178,17 +162,14 @@ export default function DebugLab({ challenge, onPass, onScore, onAskTutor }: Pro
             {passed ? "fix verified" : "edit the code, then run it"}
           </span>
         </div>
-        <textarea
-          ref={taRef}
+        <CodeEditor
           value={code}
-          onChange={(e) => setCode(e.target.value)}
-          onKeyDown={onKeyDown}
-          spellCheck={false}
-          rows={Math.max(8, Math.min(26, code.split("\n").length + 1))}
-          aria-label={`Code editor: ${challenge.title}`}
-          aria-describedby={hintId}
-          onBlur={tab.onBlur}
-          className="block w-full resize-y bg-ink-950 p-5 font-mono text-[13px] leading-relaxed text-paper-100 outline-none placeholder:text-ink-600"
+          onChange={setCode}
+          onRun={() => void run()}
+          label={`Code editor: ${challenge.title}`}
+          describedBy={hintId}
+          minRows={8}
+          maxRows={26}
         />
       </div>
 
