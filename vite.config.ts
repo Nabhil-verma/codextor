@@ -2,6 +2,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { visualizer } from "rollup-plugin-visualizer";
+import { offlinePacksPlugin } from "./scripts/offline-packs.mjs";
 
 /*
  * `bun run build:analyze` (vite build --mode analyze) also writes
@@ -12,6 +13,8 @@ import { visualizer } from "rollup-plugin-visualizer";
 export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
+    // Writes offline-packs.json so the Learn page can save tracks for offline use.
+    offlinePacksPlugin(),
     ...(mode === "analyze"
       ? [
           visualizer({
