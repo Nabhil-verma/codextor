@@ -24,6 +24,7 @@ import { AlertTriangle } from "lucide-react";
  */
 const Learn = lazy(() => import("./pages/Learn"));
 const Ascent = lazy(() => import("./pages/Ascent"));
+const Replay = lazy(() => import("./pages/Replay"));
 const Lesson = lazy(() => import("./pages/Lesson"));
 const PlaygroundPage = lazy(() => import("./pages/PlaygroundPage"));
 const Certificate = lazy(() => import("./pages/Certificate"));
@@ -203,6 +204,8 @@ export default function App() {
               }
             />
             <Route path="/ascent" element={<Ascent />} />
+            {/* Public: a replay is self-contained and reads no account data. */}
+            <Route path="/replay" element={<Replay />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

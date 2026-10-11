@@ -6,6 +6,7 @@ import type { Check } from "../data/types";
 import HintLadder from "./HintLadder";
 import ErrorNote from "./ErrorNote";
 import TraceVisualizer from "./TraceVisualizer";
+import ShareReplay from "./ShareReplay";
 import { TAB_HINT } from "../lib/useTabTrapEscape";
 import CodeEditor, { EditorToggle } from "./CodeEditor";
 import { summarizeRun } from "../lib/runSummary";
@@ -282,7 +283,12 @@ export default function Playground({
         </button>
       )}
 
-      {lang === undefined && showTrace && <TraceVisualizer code={code} />}
+      {lang === undefined && showTrace && (
+        <>
+          <TraceVisualizer code={code} />
+          <ShareReplay code={code} />
+        </>
+      )}
 
       {check?.hints?.length ? (
         showHints ? (

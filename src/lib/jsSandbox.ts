@@ -25,10 +25,24 @@
  *   - Each run gets a fresh worker, so no state survives from one run to the next.
  */
 
+import { traceCore, type TraceResult } from "./stepper";
+
 export type RunResult = {
   logs: string[];
   error: string | null;
 };
+
+/** What the page may ask the sandbox to do. Both kinds execute learner code. */
+export type SandboxRequest =
+  | { kind: "run"; code: string; timeoutMs: number }
+  | { kind: "trace"; code: string; timeoutMs: number };
+
+/** The worker's single entry point: dispatches one request to its executor. */
+export function handleSandboxRequest(request: SandboxRequest): Promise<RunResult | TraceResult> {
+  return request.kind === "trace"
+    ? traceCore(request.code, request.timeoutMs)
+    : runSandboxedCode(request.code, request.timeoutMs);
+}
 
 /** Globals hidden from learner code. Shadowed by parameters and deleted from the worker. */
 export const SHADOWED_GLOBALS = [

@@ -4,7 +4,7 @@
  * of the browser's `self`. Bundled by tests/setup-js-worker.ts.
  */
 import { parentPort } from "node:worker_threads";
-import { hardenGlobals, runSandboxedCode } from "../../src/lib/jsSandbox";
+import { handleSandboxRequest, hardenGlobals, type SandboxRequest } from "../../src/lib/jsSandbox";
 
 if (!parentPort) throw new Error("js-worker-node must run as a worker thread");
 const port = parentPort;
@@ -12,9 +12,12 @@ const send = (message: unknown) => port.postMessage(message);
 
 hardenGlobals(globalThis as unknown as Record<string, unknown>);
 
-port.on("message", (request: { code: string; timeoutMs: number }) => {
-  void runSandboxedCode(request.code, request.timeoutMs).then(
+port.on("message", (request: SandboxRequest) => {
+  void handleSandboxRequest(request).then(
     (result) => send(result),
-    (e: unknown) => send({ logs: [], error: e instanceof Error ? e.message : String(e) }),
+    (e: unknown) => {
+      const error = e instanceof Error ? e.message : String(e);
+      send(request.kind === "trace" ? { steps: [], error } : { logs: [], error });
+    },
   );
 });

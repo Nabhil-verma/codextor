@@ -164,6 +164,11 @@ describe("every route renders", () => {
     ).toBeTruthy();
   });
 
+  it("/replay — with no link, it says what to do instead of a blank page", async () => {
+    open("#/replay");
+    expect(await screen.findByText(/Nothing to show/, {}, CHUNK)).toBeTruthy();
+  });
+
   it("/ascent — the public ladder page", async () => {
     open("#/ascent");
     expect(
