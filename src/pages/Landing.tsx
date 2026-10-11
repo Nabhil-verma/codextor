@@ -949,7 +949,7 @@ export default function Landing() {
       </section>
 
       <footer className="border-t border-white/[0.06] py-10 text-center font-mono text-[0.7rem] uppercase tracking-[0.22em] text-ink-500">
-        Codexter · a 100% free code teacher · built with ♥ and zero dollars
+        Codextor · a 100% free code teacher · built with ♥ and zero dollars
       </footer>
     </div>
   );

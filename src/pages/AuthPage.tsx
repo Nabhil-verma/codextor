@@ -206,7 +206,7 @@ export default function AuthPage() {
                 animate={{ opacity: 1, y: 0, rotateX: 0 }}
                 transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
               >
-                <p className="eyebrow">Codexter</p>
+                <p className="eyebrow">Codextor</p>
                 <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight text-ink-950">
                   {title}
                 </h2>

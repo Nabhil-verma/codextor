@@ -157,7 +157,7 @@ describe("a route chunk that never arrives", () => {
     expect(screen.getByText(CHUNK_ERROR)).toBeTruthy();
 
     // The nav is still rendered, so every other page is one click away.
-    expect(screen.getByRole("link", { name: /Codexter/ })).toBeTruthy();
+    expect(screen.getByRole("link", { name: /Codextor/ })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Back to lessons" })).toBeTruthy();
     spy.mockRestore();
   });
@@ -173,7 +173,7 @@ describe("a route chunk that never arrives", () => {
     expect(
       await screen.findByRole("button", { name: "Try this page again" }, CHUNK)
     ).toBeTruthy();
-    expect(screen.getByRole("link", { name: /Codexter/ })).toBeTruthy();
+    expect(screen.getByRole("link", { name: /Codextor/ })).toBeTruthy();
     spy.mockRestore();
   });
 });

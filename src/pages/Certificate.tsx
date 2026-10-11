@@ -141,10 +141,10 @@ export default function Certificate() {
                   <span
                     className="brand-mark mx-auto block h-8 w-8"
                     role="img"
-                    aria-label="Codexter"
+                    aria-label="Codextor"
                   />
                   <p className="mt-1 font-mono text-[11px] text-ink-600">
-                    Codexter
+                    Codextor
                   </p>
                 </div>
               </div>

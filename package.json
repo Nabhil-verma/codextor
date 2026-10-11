@@ -1,12 +1,13 @@
 {
-  "name": "codexter",
+  "name": "codextor",
   "private": true,
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "node scripts/sync-pyodide.mjs && vite --host 0.0.0.0",
-    "build": "node scripts/sync-pyodide.mjs && vite build",
+    "dev": "node scripts/sync-pyodide.mjs && node scripts/gen-site.mjs && vite --host 0.0.0.0",
+    "build": "node scripts/sync-pyodide.mjs && node scripts/gen-site.mjs && vite build",
     "sync:pyodide": "node scripts/sync-pyodide.mjs",
+    "gen:site": "node scripts/gen-site.mjs",
     "build:analyze": "vite build --mode analyze",
     "preview": "vite preview --host 0.0.0.0",
     "typecheck": "tsc -b --noEmit",

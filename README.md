@@ -1,6 +1,6 @@
 # Codextor
 
-> **A 100% free, interactive code teacher.** Seventeen tracks, 103 hands-on lessons —
+> **A 100% free, interactive code teacher.** <!-- counts:words -->Seventeen tracks, 103 hands-on lessons<!-- /counts:words --> —
 > you write and run real code from minute one, in the browser, with easy signup.
 
 **Live:** [codextorcybo4.freebuff.app](https://codextorcybo4.freebuff.app)
@@ -43,7 +43,7 @@ Most "learn to code" sites teach you to recognise code. You read a snippet, you
 recognise the shape, you move on — and the moment real code appears on your
 screen, you're lost.
 
-Codexter is built on the opposite assumption: **you cannot learn to code without
+Codextor is built on the opposite assumption: **you cannot learn to code without
 running code.** So every lesson ends in a runner. You write something, you run
 it, and something checks whether it actually worked. Not a human reading your
 answer key — an expression evaluated against your program's real output, your
@@ -63,7 +63,7 @@ A few consequences worth calling out, because they're unusual for a learning app
 
 ## Feature overview
 
-- **17 curriculum tracks, 103 lessons** — Web foundations, React, Tailwind UI
+- **<!-- counts:pair -->17 curriculum tracks, 103 lessons<!-- /counts:pair -->** — Web foundations, React, Tailwind UI
   engineering, advanced React state, API integration, TypeScript for real
   projects, backend/Node, DSA, Python, Git & testing, DevOps/Linux/Docker, web
   security (OWASP), system design, web performance & accessibility,
@@ -383,7 +383,7 @@ src/
 ├── data/
 │   ├── index.ts              # the track registry + findTrack/findLesson
 │   ├── types.ts              # Lesson, Check, DebugChallenge, PreviewSpec, …
-│   └── track-*.ts            # 17 tracks, 103 lessons of content
+│   └── track-*.ts            # <!-- counts:tail -->17 tracks, 103 lessons of content<!-- /counts:tail -->
 ├── lib/
 │   ├── localStore.ts         # the shared localStorage store + pub/sub primitive
 │   ├── progress.ts           # progress store on top of it, v1→v2 migration

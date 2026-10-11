@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 
 /*
- * The Codexter lockup: the brand mark plus the wordmark.
+ * The Codextor lockup: the brand mark plus the wordmark.
  *
  * The mark is the new hexagon-ribbon `</>` — one artwork recoloured four ways,
  * so the same silhouette carries every theme. Which file loads is decided
@@ -34,13 +34,13 @@ export default function BrandLogo({
            when it doesn't. */
         aria-hidden={withWordmark || undefined}
         role={withWordmark ? undefined : "img"}
-        aria-label={withWordmark ? undefined : "Codexter"}
+        aria-label={withWordmark ? undefined : "Codextor"}
         whileHover={{ rotate: [0, -6, 6, 0] }}
         transition={{ duration: 0.45 }}
       />
       {withWordmark && (
         <span className="font-display text-lg font-bold tracking-tighter text-ink-950">
-          Codexter
+          Codextor
         </span>
       )}
     </>

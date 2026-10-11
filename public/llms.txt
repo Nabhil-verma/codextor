@@ -1,11 +1,11 @@
-# Codexter
+# Codextor
 
-> Codexter is a free, browser-based coding school. It teaches programming through
+> Codextor is a free, browser-based coding school. It teaches programming through
 > interactive lessons that pair reading with a live editor, a console, and
 > self-checking exercises — no videos, no paywall, and no build setup. Everything
 > runs client-side in the learner's browser.
 
-Codexter covers 17 tracks and more than a hundred hands-on lessons spanning web
+Codextor covers 17 tracks and 103 hands-on lessons spanning web
 fundamentals, TypeScript, React, back-end and APIs, Python, data structures and
 algorithms, Git, testing, DevOps, security, architecture, performance, and AI
 agents. Progress, streaks, and badges sync to a free account, and learners can
@@ -14,7 +14,28 @@ compare scores on weekly leaderboards or form guilds.
 ## Curriculum
 
 - [Interactive lessons](https://codextorcybo4.freebuff.app/#/learn): 17 tracks of guided, runnable lessons across the full modern web stack.
+- [Syllabus](https://codextorcybo4.freebuff.app/syllabus/): every track with its learning outcomes and full outline, readable without JavaScript.
 - [Live playground](https://codextorcybo4.freebuff.app/#/playground): a scratch editor for writing and running code outside the lessons.
+
+## Tracks
+
+- [Web Development Foundations](https://codextorcybo4.freebuff.app/syllabus/web/): 10 lessons. HTML5, CSS3, and modern JavaScript — the bedrock every frontend stands on.
+- [Modern Frontend: React](https://codextorcybo4.freebuff.app/syllabus/react/): 4 lessons. Components, hooks, and the mental model behind every modern interface.
+- [Backend Systems & APIs](https://codextorcybo4.freebuff.app/syllabus/backend/): 5 lessons. Node.js, Express, REST design, auth, and databases that don't fall over.
+- [Data Structures & Algorithms](https://codextorcybo4.freebuff.app/syllabus/dsa/): 8 lessons. Big-O thinking, classic structures, and the patterns interviewers actually ask.
+- [Python & Data Fundamentals](https://codextorcybo4.freebuff.app/syllabus/python/): 4 lessons. Python syntax, OOP and the pandas/numpy workflow — three lessons now execute in the browser (Pyodide).
+- [Git, GitHub & Workflows](https://codextorcybo4.freebuff.app/syllabus/git/): 4 lessons. Version control, branches, PRs, and shipping pipelines — how teams actually work.
+- [Testing & Debugging](https://codextorcybo4.freebuff.app/syllabus/testing/): 7 lessons. Write tests that catch bugs, hunt down the ones that slip through, and read production incidents. Watch after DevOps — its logs and containers vocabulary carries over.
+- [DevOps, Linux CLI & Cloud](https://codextorcybo4.freebuff.app/syllabus/devops/): 6 lessons. Command the terminal, write Bash, containerize with Docker, and ship behind Nginx.
+- [Web Security & OWASP](https://codextorcybo4.freebuff.app/syllabus/security/): 6 lessons. Think like an attacker: XSS, SQL injection, CSRF, CORS, and the habits that keep apps safe.
+- [System Design & Architecture](https://codextorcybo4.freebuff.app/syllabus/architecture/): 6 lessons. Scale, cache, shard, and queue — the trade-off thinking behind big systems.
+- [UI Engineering with Tailwind CSS](https://codextorcybo4.freebuff.app/syllabus/tailwind/): 6 lessons. Utility-first styling, responsive systems, and shipping a real component kit.
+- [Advanced React State Management](https://codextorcybo4.freebuff.app/syllabus/state/): 6 lessons. Reducers, context without the re-render tax, external stores, and server state.
+- [API Integration & Data Fetching](https://codextorcybo4.freebuff.app/syllabus/api/): 6 lessons. Talk to real services: HTTP, errors, races, optimistic updates, and a resilient client.
+- [TypeScript for Real Projects](https://codextorcybo4.freebuff.app/syllabus/typescript/): 6 lessons. The real compiler runs in your editor: write types, watch diagnostics with line and column, and ship code the compiler has already argued with.
+- [Web Performance & Accessibility](https://codextorcybo4.freebuff.app/syllabus/performance/): 6 lessons. Core Web Vitals, layout stability, contrast and keyboard semantics — measured, graded, and shipped as one audit-ready page.
+- [Working with Coding Agents](https://codextorcybo4.freebuff.app/syllabus/agents/): 9 lessons. Operate the tool: write specs an agent can execute, read unfamiliar code, manage context, approve plans, choose permissions, and verify what ships.
+- [Professional Workflow](https://codextorcybo4.freebuff.app/syllabus/workflow/): 4 lessons. PRs, review, tickets and decision records — the written work that decides whether code ships.
 
 ## Practice and projects
 

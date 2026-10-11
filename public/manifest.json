@@ -1,6 +1,6 @@
 {
-  "name": "Codexter",
-  "short_name": "Codexter",
+  "name": "Codextor",
+  "short_name": "Codextor",
   "description": "100% free, interactive coding lessons with a built-in editor and quizzes",
   "start_url": "/",
   "scope": "/",
@@ -12,7 +12,65 @@
       "src": "/favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Playground",
+      "short_name": "Playground",
+      "description": "Scratch editor — write and run code without a lesson",
+      "url": "/#/playground",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Continue learning",
+      "short_name": "Continue",
+      "description": "Jump back into the track you were working through",
+      "url": "/#/learn",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png"
+    },
+    {
+      "src": "/screenshot-wide-2.png",
+      "sizes": "1280x720",
+      "type": "image/png"
     }
   ]
 }
