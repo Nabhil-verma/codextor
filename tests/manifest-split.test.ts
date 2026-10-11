@@ -90,6 +90,7 @@ describe("manifest agrees with the curriculum registry", () => {
         expect(entry.quizCount).toBe(lesson.quiz.length);
         expect(entry.hasPredict).toBe(Boolean(lesson.predict?.length));
         expect(entry.hasDebug).toBe(Boolean(lesson.debug));
+        expect(entry.debugCode).toBe(lesson.debug?.diagnosis?.answer);
         const expected = lesson.starter
           ? "interactive"
           : lesson.gitSim

@@ -13,6 +13,8 @@ export type ManifestLesson = {
   /** Predict-the-output challenges, and the break-and-fix lab. */
   hasPredict: boolean;
   hasDebug: boolean;
+  /** Taxonomy code the debug lab's declared diagnosis points at, when it has one. */
+  debugCode?: string;
   lang?: "ts" | "python";
 };
 
@@ -38,7 +40,7 @@ export const MANIFEST_TRACKS: ManifestTrack[] = [
     { id: "responsive-deep", title: "Responsive Design: Mobile-First in Practice", minutes: 10, interaction: "reading", quizCount: 5, hasPredict: false, hasDebug: false },
     { id: "css-layout", title: "Flexbox, Grid & Responsive Strategy", minutes: 12, interaction: "visual", quizCount: 5, hasPredict: false, hasDebug: false },
     { id: "scope-context", title: "Execution Context & Scope: let, const, var", minutes: 10, interaction: "interactive", quizCount: 5, hasPredict: true, hasDebug: false },
-    { id: "es6-syntax", title: "ES6+ Power Syntax: Arrows & Destructuring", minutes: 9, interaction: "interactive", quizCount: 5, hasPredict: true, hasDebug: true },
+    { id: "es6-syntax", title: "ES6+ Power Syntax: Arrows & Destructuring", minutes: 9, interaction: "interactive", quizCount: 5, hasPredict: true, hasDebug: true, debugCode: "EC" },
     { id: "dom-events", title: "DOM Traversal & Event Delegation", minutes: 11, interaction: "reading", quizCount: 5, hasPredict: true, hasDebug: false },
     { id: "async-promises", title: "Promises & async/await", minutes: 11, interaction: "interactive", quizCount: 5, hasPredict: true, hasDebug: false },
     { id: "fetch-api", title: "Fetching Real APIs (with a Mock Server)", minutes: 12, interaction: "interactive", quizCount: 5, hasPredict: false, hasDebug: false },
@@ -53,7 +55,7 @@ export const MANIFEST_TRACKS: ManifestTrack[] = [
     lessons: [
     { id: "jsx-vdom", title: "JSX & the Virtual DOM", minutes: 10, interaction: "reading", quizCount: 5, hasPredict: false, hasDebug: false },
     { id: "props-state", title: "Props vs State: The Data Contracts", minutes: 10, interaction: "interactive", quizCount: 5, hasPredict: false, hasDebug: false },
-    { id: "hooks-effect", title: "Hooks in Depth: useEffect & Friends", minutes: 12, interaction: "reading", quizCount: 5, hasPredict: false, hasDebug: true },
+    { id: "hooks-effect", title: "Hooks in Depth: useEffect & Friends", minutes: 12, interaction: "reading", quizCount: 5, hasPredict: false, hasDebug: true, debugCode: "HA" },
     { id: "react-styling-routing", title: "Tailwind, Routing & App Architecture", minutes: 11, interaction: "reading", quizCount: 5, hasPredict: false, hasDebug: false },
     ],
   },
@@ -67,7 +69,7 @@ export const MANIFEST_TRACKS: ManifestTrack[] = [
     { id: "express-middleware", title: "Express & the Middleware Pipeline", minutes: 10, interaction: "interactive", quizCount: 5, hasPredict: false, hasDebug: false },
     { id: "rest-auth", title: "REST Design, Hashing & JWT", minutes: 12, interaction: "reading", quizCount: 5, hasPredict: false, hasDebug: false },
     { id: "databases", title: "Databases: SQL, Documents & ORMs", minutes: 12, interaction: "reading", quizCount: 5, hasPredict: false, hasDebug: false },
-    { id: "api-security", title: "API Security: CORS, Validation & Rate Limits", minutes: 11, interaction: "reading", quizCount: 5, hasPredict: false, hasDebug: true },
+    { id: "api-security", title: "API Security: CORS, Validation & Rate Limits", minutes: 11, interaction: "reading", quizCount: 5, hasPredict: false, hasDebug: true, debugCode: "ID" },
     ],
   },
   {
@@ -76,11 +78,11 @@ export const MANIFEST_TRACKS: ManifestTrack[] = [
     blurb: "Big-O thinking, classic structures, and the patterns interviewers actually ask.",
     numeral: "Ⅳ",
     lessons: [
-    { id: "big-o", title: "Big-O: Measuring Growth, Not Seconds", minutes: 10, interaction: "interactive", quizCount: 5, hasPredict: false, hasDebug: true },
+    { id: "big-o", title: "Big-O: Measuring Growth, Not Seconds", minutes: 10, interaction: "interactive", quizCount: 5, hasPredict: false, hasDebug: true, debugCode: "CX" },
     { id: "hash-maps", title: "Hash Maps: The O(1) Cheat Code", minutes: 9, interaction: "interactive", quizCount: 5, hasPredict: false, hasDebug: false },
     { id: "linked-lists-stacks-queues", title: "Linked Lists, Stacks & Queues", minutes: 10, interaction: "reading", quizCount: 5, hasPredict: false, hasDebug: false },
     { id: "trees-recursion", title: "Trees & Recursion", minutes: 11, interaction: "reading", quizCount: 5, hasPredict: false, hasDebug: false },
-    { id: "sorting", title: "Sorting: Merge & Quick Sort", minutes: 10, interaction: "interactive", quizCount: 5, hasPredict: false, hasDebug: true },
+    { id: "sorting", title: "Sorting: Merge & Quick Sort", minutes: 10, interaction: "interactive", quizCount: 5, hasPredict: false, hasDebug: true, debugCode: "CX" },
     { id: "patterns-two-pointer", title: "Patterns: Two Pointers & Sliding Window", minutes: 10, interaction: "interactive", quizCount: 5, hasPredict: false, hasDebug: false },
     { id: "graphs-bfs-dfs", title: "Graphs: BFS & DFS", minutes: 12, interaction: "interactive", quizCount: 5, hasPredict: true, hasDebug: false },
     { id: "dp-intro", title: "Dynamic Programming: Overlapping Subproblems", minutes: 11, interaction: "interactive", quizCount: 5, hasPredict: false, hasDebug: false },
@@ -195,7 +197,7 @@ export const MANIFEST_TRACKS: ManifestTrack[] = [
     blurb: "Reducers, context without the re-render tax, external stores, and server state.",
     numeral: "Ⅻ",
     lessons: [
-    { id: "state-shapes", title: "Choosing a State Shape", minutes: 12, interaction: "reading", quizCount: 4, hasPredict: false, hasDebug: true },
+    { id: "state-shapes", title: "Choosing a State Shape", minutes: 12, interaction: "reading", quizCount: 4, hasPredict: false, hasDebug: true, debugCode: "SL" },
     { id: "usereducer", title: "useReducer: State Machines in Disguise", minutes: 13, interaction: "interactive", quizCount: 4, hasPredict: false, hasDebug: false },
     { id: "context", title: "Context Without the Re-Render Tax", minutes: 12, interaction: "reading", quizCount: 4, hasPredict: true, hasDebug: false },
     { id: "external-stores", title: "External Stores & useSyncExternalStore", minutes: 14, interaction: "interactive", quizCount: 4, hasPredict: false, hasDebug: false },
@@ -210,7 +212,7 @@ export const MANIFEST_TRACKS: ManifestTrack[] = [
     numeral: "XIII",
     lessons: [
     { id: "http-verbs", title: "HTTP, REST & Status Codes", minutes: 12, interaction: "interactive", quizCount: 4, hasPredict: false, hasDebug: false },
-    { id: "fetch-async", title: "Errors, Ordering & the Missing Await", minutes: 13, interaction: "reading", quizCount: 4, hasPredict: false, hasDebug: true },
+    { id: "fetch-async", title: "Errors, Ordering & the Missing Await", minutes: 13, interaction: "reading", quizCount: 4, hasPredict: false, hasDebug: true, debugCode: "RC" },
     { id: "loading-errors", title: "The Four States of Every Request", minutes: 11, interaction: "reading", quizCount: 4, hasPredict: false, hasDebug: false },
     { id: "abort-races", title: "Races, Aborts & Debounce", minutes: 13, interaction: "interactive", quizCount: 4, hasPredict: false, hasDebug: false },
     { id: "optimistic", title: "Optimistic Updates & Cache Invalidation", minutes: 12, interaction: "reading", quizCount: 4, hasPredict: false, hasDebug: false },
@@ -259,9 +261,9 @@ export const MANIFEST_TRACKS: ManifestTrack[] = [
     { id: "instruction-files", title: "Project Instruction Files: Teaching an Agent Your Conventions", minutes: 12, interaction: "reading", quizCount: 5, hasPredict: false, hasDebug: false },
     { id: "plan-before-code", title: "Plan Before Code: The Cheapest Place to Catch a Misunderstanding", minutes: 11, interaction: "reading", quizCount: 6, hasPredict: false, hasDebug: false },
     { id: "permissions-and-sandbox", title: "Permissions & Sandbox Settings: Least Privilege for an Unattended Tool", minutes: 12, interaction: "reading", quizCount: 8, hasPredict: false, hasDebug: false },
-    { id: "verifying-agent-output", title: "Verifying Agent Output: Tests Are the Review You Can't Skip", minutes: 13, interaction: "reading", quizCount: 3, hasPredict: false, hasDebug: true },
+    { id: "verifying-agent-output", title: "Verifying Agent Output: Tests Are the Review You Can't Skip", minutes: 13, interaction: "reading", quizCount: 3, hasPredict: false, hasDebug: true, debugCode: "SL" },
     { id: "when-not-to-use-agents", title: "Knowing When Not to Use an Agent", minutes: 10, interaction: "reading", quizCount: 8, hasPredict: false, hasDebug: false },
-    { id: "capstone-agent-loop", title: "Capstone: Run the Full Agent Loop", minutes: 22, interaction: "reading", quizCount: 3, hasPredict: false, hasDebug: true },
+    { id: "capstone-agent-loop", title: "Capstone: Run the Full Agent Loop", minutes: 22, interaction: "reading", quizCount: 3, hasPredict: false, hasDebug: true, debugCode: "RC" },
     ],
   },
   {

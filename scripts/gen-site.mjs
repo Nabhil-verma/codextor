@@ -699,7 +699,9 @@ const manifestTracks = tracks
               ? "visual"
               : "reading";
         const lang = l.lang === "ts" || l.lang === "python" ? `, lang: ${JSON.stringify(l.lang)}` : "";
-        return `    { id: ${JSON.stringify(l.id)}, title: ${JSON.stringify(l.title)}, minutes: ${l.minutes}, interaction: ${JSON.stringify(interaction)}, quizCount: ${l.quiz.length}, hasPredict: ${Boolean(l.predict?.length)}, hasDebug: ${Boolean(l.debug)}${lang} },`;
+        const code = l.debug?.diagnosis?.answer;
+        const debugCode = code ? `, debugCode: ${JSON.stringify(code)}` : "";
+        return `    { id: ${JSON.stringify(l.id)}, title: ${JSON.stringify(l.title)}, minutes: ${l.minutes}, interaction: ${JSON.stringify(interaction)}, quizCount: ${l.quiz.length}, hasPredict: ${Boolean(l.predict?.length)}, hasDebug: ${Boolean(l.debug)}${debugCode}${lang} },`;
       })
       .join("\n");
     const optional = t.optional ? `\n    optional: true,` : "";
@@ -733,6 +735,8 @@ export type ManifestLesson = {
   /** Predict-the-output challenges, and the break-and-fix lab. */
   hasPredict: boolean;
   hasDebug: boolean;
+  /** Taxonomy code the debug lab's declared diagnosis points at, when it has one. */
+  debugCode?: string;
   lang?: "ts" | "python";
 };
 
