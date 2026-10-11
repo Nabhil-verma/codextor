@@ -170,7 +170,8 @@ function BoardRow({
   pinned = false,
 }: {
   row: {
-    rank: number;
+    /** null: a pinned row beyond the server's scan cap, shown as "500+". */
+    rank: number | null;
     /** Set for public board rows; the local fallback row has no profile yet. */
     profileId?: string;
     name: string;
@@ -212,9 +213,9 @@ function BoardRow({
       )}
 
       <span className="relative z-10 w-8 shrink-0 text-center">
-        {row.rank <= 3 ? <RankMedal rank={row.rank} /> : (
+        {row.rank !== null && row.rank <= 3 ? <RankMedal rank={row.rank} /> : (
           <span className="font-mono text-xs font-bold text-ink-500">
-            {row.rank}
+            {row.rank === null ? "500+" : row.rank}
           </span>
         )}
       </span>
