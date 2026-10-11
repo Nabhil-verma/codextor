@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { runTs, typecheckTs } from "../src/lib/tsRunner";
+import { provideTypeScriptCompiler } from "./support/typescript-compiler";
 
 /*
  * The TypeScript track's whole premise: the browser runs the real compiler.
@@ -9,8 +10,10 @@ import { runTs, typecheckTs } from "../src/lib/tsRunner";
  */
 
 describe("tsRunner", () => {
-  it("type-checks clean code with zero diagnostics", () => {
-    const diags = typecheckTs(
+  provideTypeScriptCompiler();
+
+  it("type-checks clean code with zero diagnostics", async () => {
+    const diags = await typecheckTs(
       `const total = (nums: number[]): number =>
   nums.reduce((a, b) => a + b, 0);
 console.log("total:", total([1, 2, 3]));`
@@ -18,8 +21,8 @@ console.log("total:", total([1, 2, 3]));`
     expect(diags).toEqual([]);
   });
 
-  it("reports a real type error with line, column and TS code", () => {
-    const diags = typecheckTs(`const n: number = "not a number";`);
+  it("reports a real type error with line, column and TS code", async () => {
+    const diags = await typecheckTs(`const n: number = "not a number";`);
     expect(diags).toHaveLength(1);
     expect(diags[0].code).toBe(2322);
     expect(diags[0].line).toBe(1);
@@ -28,8 +31,8 @@ console.log("total:", total([1, 2, 3]));`
     expect(diags[0].message).toMatch(/not assignable/i);
   });
 
-  it("declares the sandbox globals the runner injects — console, timers, fetch", () => {
-    const diags = typecheckTs(
+  it("declares the sandbox globals the runner injects — console, timers, fetch", async () => {
+    const diags = await typecheckTs(
       `setTimeout(() => console.log("later"), 10);
 const res = await fetch("/api/users", { method: "GET" });
 console.log(res.status, res.ok);`
@@ -37,13 +40,13 @@ console.log(res.status, res.ok);`
     expect(diags).toEqual([]);
   });
 
-  it("does not promise the DOM the sandbox doesn't provide", () => {
-    const diags = typecheckTs(`console.log(document.title);`);
+  it("does not promise the DOM the sandbox doesn't provide", async () => {
+    const diags = await typecheckTs(`console.log(document.title);`);
     expect(diags.some((d) => d.message.includes("document"))).toBe(true);
   });
 
-  it("allows top-level await", () => {
-    const diags = typecheckTs(
+  it("allows top-level await", async () => {
+    const diags = await typecheckTs(
       `const values = await Promise.all([Promise.resolve(1), Promise.resolve(2)]);
 console.log(values.join(","));`
     );

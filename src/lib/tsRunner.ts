@@ -13,7 +13,7 @@
 /* reference solution satisfies all three (both are test-verified).    */
 /* ------------------------------------------------------------------ */
 
-import ts from "typescript";
+import type ts from "typescript";
 import type { RunResult } from "./runner";
 import { runUserCode } from "./runner";
 
@@ -163,17 +163,73 @@ export type TsRunResult = RunResult & { typeErrors: TsDiagnostic[] };
 const LESSON_FILE = "lesson.ts";
 const SANDBOX_FILE = "sandbox.d.ts";
 
-const OPTIONS: ts.CompilerOptions = {
-  noEmit: true,
-  strict: true,
-  target: ts.ScriptTarget.ES2020,
-  module: ts.ModuleKind.ESNext,
-  skipLibCheck: true,
-  types: [],
-  // Serve lib files by plain path join from our in-memory host instead of
-  // running type-reference module resolution that expects node_modules.
-  libReplacement: false,
-};
+/** The compiler's value API, as the `typescript` package types it. */
+type Compiler = typeof import("typescript");
+
+/**
+ * Where scripts/sync-typescript.mjs puts the compiler. It is a classic
+ * script that defines the global `ts`, so it stays out of the module graph
+ * and is fetched only when a lesson is first checked.
+ */
+const COMPILER_URL = "/typescript/typescript.js";
+
+let compilerPromise: Promise<Compiler> | null = null;
+
+/**
+ * The TypeScript compiler, loaded at most once per page. A `ts` global that
+ * already exists (Node tests) is used as is, so tests need no DOM.
+ */
+export function loadCompiler(): Promise<Compiler> {
+  if (!compilerPromise) {
+    compilerPromise = injectCompiler().catch((err: unknown) => {
+      compilerPromise = null; // allow a retry after a failed load
+      throw err;
+    });
+  }
+  return compilerPromise;
+}
+
+function readGlobalCompiler(): Compiler | undefined {
+  return (globalThis as { ts?: Compiler }).ts;
+}
+
+async function injectCompiler(): Promise<Compiler> {
+  const existing = readGlobalCompiler();
+  if (existing) return existing;
+  if (typeof document === "undefined") {
+    throw new Error("The TypeScript compiler is not available in this environment");
+  }
+  await new Promise<void>((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = COMPILER_URL;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => {
+      script.remove();
+      reject(new Error(`Could not load the TypeScript compiler from ${COMPILER_URL}`));
+    };
+    document.head.appendChild(script);
+  });
+  const loaded = readGlobalCompiler();
+  if (!loaded) {
+    throw new Error("The TypeScript compiler script loaded but did not define `ts`");
+  }
+  return loaded;
+}
+
+function compilerOptions(t: Compiler): ts.CompilerOptions {
+  return {
+    noEmit: true,
+    strict: true,
+    target: t.ScriptTarget.ES2020,
+    module: t.ModuleKind.ESNext,
+    skipLibCheck: true,
+    types: [],
+    // Serve lib files by plain path join from our in-memory host instead of
+    // running type-reference module resolution that expects node_modules.
+    libReplacement: false,
+  };
+}
 
 /** Parsed lib SourceFiles are immutable — parse once, reuse every run. */
 const sourceCache = new Map<string, ts.SourceFile>();
@@ -187,44 +243,47 @@ function resolveName(fileName: string): string | undefined {
 /** Virtual filesystem: the learner's code, the sandbox ambient, the libs. */
 let files: Record<string, string> = {};
 
-const host: ts.CompilerHost = {
-  getSourceFile: (fileName, languageVersion) => {
-    const key = resolveName(fileName);
-    if (key === undefined) return undefined;
-    if (key === LESSON_FILE) {
-      // Never cached: every run is a fresh editor buffer.
-      return ts.createSourceFile(fileName, files[key], languageVersion, true);
-    }
-    let sf = sourceCache.get(key);
-    if (!sf) {
-      sf = ts.createSourceFile(fileName, files[key], languageVersion, true);
-      sourceCache.set(key, sf);
-    }
-    return sf;
-  },
-  writeFile: () => {},
-  getCurrentDirectory: () => "/",
-  getDirectories: () => [],
-  fileExists: (fileName) => resolveName(fileName) !== undefined,
-  readFile: (fileName) => {
-    const key = resolveName(fileName);
-    return key === undefined ? undefined : files[key];
-  },
-  getDefaultLibFileName: () => "lib.es2020.d.ts",
-  getCanonicalFileName: (fileName) => fileName,
-  useCaseSensitiveFileNames: () => true,
-  getNewLine: () => "\n",
-  directoryExists: (dir) => dir === "/" || dir === "" || dir === ".",
-  realpath: (p) => p,
-  readDirectory: () => [],
-};
+function makeHost(t: Compiler): ts.CompilerHost {
+  return {
+    getSourceFile: (fileName, languageVersion) => {
+      const key = resolveName(fileName);
+      if (key === undefined) return undefined;
+      if (key === LESSON_FILE) {
+        // Never cached: every run is a fresh editor buffer.
+        return t.createSourceFile(fileName, files[key], languageVersion, true);
+      }
+      let sf = sourceCache.get(key);
+      if (!sf) {
+        sf = t.createSourceFile(fileName, files[key], languageVersion, true);
+        sourceCache.set(key, sf);
+      }
+      return sf;
+    },
+    writeFile: () => {},
+    getCurrentDirectory: () => "/",
+    getDirectories: () => [],
+    fileExists: (fileName) => resolveName(fileName) !== undefined,
+    readFile: (fileName) => {
+      const key = resolveName(fileName);
+      return key === undefined ? undefined : files[key];
+    },
+    getDefaultLibFileName: () => "lib.es2020.d.ts",
+    getCanonicalFileName: (fileName) => fileName,
+    useCaseSensitiveFileNames: () => true,
+    getNewLine: () => "\n",
+    directoryExists: (dir) => dir === "/" || dir === "" || dir === ".",
+    realpath: (p) => p,
+    readDirectory: () => [],
+  };
+}
 
 /**
  * Type-check a TypeScript program the way `tsc` would, against the same
  * ES2020 libs and sandbox ambient the runtime actually provides.
  * Returns one entry per diagnostic in the learner's file.
  */
-export function typecheckTs(code: string): TsDiagnostic[] {
+export async function typecheckTs(code: string): Promise<TsDiagnostic[]> {
+  const t = await loadCompiler();
   files = {
     ...LIB_FILES,
     [SANDBOX_FILE]: SANDBOX_LIB,
@@ -233,7 +292,11 @@ export function typecheckTs(code: string): TsDiagnostic[] {
     // so every reported position still matches the editor.
     [LESSON_FILE]: code + "\nexport {};\n",
   };
-  const program = ts.createProgram([LESSON_FILE, SANDBOX_FILE], OPTIONS, host);
+  const program = t.createProgram(
+    [LESSON_FILE, SANDBOX_FILE],
+    compilerOptions(t),
+    makeHost(t)
+  );
   const diagnostics = [
     ...program.getOptionsDiagnostics(),
     ...program.getGlobalDiagnostics(),
@@ -252,18 +315,18 @@ export function typecheckTs(code: string): TsDiagnostic[] {
       line: (pos?.line ?? 0) + 1,
       col: (pos?.character ?? 0) + 1,
       code: d.code,
-      message: ts.flattenDiagnosticMessageText(d.messageText, " "),
+      message: t.flattenDiagnosticMessageText(d.messageText, " "),
     });
   }
   return out;
 }
 
 /** Strip types for the JS sandbox. Error-tolerant: bad code still emits runnable output. */
-function transpileTs(code: string): string {
-  return ts.transpileModule(code, {
+function transpileTs(t: Compiler, code: string): string {
+  return t.transpileModule(code, {
     compilerOptions: {
-      target: ts.ScriptTarget.ES2020,
-      module: ts.ModuleKind.ESNext,
+      target: t.ScriptTarget.ES2020,
+      module: t.ModuleKind.ESNext,
     },
   }).outputText;
 }
@@ -277,7 +340,8 @@ export async function runTs(
   code: string,
   timeoutMs?: number
 ): Promise<TsRunResult> {
-  const typeErrors = typecheckTs(code);
-  const run = await runUserCode(transpileTs(code), timeoutMs);
+  const typeErrors = await typecheckTs(code);
+  const t = await loadCompiler();
+  const run = await runUserCode(transpileTs(t, code), timeoutMs);
   return { ...run, typeErrors };
 }

@@ -2,6 +2,9 @@ import { describe, it, expect } from "vitest";
 import { tracks, findLesson, lessonKey, totalLessonCount } from "../src/data";
 import { evaluateCheck, runUserCode } from "../src/lib/runner";
 import { runTs, type TsRunResult } from "../src/lib/tsRunner";
+import { provideTypeScriptCompiler } from "./support/typescript-compiler";
+
+provideTypeScriptCompiler();
 
 const allLessons = tracks.flatMap((t) =>
   t.lessons.map((l) => ({ track: t, lesson: l }))
