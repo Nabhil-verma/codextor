@@ -97,10 +97,20 @@ export default function Lesson() {
     };
   }, [key, record]);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
+  /*
+   * Per-lesson scratch state: walking into another lesson starts clean.
+   * Comparing the route during render is React's documented way to reset state
+   * when an input changes, and it avoids a second render pass.
+   */
+  const [visit, setVisit] = useState({ trackId, lessonId });
+  if (visit.trackId !== trackId || visit.lessonId !== lessonId) {
+    setVisit({ trackId, lessonId });
     setExerciseDone(false);
     setRapid(false);
+  }
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
   }, [trackId, lessonId]);
 
   // Once the lesson is on screen, warm what the learner will need next: the

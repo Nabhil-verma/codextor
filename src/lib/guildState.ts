@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 /* ═══════════════════════════════════════════════════════════════
    The learner's guild role, published once at the app root and
@@ -18,15 +18,16 @@ export function setClanRole(next: ClanRole) {
   for (const fn of listeners) fn(next);
 }
 
+const subscribe = (onChange: () => void) => {
+  listeners.add(onChange);
+  return () => {
+    listeners.delete(onChange);
+  };
+};
+
+const getSnapshot = () => current;
+
 /** Current guild role, re-rendering the caller whenever it changes. */
 export function useClanRole(): ClanRole {
-  const [role, setRole] = useState(current);
-  useEffect(() => {
-    listeners.add(setRole);
-    setRole(current);
-    return () => {
-      listeners.delete(setRole);
-    };
-  }, []);
-  return role;
+  return useSyncExternalStore(subscribe, getSnapshot);
 }

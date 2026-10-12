@@ -16,7 +16,6 @@ if ("serviceWorker" in navigator && import.meta.env.PROD) {
 
 // Surface async crashes in the hosted preview console instead of dying silently.
 window.addEventListener("unhandledrejection", (e) => {
-  // eslint-disable-next-line no-console
   console.error("[unhandledrejection]", e.reason);
 });
 

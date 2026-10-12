@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { traceCode, type TraceResult, type StepSnapshot } from "../lib/stepper";
 
 type Props = {
@@ -53,12 +53,12 @@ export default function TraceVisualizer({ code }: Props) {
   const sourceLines = useMemo(() => code.split("\n"), [code]);
   const activeLine = current?.line ?? -1;
 
-  // Auto-play
-  const playInterval = useMemo(() => {
-    if (!playing || !result || step >= steps.length - 1) {
-      setPlaying(false);
-      return undefined;
-    }
+  // Auto-play. Playback stops on its own at the last step.
+  const atEnd = steps.length > 0 && step >= steps.length - 1;
+  const isPlaying = playing && result !== null && !atEnd;
+
+  useEffect(() => {
+    if (!isPlaying) return;
     const id = setInterval(() => {
       setStep((s) => {
         if (s >= steps.length - 1) {
@@ -68,11 +68,8 @@ export default function TraceVisualizer({ code }: Props) {
         return s + 1;
       });
     }, 400);
-    return id;
-  }, [playing, result, step, steps.length]);
-
-  // Cleanup interval on unmount
-  useMemo(() => () => { if (playInterval) clearInterval(playInterval); }, [playInterval]);
+    return () => clearInterval(id);
+  }, [isPlaying, steps.length]);
 
   return (
     <div className="space-y-3">
@@ -192,11 +189,11 @@ export default function TraceVisualizer({ code }: Props) {
           </button>
           <button
             onClick={() => {
-              if (playing) { setPlaying(false); } else { setStep(0); setPlaying(true); }
+              if (isPlaying) { setPlaying(false); } else { setStep(0); setPlaying(true); }
             }}
             className="rounded-full bg-gold-400 px-4 py-1 font-mono text-xs font-bold text-ink-950 transition hover:bg-gold-300"
           >
-            {playing ? "⏸ pause" : "▶ play"}
+            {isPlaying ? "⏸ pause" : "▶ play"}
           </button>
         </div>
       )}

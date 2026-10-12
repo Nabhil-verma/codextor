@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { ConvexProvider, ConvexReactClient, useMutation, useQuery } from "convex/react"; // eslint-disable-line -- ConvexReactClient used below
+import { ConvexProvider, ConvexReactClient, useMutation, useQuery } from "convex/react";
 import { ConvexAuthProvider, useAuthActions } from "@convex-dev/auth/react";
 import { useConvexAuth } from "convex/react";
 import { api } from "./convex/_generated/api";

@@ -49,23 +49,24 @@ export function highlight(source: string): Span[] {
 /** Reveals `text` one character at a time. Instant under reduced motion. */
 export function useTypewriter(text: string, speed = 28, startDelay = 600) {
   const reduce = useReducedMotion();
-  const [count, setCount] = useState(reduce ? text.length : 0);
+  const [reveal, setReveal] = useState({ text, count: 0 });
+
+  // A new text starts the reveal over. Comparing during render is React's
+  // documented way to reset state when an input changes.
+  if (reveal.text !== text) setReveal({ text, count: 0 });
 
   useEffect(() => {
-    if (reduce) {
-      setCount(text.length);
-      return;
-    }
-    setCount(0);
+    if (reduce) return;
     let tick: ReturnType<typeof setInterval> | undefined;
     const start = setTimeout(() => {
       tick = setInterval(() => {
-        setCount((c) => {
-          if (c >= text.length) {
+        setReveal((prev) => {
+          const base = prev.text === text ? prev.count : 0;
+          if (base >= text.length) {
             if (tick) clearInterval(tick);
-            return c;
+            return prev;
           }
-          return c + 1;
+          return { text, count: base + 1 };
         });
       }, speed);
     }, startDelay);
@@ -75,6 +76,8 @@ export function useTypewriter(text: string, speed = 28, startDelay = 600) {
     };
   }, [text, speed, startDelay, reduce]);
 
+  // Reduced motion shows the whole text at once.
+  const count = reduce ? text.length : reveal.text === text ? reveal.count : 0;
   return { shown: text.slice(0, count), done: count >= text.length };
 }
 

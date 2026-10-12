@@ -28,14 +28,13 @@ type Phase = "loading" | "idle" | "saving" | "error" | "unavailable";
 export default function OfflinePackButton({ trackId }: { trackId: string }) {
   const [index, setIndex] = useState<PackIndex | null>(null);
   const [status, setStatus] = useState<PackStatus>("none");
-  const [phase, setPhase] = useState<Phase>("loading");
+  const [phase, setPhase] = useState<Phase>(() =>
+    typeof caches === "undefined" ? "unavailable" : "loading",
+  );
 
   useEffect(() => {
     let live = true;
-    if (typeof caches === "undefined") {
-      setPhase("unavailable");
-      return;
-    }
+    if (typeof caches === "undefined") return;
     sharedIndex().then(async (loaded) => {
       if (!live) return;
       if (!loaded) {

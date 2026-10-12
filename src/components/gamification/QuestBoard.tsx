@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { scoreFor, useProgressState } from "../../lib/progress";
+import { scoreFor, useProgressState, type Progress } from "../../lib/progress";
 import { tracks } from "../../data";
 import { useReviewDays } from "../../lib/reviewStore";
 import {
@@ -19,6 +19,18 @@ import {
    ═══════════════════════════════════════════════════════════════ */
 
 const EASE = [0.22, 1, 0.36, 1] as const;
+
+/** The first lesson the learner has not finished, or null when they all are. */
+function firstUnfinishedLesson(progress: Progress) {
+  for (const track of tracks) {
+    for (const lesson of track.lessons) {
+      if (scoreFor(progress, track.id + "/" + lesson.id) < 1) {
+        return { trackId: track.id, id: lesson.id, title: lesson.title, track: track.title };
+      }
+    }
+  }
+  return null;
+}
 
 export default function QuestBoard() {
   const progress = useProgressState();
@@ -45,16 +57,7 @@ export default function QuestBoard() {
    * on, so the button did nothing for a learner standing right there. Point it
    * at the first unfinished lesson instead, which is what the quest means.
    */
-  const nextLesson = useMemo(() => {
-    for (const track of tracks) {
-      for (const lesson of track.lessons) {
-        if (scoreFor(progress, track.id + "/" + lesson.id) < 1) {
-          return { trackId: track.id, id: lesson.id, title: lesson.title, track: track.title };
-        }
-      }
-    }
-    return null;
-  }, [progress]);
+  const nextLesson = useMemo(() => firstUnfinishedLesson(progress), [progress]);
 
   return (
     <div className="glass glass-edge relative overflow-hidden rounded-2xl border border-paper-200/60">

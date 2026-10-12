@@ -224,11 +224,17 @@ export default function CommandPalette() {
   /* ---------------- open/close ---------------- */
 
   useEffect(() => {
-    const openIt = () => setOpen(true);
+    const openIt = () => {
+      setQuery("");
+      setActive(0);
+      setOpen(true);
+    };
     const offBus = onOpenPalette(openIt);
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
+        setQuery("");
+        setActive(0);
         setOpen((v) => !v);
       }
     };
@@ -243,18 +249,12 @@ export default function CommandPalette() {
   useEffect(() => {
     if (!open) return;
     restoreRef.current = document.activeElement as HTMLElement | null;
-    setQuery("");
-    setActive(0);
     const t = setTimeout(() => inputRef.current?.focus(), 0);
     return () => {
       clearTimeout(t);
       restoreRef.current?.focus?.();
     };
   }, [open]);
-
-  useEffect(() => {
-    setActive(0);
-  }, [query]);
 
   // Also let the nav's own Settings control announce itself to the palette.
   useEffect(() => onOpenAiSettings(() => setOpen(false)), []);
@@ -285,7 +285,12 @@ export default function CommandPalette() {
     }
   };
 
-  let lastGroup: Group | null = null;
+  // Group headers are decided before render, never by mutating a marker mid-map.
+  const rows = results.map((item, i) => ({
+    item,
+    i,
+    header: i === 0 || results[i - 1].group !== item.group ? item.group : null,
+  }));
 
   return (
     <div
@@ -308,7 +313,10 @@ export default function CommandPalette() {
           aria-activedescendant={activeId}
           aria-label="Search lessons, tracks and commands"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setActive(0);
+          }}
           onKeyDown={onKeyDown}
           placeholder="Search lessons, tracks, commands…"
           className="w-full border-b border-paper-200 bg-transparent px-5 py-4 text-base text-ink-950 outline-none placeholder:text-ink-400"
@@ -317,10 +325,7 @@ export default function CommandPalette() {
           {results.length === 0 && (
             <li className="px-5 py-6 text-sm text-ink-500">No matches. Try a lesson name or a command.</li>
           )}
-          {results.map((item, i) => {
-            const header = item.group !== lastGroup ? item.group : null;
-            lastGroup = item.group;
-            return (
+          {rows.map(({ item, i, header }) => (
               <li key={item.id}>
                 {header && (
                   <p className="px-5 pb-1 pt-3 font-mono text-[10px] uppercase tracking-widest text-ink-500">
@@ -344,8 +349,7 @@ export default function CommandPalette() {
                   <span className="shrink-0 font-mono text-[11px] text-ink-500">{item.hint}</span>
                 </button>
               </li>
-            );
-          })}
+          ))}
         </ul>
       </div>
     </div>
