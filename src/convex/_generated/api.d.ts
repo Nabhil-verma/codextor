@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as atlas from "../atlas.js";
 import type * as auth from "../auth.js";
 import type * as certificates from "../certificates.js";
 import type * as clans from "../clans.js";
@@ -25,6 +26,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  atlas: typeof atlas;
   auth: typeof auth;
   certificates: typeof certificates;
   clans: typeof clans;

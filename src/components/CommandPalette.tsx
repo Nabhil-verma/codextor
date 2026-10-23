@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { MANIFEST_TRACKS, lessonKey } from "../data/manifest";
 import { BUG_TAXONOMY } from "../data/bug-taxonomy";
 import { scoreFor, useProgressState } from "../lib/progress";
@@ -61,6 +61,7 @@ export function fuzzyScore(query: string, text: string): number {
 
 export default function CommandPalette() {
   const navigate = useNavigate();
+  const location = useLocation();
   const progress = useProgressState();
   const { theme, toggle } = useTheme();
   const { style, setStyle } = useThemeStyle();
@@ -117,6 +118,7 @@ export default function CommandPalette() {
     const routes: Item[] = [
       { to: "/playground", label: "Playground", hint: "scratch editor" },
       { to: "/learn", label: "Lessons", hint: "the catalog" },
+      { to: "/atlas", label: "Atlas", hint: "your learning plan and map" },
       { to: "/leaderboard", label: "Leaderboard", hint: "weekly, monthly, all-time" },
       { to: "/clans", label: "Guilds", hint: "clans and co-op quests" },
       { to: "/portfolio", label: "Portfolio", hint: "your work and certificates" },
@@ -140,7 +142,44 @@ export default function CommandPalette() {
       return null;
     })();
 
+    /*
+     * Next node: on a lesson, the next unfinished lesson in the same track
+     * after this one, else the first unfinished lesson of a later track.
+     * Hidden off a lesson page so it never guesses a starting point.
+     */
+    const nextNode = (() => {
+      const [, route, trackId, lessonId] = location.pathname.split("/");
+      if (route !== "learn" || !trackId || !lessonId) return null;
+      const trackIndex = MANIFEST_TRACKS.findIndex((t) => t.id === trackId);
+      if (trackIndex === -1) return null;
+      const track = MANIFEST_TRACKS[trackIndex];
+      const here = track.lessons.findIndex((l) => l.id === lessonId);
+      if (here === -1) return null;
+      const unfinished = (l: { id: string }, t: { id: string }) =>
+        scoreFor(progress, lessonKey(t.id, l.id)) < 1;
+      const same = track.lessons.slice(here + 1).find((l) => unfinished(l, track));
+      if (same) return { trackId: track.id, lessonId: same.id };
+      for (const later of MANIFEST_TRACKS.slice(trackIndex + 1)) {
+        const found = later.lessons.find((l) => unfinished(l, later));
+        if (found) return { trackId: later.id, lessonId: found.id };
+      }
+      return null;
+    })();
+
     const actions: Item[] = [
+      ...(nextNode
+        ? [
+            {
+              id: "action:next-node",
+              label: "Next node",
+              hint: "the next unfinished lesson on your path",
+              keywords: "next node lesson forward",
+              group: "Actions" as Group,
+              run: () =>
+                go(`/learn/${nextNode.trackId}/${nextNode.lessonId}`, "action:next-node"),
+            },
+          ]
+        : []),
       ...(nextIncomplete
         ? [
             {
@@ -193,7 +232,7 @@ export default function CommandPalette() {
     ];
 
     return [...lessons, ...tracks, ...taxonomy, ...routes, ...actions];
-  }, [progress, theme, style, toggle, setStyle]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [progress, location.pathname, theme, style, toggle, setStyle]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const byId = useMemo(() => new Map(items.map((item) => [item.id, item])), [items]);
 

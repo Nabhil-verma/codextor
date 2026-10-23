@@ -25,6 +25,19 @@ export default defineSchema({
     .index("email", ["email"])
     .index("phone", ["phone"]),
 
+  /**
+   * Atlas interview answers, one row per user. Additive: a new table, so no
+   * existing row changes. Optional revision migrates old answer rows on read.
+   * Newer snapshots win; equal revisions use sorted content to break ties.
+   * Empty snapshots preserve deliberate skips across devices.
+   */
+  atlas: defineTable({
+    userId: v.id("users"),
+    answers: v.any(),
+    revision: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
+  }).index("by_user", ["userId"]),
+
   /** One row per user: the same `completed` map the app keeps in localStorage. */
   progress: defineTable({
     userId: v.id("users"),
