@@ -208,14 +208,14 @@ function SubmitForm({
             onChange={(e) => setCode(e.target.value)}
             rows={4}
             aria-label="Your solution code"
-            className="block w-full rounded-lg border border-ink-200 bg-ink-950 p-3 font-mono text-[12px] text-paper-100 outline-none focus:border-gold-400"
+            className="block w-full rounded-lg border border-ink-200 bg-ink-950 p-3 font-mono text-[12px] text-paper-100 outline-hidden focus:border-gold-400"
             placeholder="Paste your solution code…"
           />
           <input
             value={note}
             onChange={(e) => setNote(e.target.value)}
             aria-label="Note about your approach (optional)"
-            className="block w-full rounded-lg border border-ink-200 bg-paper-50 px-3 py-2 text-sm text-ink-800 outline-none focus:border-gold-400"
+            className="block w-full rounded-lg border border-ink-200 bg-paper-50 px-3 py-2 text-sm text-ink-800 outline-hidden focus:border-gold-400"
             placeholder="Optional note about your approach…"
           />
           <button

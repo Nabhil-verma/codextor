@@ -7,7 +7,7 @@
 > milestones reworked around agent tasks, notes, and proof tests. Where the
 > patch disagrees with this document, the patch wins.
 
-The next version of Codexter's curriculum. Its single organizing idea: every
+The next version of Codextor's curriculum. Its single organizing idea: every
 track trains **judgment over AI output**, not just authorship of code. The
 canonical exercise becomes *"Here is AI-written code. Something is wrong with
 it. Find it, explain it, fix it."*

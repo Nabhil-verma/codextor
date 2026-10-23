@@ -16,12 +16,47 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codextorcybo4.freebuff.app/syllabus/react/</loc>
+    <loc>https://codextorcybo4.freebuff.app/syllabus/git/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://codextorcybo4.freebuff.app/syllabus/testing/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://codextorcybo4.freebuff.app/syllabus/agents/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://codextorcybo4.freebuff.app/syllabus/workflow/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://codextorcybo4.freebuff.app/syllabus/security/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://codextorcybo4.freebuff.app/syllabus/typescript/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://codextorcybo4.freebuff.app/syllabus/backend/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://codextorcybo4.freebuff.app/syllabus/react/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://codextorcybo4.freebuff.app/syllabus/api/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -36,22 +71,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codextorcybo4.freebuff.app/syllabus/git/</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://codextorcybo4.freebuff.app/syllabus/testing/</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://codextorcybo4.freebuff.app/syllabus/devops/</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://codextorcybo4.freebuff.app/syllabus/security/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -71,27 +91,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://codextorcybo4.freebuff.app/syllabus/api/</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://codextorcybo4.freebuff.app/syllabus/typescript/</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://codextorcybo4.freebuff.app/syllabus/performance/</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://codextorcybo4.freebuff.app/syllabus/agents/</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://codextorcybo4.freebuff.app/syllabus/workflow/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

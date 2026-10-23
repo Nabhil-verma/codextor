@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEBUG_CHALLENGES } from "../src/data/debug-challenges";
+import { DEBUG_CHALLENGES, ALL_CHALLENGES } from "../src/data/debug-challenges";
 import { EXTRA_CHALLENGES, LEGACY_DIAGNOSES } from "../src/data/taxonomy-extras";
 import { EXECUTED_CODES } from "../src/data/bug-taxonomy";
 import { tracks } from "../src/data";
@@ -59,7 +59,7 @@ describe("executable taxonomy coverage", () => {
 
   it("resolves every wired challenge id and wires the three new codes", () => {
     const library = new Set([
-      ...DEBUG_CHALLENGES.map((c) => c.id),
+      ...ALL_CHALLENGES.map((c) => c.id),
       ...EXTRA_CHALLENGES.map((c) => c.id),
     ]);
     const wiredIds = WIRED.map(({ challenge }) => challenge.id);
@@ -119,5 +119,17 @@ describe("the three new challenges are real exercises", () => {
       expect(tiers).toEqual([...tiers].sort((a, b) => a - b));
       expect(c.solution.length, `"${c.id}" solution`).toBeGreaterThan(40);
     }
+  });
+});
+
+// Judge real line/category evidence, and clean approvals, not keyword presence.
+describe("Review Gym coverage", () => {
+  it("renders fourteen distinct exercises, with all missing review codes at least twice", () => {
+    const reviews=tracks.flatMap(t=>t.lessons.flatMap(l=>l.reviews ?? []));
+    expect(reviews).toHaveLength(14);
+    expect(new Set(reviews.map(r=>r.id)).size).toBe(14);
+    for(const code of ["SC","TG","NM","DL"]) expect(reviews.filter(r=>r.planted?.category===code).length,code).toBeGreaterThanOrEqual(2);
+    for(const code of ["HA","ID","CX"]) expect(reviews.some(r=>r.planted?.category===code),code).toBe(true);
+    expect(reviews.filter(r=>r.planted===null)).toHaveLength(2);
   });
 });

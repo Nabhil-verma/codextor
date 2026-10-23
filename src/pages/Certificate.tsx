@@ -3,7 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import Nav from "../components/Nav";
 import { Orb, Tilt } from "../components/motion";
-import { MANIFEST_TRACKS as tracks, lessonKey } from "../data/manifest";
+import { MANIFEST_TRACKS as tracks } from "../data/manifest";
+import { certificateLessonKeys } from "../lib/progressKeys";
 import { scoreFor, useProgressState } from "../lib/progress";
 import { useAccount } from "../AccountProvider";
 
@@ -59,10 +60,9 @@ export default function Certificate() {
     );
   }
 
-  const done = track.lessons.filter(
-    (l) => scoreFor(progress, lessonKey(track.id, l.id)) >= 1
-  ).length;
-  const complete = done === track.lessons.length;
+  const certificateKeys = certificateLessonKeys(track);
+  const done = certificateKeys.filter(key => scoreFor(progress, key) >= 1).length;
+  const complete = done === certificateKeys.length;
   const totalMinutes = track.lessons.reduce((n, l) => n + l.minutes, 0);
   const today = new Date().toISOString().slice(0, 10);
 
@@ -78,12 +78,12 @@ export default function Certificate() {
           <div className="card mx-auto max-w-xl p-10 text-center">
             <p className="eyebrow">Not yet</p>
             <h1 className="mt-2 font-display text-3xl font-semibold text-ink-950">
-              {done}/{track.lessons.length} lessons complete
+              {done}/{certificateKeys.length} lessons complete
             </h1>
             <p className="mt-3 text-ink-600">
               Finish every lesson in <strong>{track.title}</strong> with a 100%
               quiz score to unlock this certificate. You're
-              {" "}{track.lessons.length - done} away.
+              {" "}{certificateKeys.length - done} away.
             </p>
             <Link
               to={"/learn/" + track.id + "/" + track.lessons[0].id}
@@ -162,7 +162,7 @@ export default function Certificate() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Your name on the certificate"
-                className="w-56 rounded-full border border-paper-300 bg-paper-50 px-4 py-2.5 text-sm text-ink-950 outline-none transition placeholder:text-ink-600/60 focus:border-gold-400 focus:ring-2 focus:ring-gold-400/25"
+                className="w-56 rounded-full border border-paper-300 bg-paper-50 px-4 py-2.5 text-sm text-ink-950 outline-hidden transition placeholder:text-ink-600/60 focus:border-gold-400 focus:ring-2 focus:ring-gold-400/25"
               />
               <button
                 type="button"

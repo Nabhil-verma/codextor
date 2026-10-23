@@ -1,3 +1,4 @@
+import { createMockAgentEndpoint } from "./mockAgentEndpoint";
 import { evaluateCheckExpression } from "./checkExpr";
 
 export type RunResult = {
@@ -219,10 +220,20 @@ function jsonRes(body: unknown, status = 200) {
 }
 
 function makeMockFetch(log: (...a: unknown[]) => void, pending: Promise<unknown>[]) {
+  const model = createMockAgentEndpoint();
   return async (url: string, opts?: { method?: string; body?: string }) => {
     await latency(pending);
     const method = (opts?.method ?? "GET").toUpperCase();
     const path = url.replace(/^https?:\/\/[^/]+/, "");
+    if (path === "/api/llm/chat") {
+      if (method !== "POST") return jsonRes({ error: "POST required" }, 405);
+      try {
+        const result = model(JSON.parse(opts?.body ?? "{}"));
+        return jsonRes(result.body, result.status);
+      } catch {
+        return jsonRes({ error: "invalid JSON body" }, 400);
+      }
+    }
     const users = serverState.users;
 
     let m: RegExpMatchArray | null;

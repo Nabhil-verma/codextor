@@ -282,7 +282,7 @@ describe("the landing hero", () => {
       </MemoryRouter>
     );
     expect(
-      screen.getByRole("heading", { name: "The code teacher that runs your code" })
+      screen.getByRole("heading", { name: "Judgment over authorship" })
     ).toBeTruthy();
     expect(screen.getByRole("button", { name: /Switch to (dark|light) mode/ })).toBeTruthy();
   });

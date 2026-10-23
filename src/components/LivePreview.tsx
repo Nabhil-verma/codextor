@@ -251,7 +251,7 @@ export default function LivePreview({
             spellCheck={false}
             rows={16}
             aria-label={`${tab} source`}
-            className="block w-full resize-y bg-ink-950 p-4 font-mono text-[13px] leading-relaxed text-paper-100 outline-none"
+            className="block w-full resize-y bg-ink-950 p-4 font-mono text-[13px] leading-relaxed text-paper-100 outline-hidden"
           />
         </div>
 

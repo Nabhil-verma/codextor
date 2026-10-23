@@ -74,7 +74,7 @@ const marqueeItems = [
   "Microservices",
 ];
 
-const headlineWords = ["The", "code", "teacher", "that", "runs", "your", "code"];
+const headlineWords = ["Judgment", "over", "authorship"];
 
 const HERO_CODE = `const learner = { name: "you", excuses: "none" };
 console.log("Hello, free education. 👋");`;
@@ -601,22 +601,22 @@ export default function Landing() {
           {/* Kinetic headline — words resolve out of blur, one by one */}
           <h1
             className="mx-auto mt-10 max-w-5xl text-balance font-display text-[2.9rem] font-bold leading-[0.98] tracking-tighter text-ink-950 sm:text-7xl lg:text-[6.5rem]"
-            aria-label="The code teacher that runs your code"
+            aria-label="Judgment over authorship"
           >
             {headlineWords.map((w, i) => (
               <motion.span
                 key={i}
                 aria-hidden
                 className="mr-[0.22em] inline-block will-change-transform"
-                initial={{ opacity: 0, y: 44, filter: "blur(14px)" }}
+                initial={reduceMotion ? false : { opacity: 0, y: 44, filter: "blur(14px)" }}
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                 transition={{
-                  duration: 0.8,
-                  delay: 0.1 + i * 0.075,
+                  duration: reduceMotion ? 0 : 0.8,
+                  delay: reduceMotion ? 0 : 0.1 + i * 0.075,
                   ease: [0.25, 1, 0.5, 1],
                 }}
               >
-                {i >= 4 ? <span className="gradient-text">{w}</span> : w}
+                {i === 0 ? <span className="gradient-text">{w}</span> : w}
               </motion.span>
             ))}
           </h1>
@@ -627,12 +627,8 @@ export default function Landing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.7 }}
           >
-            Interactive JavaScript lessons with a built-in editor, console, and
-            self-checking exercises. From your first{" "}
-            <code className="rounded-md border border-white/10 bg-white/[0.05] px-2 py-0.5 font-mono text-sm text-gold-300">
-              console.log
-            </code>{" "}
-            to real programs — create a free account and go.
+            Direct the agent. Challenge the draft. Prove what ships.
+            A free browser school for agentic engineering: spec → context → plan → delegate → verify → operate.
           </motion.p>
 
           <motion.div
@@ -889,7 +885,7 @@ export default function Landing() {
             index="05"
             label="the curriculum"
             title={`${tracks.length} tracks · ${totalLessonCount} hands-on lessons`}
-            lede="Start at the top if you're new. Every lesson ends with code you ran yourself and a quiz you passed."
+            lede="Start with foundations, then direct agents through specs, plans, verification and operation. Judgment is practiced, not assumed."
           />
         </div>
         <div

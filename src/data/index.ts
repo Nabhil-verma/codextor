@@ -17,6 +17,9 @@ import { typescriptTrack } from "./track-typescript";
 import { performanceTrack } from "./track-performance";
 import { agentsTrack } from "./track-agents";
 import { workflowTrack } from "./track-workflow";
+import { agentInternalsTrack } from "./track-agent-internals";
+import { fieldReportsTrack } from "./track-field-reports";
+import { flagEnabled } from "../lib/flags";
 
 export type { Track, Lesson } from "./types";
 export type { Check, QuizQuestion } from "./types";
@@ -30,22 +33,25 @@ export type { Check, QuizQuestion } from "./types";
  */
 export const tracks: Track[] = [
   webTrack,
-  reactTrack,
-  backendTrack,
-  dsaTrack,
-  pythonTrack,
   gitTrack,
   testingTrack,
-  devopsTrack,
+  agentsTrack,
+  workflowTrack,
   securityTrack,
+  typescriptTrack,
+  backendTrack,
+  reactTrack,
+  apiTrack,
+  dsaTrack,
+  pythonTrack,
+  devopsTrack,
   architectureTrack,
   tailwindTrack,
   stateTrack,
-  apiTrack,
-  typescriptTrack,
   performanceTrack,
-  agentsTrack,
-  workflowTrack,
+  // Flagged: VITE_FLAG_AGENT_INTERNALS=1 adds the depth track.
+  ...(flagEnabled("agentInternals") ? [agentInternalsTrack] : []),
+  ...(flagEnabled("fieldReports") ? [fieldReportsTrack] : []),
 ].map(wireTrack);
 
 export function findTrack(trackId: string) {

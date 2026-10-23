@@ -1,0 +1,170 @@
+
+> codextor@0.1.0 test
+> vitest run
+
+
+ RUN  v2.1.9 /workspace/chats/101b4a5ca56c23ee41b9852b
+
+ ✓ tests/milestone-claims.test.ts (22 tests) 104ms
+ ✓ tests/lab-graders.test.ts (27 tests) 43ms
+ ✓ tests/new-exercises.test.ts (6 tests) 5250ms
+   ✓ new interactive exercises > is not already solved by the starter 2742ms
+   ✓ new interactive exercises > accepts an independently written solution 2502ms
+ ✓ tests/clan-roster-edges.test.ts (11 tests) 102ms
+ ✓ tests/curriculum.test.ts (15 tests) 15287ms
+   ✓ curriculum integrity > every predict challenge has a valid answer and runnable code 3819ms
+   ✓ curriculum integrity > every interactive starter runs cleanly and every check expression compiles 8412ms
+   ✓ exercise checks are satisfiable > rejects the starter but accepts a reference fix 3011ms
+stderr | tests/clan-quest-lifecycle.test.ts > clan quest lifecycle > keeps the activity feed ordered, attributed and private to the guild
+profiles.sync: would clamp [level>curve, streak>account-age] for 000000000000000000000010000users
+
+stderr | tests/clan-quest-lifecycle.test.ts > clan quest lifecycle > enforces the role ladder for promotion and removal
+profiles.sync: would clamp [level>curve] for 000000000000000000000010001users
+
+stderr | tests/clan-quest-lifecycle.test.ts > clan quest lifecycle > moves the founder's crown to the highest-XP member when they leave
+profiles.sync: would clamp [streak>account-age] for 000000000000000000000010001users
+
+ ✓ tests/clan-quest-lifecycle.test.ts (6 tests) 149ms
+ ✓ tests/milestones.test.ts (16 tests) 1622ms
+   ✓ milestone proofs > is not already satisfied by the starter code 808ms
+   ✓ milestone proofs > accepts an independently written solution 803ms
+ ✓ tests/palette.test.ts (6 tests) 1301ms
+   ✓ the colour palette > really compiles every colour class the source uses, through its variable 1289ms
+stderr | tests/backend-xp-clamps.test.ts > profiles.sync in log-only mode (the default) > records the violation but stores what the client sent
+profiles.sync: would clamp [lessons>total, xp>curriculum, xpMonth>xp, xpWeek>xpMonth, level>curve, streak>account-age] for 000000000000000000000010000users
+
+stderr | tests/backend-xp-clamps.test.ts > profiles.sync with CODEXTOR_XP_CLAMPS=enforce > bounds a forged payload to what the curriculum allows
+profiles.sync: clamped [lessons>total, xp>curriculum, xpMonth>xp, xpWeek>xpMonth, level>curve, streak>account-age] for 000000000000000000000010000users
+
+stderr | tests/backend-xp-clamps.test.ts > profiles.sync with CODEXTOR_XP_CLAMPS=enforce > drops a runaway sync loop instead of overwriting the card
+profiles.sync: rate limit hit for 000000000000000000000010000users (21/20 per minute)
+profiles.sync: rate limit hit for 000000000000000000000010000users (22/20 per minute)
+profiles.sync: rate limit hit for 000000000000000000000010000users (23/20 per minute)
+profiles.sync: rate limit hit for 000000000000000000000010000users (24/20 per minute)
+profiles.sync: rate limit hit for 000000000000000000000010000users (25/20 per minute)
+
+ ✓ tests/backend-xp-clamps.test.ts (11 tests) 42ms
+ ✓ tests/game-layer.test.ts (17 tests) 10ms
+ ✓ tests/gamification.test.ts (15 tests) 76ms
+ ✓ tests/site-gen.test.ts (16 tests) 18ms
+ ✓ tests/progress.test.ts (15 tests) 12ms
+ ✓ tests/review-wiring.test.ts (10 tests) 11ms
+ ✓ tests/python-exercises.test.ts (6 tests) 2649ms
+   ✓ Python track executes for real > keeps every executed lesson's starter failing its own check 2597ms
+ ✓ tests/taxonomy-coverage.test.ts (8 tests) 3082ms
+   ✓ the three new challenges are real exercises > fails each broken program on its own check 1046ms
+   ✓ the three new challenges are real exercises > accepts each reference fix 1011ms
+   ✓ the three new challenges are real exercises > fails because of a bug, not a typo hunt 1016ms
+ ✓ tests/highlight.test.ts (14 tests) 12ms
+ ✓ tests/manifest-split.test.ts (7 tests) 90ms
+ ✓ tests/ai-stream.test.ts (9 tests) 14ms
+ ✓ tests/ai-provider.test.ts (12 tests) 13ms
+ ✓ tests/check-expr.test.ts (7 tests) 8ms
+ ✓ tests/runner.test.ts (14 tests) 3479ms
+   ✓ runUserCode > does not leak user variables into later runs 402ms
+   ✓ runUserCode > stops infinite loops with the loop guard 501ms
+   ✓ runUserCode > stops brace-less infinite while loops 502ms
+ ✓ tests/curriculum-profile.test.ts (4 tests) 355ms
+ ✓ tests/ts-runner.test.ts (9 tests) 1423ms
+   ✓ tsRunner > type-checks clean code with zero diagnostics 424ms
+ ✓ tests/debug-challenges.test.ts (6 tests) 7080ms
+   ✓ debug challenge library > grades a fix only when the program actually behaves 2360ms
+   ✓ debug challenge library > accepts the reference fix for every challenge 2358ms
+   ✓ debug challenge library > fails because of a bug, not because it doesn't parse 2355ms
+ ✓ tests/ceremony.test.ts (6 tests) 6ms
+ ✓ tests/stepper.test.ts (7 tests) 810ms
+   ✓ traceCode > aborts infinite loops via the tick guard 801ms
+ ✓ tests/backend-preferences.test.ts (4 tests) 37ms
+ ✓ tests/guild-quests.test.ts (6 tests) 7ms
+ ✓ tests/compiler-asset.test.ts (1 test) 1208ms
+   ✓ production real TypeScript compiler artifact > typechecks good and bad programs in a browser-like realm 1206ms
+ ✓ tests/shuffle.test.ts (4 tests) 8ms
+ ✓ tests/docs.test.ts (2 tests) 3ms
+ ✓ tests/socratic-lang.test.ts (2 tests) 3ms
+stderr | tests/resilience-ux.test.tsx > the quest board call to action > links at the next unfinished lesson instead of the page it sits on
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/resilience-ux.test.tsx (13 tests) 1140ms
+   ✓ the landing hero > still renders after the scroll-fade rework, with the toggle in reach 437ms
+stderr | tests/clan-ui.test.tsx > guild roster > lets the founder promote a member to officer, and demote one back
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/clan-ui.test.tsx (9 tests) 701ms
+ ✓ tests/telemetry.test.ts (16 tests) 13ms
+ ✓ tests/review.test.ts (22 tests) 62ms
+stderr | tests/error-boundary.test.tsx > a route chunk that never arrives > degrades to App's page-level crash card with the shell still standing
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/error-boundary.test.tsx (4 tests) 652ms
+stderr | tests/command-palette.test.tsx > opening > stays closed until asked
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/command-palette.test.tsx (14 tests) 734ms
+ ✓ tests/editor-a11y.test.tsx (16 tests) 1294ms
+ ✓ tests/local-store.test.ts (14 tests) 27ms
+ ✓ tests/code-editor.test.tsx (9 tests) 256ms
+stderr | tests/routes.test.tsx > every route renders > / — the public landing page
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/routes.test.tsx (14 tests) 3451ms
+   ✓ every route renders > / — the public landing page 745ms
+   ✓ every route renders > /auth — signed in, it forwards to the app instead of looping 1014ms
+   ✓ every route renders > /learn — the track index with a cold backend 322ms
+   ✓ every route renders > /learn/:trackId/:lessonId — a lesson that doesn't exist says so 474ms
+stderr | tests/learn-filters.test.tsx > Learn search and filters > shows every track before filtering
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/learn-filters.test.tsx (7 tests) 3286ms
+   ✓ Learn search and filters > shows every track before filtering 961ms
+   ✓ Learn search and filters > narrows the list to matching lessons 463ms
+   ✓ Learn search and filters > filters to break-and-fix labs 402ms
+   ✓ Learn search and filters > says so when nothing is done yet 349ms
+   ✓ Learn search and filters > filters by interaction kind 452ms
+   ✓ Learn search and filters > clears every filter at once 448ms
+ ✓ tests/rapidfire-timers.test.tsx (3 tests) 446ms
+stderr | tests/curriculum-ui.test.tsx > the lesson step flow > renders the break-and-fix lab for a `debug` lesson
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/curriculum-ui.test.tsx (5 tests) 1025ms
+   ✓ the lesson step flow > renders the break-and-fix lab for a `debug` lesson 407ms
+stderr | tests/lab-ui.test.tsx > Track XVI labs render through the lesson page > renders the diff review with its submit control
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/lab-ui.test.tsx (7 tests) 1482ms
+   ✓ Track XVI labs render through the lesson page > renders the diff review with its submit control 534ms
+ ✓ tests/url.test.ts (8 tests) 10ms
+ ✓ tests/tutor-error-ask.test.tsx (5 tests) 889ms
+   ✓ Playground error hand-off > passes the raw error and the open hint tier to the tutor 509ms
+stderr | tests/ceremony-ui.test.tsx > Ceremony > says nothing when there is no progress at all
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/ceremony-ui.test.tsx (4 tests) 284ms
+ ✓ tests/theme-sync.test.tsx (4 tests) 469ms
+   ✓ appearance style follows the account > pushes changes made while signed in 405ms
+ ✓ tests/code-block.test.tsx (9 tests) 249ms
+ ✓ tests/proof-runner.test.tsx (4 tests) 1463ms
+   ✓ ProofRunner > verifies a proof that fails on the draft and passes on the fix 619ms
+   ✓ ProofRunner > records 0.5 when the draft does not fail 418ms
+   ✓ ProofRunner > records 0 when the test distinguishes nothing 415ms
+stderr | tests/review-card.test.tsx > ReviewCard > seeds the queue from a shaky lesson and lets the learner recall it
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/review-card.test.tsx (2 tests) 280ms
+ ✓ tests/ai-settings-ui.test.tsx (5 tests) 413ms
+ ✓ tests/socratic-stream.test.tsx (2 tests) 335ms
+
+ Test Files  56 passed (56)
+      Tests  517 passed (517)
+   Start at  12:43:52
+   Duration  110.15s (transform 3.28s, setup 0ms, collect 14.58s, tests 63.28s, environment 18.40s, prepare 4.32s)
+

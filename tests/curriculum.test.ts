@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { flagEnabled } from "../src/lib/flags";
 import { tracks, findLesson, lessonKey, totalLessonCount } from "../src/data";
 import { evaluateCheck, runUserCode } from "../src/lib/runner";
 import { runTs, type TsRunResult } from "../src/lib/tsRunner";
@@ -9,30 +10,16 @@ const allLessons = tracks.flatMap((t) =>
 
 describe("curriculum integrity", () => {
   it("has seventeen tracks", () => {
-    expect(tracks).toHaveLength(17);
+    expect(tracks).toHaveLength(17 + Number(flagEnabled("agentInternals")) + Number(flagEnabled("fieldReports")));
   });
 
   it("covers all seventeen planned curriculum areas", () => {
     expect(tracks.map((t) => t.id)).toEqual([
-      "web",
-      "react",
-      "backend",
-      "dsa",
-      "python",
-      "git",
-      "testing",
-      "devops",
-      "security",
-      "architecture",
-      "tailwind",
-      "state",
-      "api",
-      "typescript",
-      "performance",
-      "agents",
-      // V2.1 Fix 2 propagation: the first content authored against the
-      // diff/click grader outside the pilot track.
-      "workflow",
+      "web", "git", "testing", "agents", "workflow", "security",
+      "typescript", "backend", "react", "api", "dsa", "python",
+      "devops", "architecture", "tailwind", "state", "performance",
+      ...(flagEnabled("agentInternals") ? ["agent-internals"] : []),
+      ...(flagEnabled("fieldReports") ? ["field-reports"] : []),
     ]);
   });
 

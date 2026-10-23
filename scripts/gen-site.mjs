@@ -9,12 +9,18 @@
  *
  * Idempotent: running it twice produces byte-identical output.
  */
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { deflateSync } from "node:zlib";
 import { tmpdir } from "node:os";
 
 const ROOT = process.cwd();
+// Match Vite mode/env loading before evaluating the registry in Node.
+const { loadEnv } = await import("vite");
+const mode = process.env.NODE_ENV === "production" ? "production" : "development";
+for (const [key, value] of Object.entries(loadEnv(mode, ROOT, "VITE_FLAG_"))) {
+  if (process.env[key] === undefined) process.env[key] = value;
+}
 const ORIGIN = "https://codextorcybo4.freebuff.app";
 
 /* ------------------------------------------------------------------ */
@@ -250,7 +256,7 @@ function ogImage(trackCount, lessonCount) {
   fillRect(cv, 144, 114, 12, 12, [34, 197, 94], 0.9);
 
   drawText(cv, "CODEXTOR", 152, 180, 16, PAPER);
-  drawText(cv, "RUN REAL CODE, GET IT GRADED", 154, 320, 5, CYAN);
+  drawText(cv, "JUDGMENT OVER AUTHORSHIP", 154, 320, 5, CYAN);
   const stats = `${lessonCount} LESSONS / ${trackCount} TRACKS / FREE`;
   drawText(cv, stats, 154, 392, 5, [148, 163, 184]);
   drawText(cv, "IN YOUR BROWSER - NOTHING TO INSTALL", 154, 452, 4, [100, 116, 139]);
@@ -499,7 +505,7 @@ function injectCopy({ tracks, total }) {
 
   const index = join(ROOT, "index.html");
   const readme = join(ROOT, "README.md");
-  const description = `Write and run real code from minute one: ${tracks.length} tracks, ${total} hands-on lessons, a live playground and quizzes. Free forever. Every exercise runs in your browser.`;
+  const description = `Judgment over authorship: ${tracks.length} tracks, ${total} hands-on lessons, deterministic judgment labs and real runtimes. Free forever. Every exercise runs in your browser.`;
   let html = replaceBetween(readFile(index), "hero", hero, "index.html");
   html = setMetaContent(html, "og:description", "property", description, "index.html");
   html = setMetaContent(html, "twitter:description", "name", description, "index.html");
@@ -508,6 +514,8 @@ function injectCopy({ tracks, total }) {
   let md = replaceBetween(readFile(readme), "words", words, "README.md");
   md = replaceBetween(md, "pair", pair, "README.md");
   md = replaceBetween(md, "tail", tail, "README.md");
+  const table = "| # | Track | ID | Lessons | What it's for |\n| --- | --- | --- | --- | --- |\n" + tracks.map(t => `| ${t.numeral} | ${t.title} | \`${t.id}\` | ${t.lessons.length} | ${t.blurb.replaceAll('|', '\\|')} |`).join('\n');
+  md = md.replace(/<!-- curriculum-table:start -->[\s\S]*?<!-- curriculum-table:end -->/, `<!-- curriculum-table:start -->\n${table}\n<!-- curriculum-table:end -->`);
   writeFile(readme, md);
 
   return { hero, pair, words, tail };
@@ -676,6 +684,10 @@ writeFile(
   screenshot(1280, 720, "PROGRESS AND GUILDS", "XP, STREAKS, CERTIFICATES"),
 );
 
+// Remove only generated experimental syllabus output when flags roll back; authored lessons remain intact.
+for (const id of ["agent-internals", "field-reports"]) {
+  if (!tracks.some(t => t.id === id)) rmSync(join(ROOT, `public/syllabus/${id}`), { recursive: true, force: true });
+}
 writeFile(join(ROOT, "public/syllabus/index.html"), syllabusIndexPage(tracks, total));
 for (const [i, track] of tracks.entries()) {
   writeFile(join(ROOT, `public/syllabus/${track.id}/index.html`), trackPage(track, i));

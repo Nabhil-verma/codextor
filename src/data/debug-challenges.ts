@@ -1,3 +1,4 @@
+import { TOOL_WRAPPER } from "./guardrails";
 import type { DebugChallenge, Hint } from "./types";
 import { EXTRA_CHALLENGES, LEGACY_DIAGNOSES } from "./taxonomy-extras";
 
@@ -440,6 +441,7 @@ export const DEBUG_CHALLENGES: DebugChallenge[] = LEGACY_CHALLENGES.map((c) => (
 
 /** Every executable challenge: the legacy library plus the taxonomy extras. */
 export const ALL_CHALLENGES: DebugChallenge[] = [
+  TOOL_WRAPPER,
   ...DEBUG_CHALLENGES,
   ...EXTRA_CHALLENGES,
 ];

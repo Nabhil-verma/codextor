@@ -1,5 +1,7 @@
+import ReviewerAssessment from "../components/ReviewerAssessment";
+import { requiredExerciseIds, evidenceScore, submitExercise } from "../lib/lessonEvidence";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import Nav from "../components/Nav";
 import { PageFade, Reveal } from "../components/motion";
@@ -12,14 +14,19 @@ import RepoLab from "../components/RepoLab";
 import Rubric from "../components/Rubric";
 import LivePreview from "../components/LivePreview";
 import GitSim from "../components/GitSim";
+import { flagEnabled } from "../lib/flags";
 import PredictOutput from "../components/PredictOutput";
+import CatchAgentLab from "../components/CatchAgentLab";
+import TranscriptLab from "../components/TranscriptLab";
+import DecisionLab from "../components/DecisionLab";
+import PlacementCheck from "../components/PlacementCheck";
 import Quiz from "../components/Quiz";
 import SolutionFeed from "../components/SolutionFeed";
 import SocraticTutor from "../components/SocraticTutor";
 import RapidFire from "../components/gamification/RapidFire";
 import DragSort from "../components/gamification/DragSort";
 import { findTrackMeta, findLessonMeta, lessonKey } from "../data/manifest";
-import { loadTrack, prefetchNextLesson } from "../data/loadTrack";
+import { lessonRoute, loadTrack, prefetchNextLesson } from "../data/loadTrack";
 import type { QuizQuestion, Track } from "../data/types";
 import { Skeleton } from "../components/ui/Skeleton";
 import { useProgress, useProgressState, scoreFor } from "../lib/progress";
@@ -85,17 +92,25 @@ export default function Lesson() {
    */
   const scorers = useMemo(() => {
     const forElement = (element: AttemptElement) => (score: number) => {
-      if (score > 0) record(key, score, todayKey());
       recordAttempt({ key, element, score, day: todayKey() });
+      const ids = lesson ? requiredExerciseIds(lesson).filter(id => id !== "worktree-lab" || flagEnabled("gitWorktreeLab")) : [];
+      const earned = ids.length ? evidenceScore(key, ids) : score;
+      if (earned > 0) record(key, earned, todayKey());
     };
     return {
       quiz: forElement("quiz"),
-      debug: forElement("debug"),
+      debug: (score: number) => {
+        if (lesson?.debug?.diagnosis?.codes.includes("TG")) submitExercise(key, lesson.debug.id, "debug", score, todayKey());
+        forElement("debug")(score);
+      },
       diff: forElement("diff"),
       repo: forElement("repo"),
-      rubric: forElement("rubric"),
+      rubric: (score: number) => {
+        if (lesson?.rubric && lesson.reviewed) submitExercise(key, lesson.rubric.id, "rubric", score, todayKey());
+        forElement("rubric")(score);
+      },
     };
-  }, [key, record]);
+  }, [key, record, lesson]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -108,6 +123,9 @@ export default function Lesson() {
   useEffect(() => {
     if (trackId && lessonId) prefetchNextLesson(trackId, lessonId);
   }, [trackId, lessonId]);
+
+  const route = lessonRoute(trackId ?? "", lessonId ?? "");
+  if (route.trackId !== trackId || route.lessonId !== lessonId) return <Navigate replace to={`/learn/${route.trackId}/${route.lessonId}`} />;
 
   // Unknown ids are answered from the manifest; a track that is still loading
   // shows a placeholder instead of "not found".
@@ -172,8 +190,9 @@ export default function Lesson() {
     ...(runKind ? [runKind] : []),
     ...(lesson.sort ? ["Sequence"] : []),
     ...(lesson.debug ? ["Debug"] : []),
+    ...(lesson.catchTests?.length ? ["Test the draft"] : []),
     ...(lesson.preview ? ["Build"] : []),
-    ...(lesson.diff ? ["Review"] : []),
+    ...(lesson.diff || lesson.reviews?.length ? ["Review"] : []),
     ...(lesson.repo ? ["Trace"] : []),
     ...(lesson.rubric ? ["Write"] : []),
     "Prove it",
@@ -183,6 +202,12 @@ export default function Lesson() {
     ROMAN[STEPS.indexOf(name)] ?? ROMAN[0];
 
   const completed = scoreFor(progressState, key) >= 1;
+  const submitArtifact = (id: string, element: AttemptElement, score: number) => {
+    submitExercise(key, id, element, score, todayKey());
+    const ids = requiredExerciseIds(lesson).filter(id => id !== "worktree-lab" || flagEnabled("gitWorktreeLab"));
+    const earned = evidenceScore(key, ids);
+    if (earned > 0) record(key, earned, todayKey());
+  };
 
   return (
     <div className="min-h-screen">
@@ -214,6 +239,7 @@ export default function Lesson() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.25 }}
         >            <span>{lesson.minutes} min</span>
+            {lesson.reviewed && <span>last reviewed <time dateTime={lesson.reviewed}>{lesson.reviewed}</time></span>}
             <span className="text-gold-500">·</span>
             <span>
               {lesson.starter
@@ -246,6 +272,8 @@ export default function Lesson() {
           )}
         </motion.p>
 
+        {lesson.id === "agentic-loop-zero" && <div className="mt-10"><PlacementCheck /></div>}
+
         {/*
           * 1 + 2 + 2.5 — Read · Run · Ask the Tutor.
           * Code lessons become a two-pane workspace from xl up: the lesson text
@@ -272,7 +300,7 @@ export default function Lesson() {
                     lang={lesson.lang}
                     pythonPrelude={lesson.pythonPrelude}
                     label={lesson.title}
-                    onPass={() => setExerciseDone(true)}
+                    onPass={() => { setExerciseDone(true); if (lesson.reviewed) submitArtifact("code", "proof", 1); }}
                     onAskTutor={askAboutError}
                   />
                 </section>
@@ -318,11 +346,10 @@ export default function Lesson() {
           <Reveal className="mt-14">
             <section>
               <h2 className="eyebrow mb-4">{step("Do")} · Do</h2>
-              <GitSim objectives={lesson.gitSim} />
+              <GitSim objectives={lesson.gitSim} parallel={lesson.worktreeLab && flagEnabled("gitWorktreeLab")} onScore={score => submitArtifact("worktree-lab", "worktree", score)} />
             </section>
           </Reveal>
         )}
-
         {/* 2.25 Sequence — drag the steps into the right order */}
         {lesson.sort && (
           <Reveal className="mt-14">
@@ -352,6 +379,10 @@ export default function Lesson() {
           </Reveal>
         )}
 
+        {lesson.catchTests?.map(exercise => <CatchAgentLab key={exercise.id} exercise={exercise} onScore={score => submitArtifact(exercise.id, "proof", score)} />)}
+        {lesson.transcripts?.map(t => <TranscriptLab key={t.id} transcript={t} onScore={score => submitArtifact(t.id, "transcript", score)} />)}
+        {lesson.decisions?.map(d => <DecisionLab key={d.id} artifact={d} onScore={score => submitArtifact(d.id, "decision", score)} />)}
+
         {/* 2.4 Build — live rendering, graded structurally in the frame */}
         {lesson.preview && (
           <Reveal className="mt-14">
@@ -379,6 +410,12 @@ export default function Lesson() {
           </Reveal>
         )}
 
+        {lesson.reviews?.map(exercise => <section key={exercise.id} className="mt-10" aria-label={`Review Gym: ${exercise.title}`}>
+          <DiffLab exercise={exercise} onScore={score => {
+            submitArtifact(exercise.id, "diff", score);
+          }} />
+        </section>)}
+
         {/* 2.46 Trace — codebase archaeology in a read-only snapshot */}
         {lesson.repo && (
           <Reveal className="mt-14">
@@ -386,7 +423,7 @@ export default function Lesson() {
               <h2 className="eyebrow mb-4">{step("Trace")} · Trace</h2>
               <RepoLab
                 exercise={lesson.repo}
-                onScore={scorers.repo}
+                onScore={lesson.repo.id.startsWith("judge-") ? score => submitArtifact(lesson.repo!.id, "repo", score) : scorers.repo}
                 onPass={() => setExerciseDone(true)}
               />
             </section>
@@ -475,6 +512,8 @@ export default function Lesson() {
             </section>
           </Reveal>
         )}
+
+        {lesson.reviews?.length && flagEnabled("reviewerCertificate") ? <ReviewerAssessment /> : null}
 
         {/* Prev / next */}
         {/* On phones the two actions stack — full-width, thumb-sized buttons

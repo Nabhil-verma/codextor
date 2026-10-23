@@ -1,0 +1,41 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.12 [39m[90m/workspace/chats/101b4a5ca56c23ee41b9852b[39m
+
+ [32m✓[39m tests/completion-integration.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 854[2mms[22m[39m
+     [33m[2m✓[22m[39m executes the model mock through the learner fetch interface and resets retries each run [33m 844[2mms[22m[39m
+ [32m✓[39m tests/transcript-lab.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[32m 279[2mms[22m[39m
+ [32m✓[39m tests/unseen-certificate.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 54[2mms[22m[39m
+ [32m✓[39m tests/field-reports.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [31m❯[39m tests/agent-internals.test.ts [2m([22m[2m4 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 461[2mms[22m[39m
+     [32m✓[39m has six lessons, each with a quiz and an authored duration[32m 3[2mms[22m[39m
+     [32m✓[39m uses unique lesson ids and is optional[32m 0[2mms[22m[39m
+[31m     [31m×[31m all JS practices reject the starter and accept an independently implemented repair[39m[33m 456[2mms[22m[39m
+     [32m✓[39m is registered only when the agentInternals flag is on[32m 0[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/agent-internals.test.ts[2m > [22mflagged Agent Internals track[2m > [22mall JS practices reject the starter and accept an independently implemented repair
+[31m[1mAssertionError[22m: request-loop: expected 'Cannot read properties of undefined (…' to be null[39m
+
+[32m- Expected:[39m
+null
+
+[31m+ Received:[39m
+"Cannot read properties of undefined (reading 'name')"
+
+[36m [2m❯[22m tests/agent-internals.test.ts:[2m32:38[22m[39m
+    [90m 30|[39m       expect(evaluateCheck(lesson.check!.expr, broken.logs.join('\n'))…
+    [90m 31|[39m       [35mconst[39m fixed [33m=[39m [35mawait[39m [34mrunUserCode[39m(repairs[lesson[33m.[39mid])[33m;[39m
+    [90m 32|[39m       [34mexpect[39m(fixed[33m.[39merror[33m,[39m lesson[33m.[39mid)[33m.[39m[34mtoBeNull[39m()[33m;[39m
+    [90m   |[39m                                      [31m^[39m
+    [90m 33|[39m       expect(evaluateCheck(lesson.check!.expr, fixed.logs.join('\n')),…
+    [90m 34|[39m     }
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m4 passed[39m[22m[90m (5)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m25 passed[39m[22m[90m (26)[39m
+[2m   Start at [22m 17:12:39
+[2m   Duration [22m 4.94s[2m (transform 755ms, setup 0ms, import 1.19s, tests 1.66s, environment 1.39s)[22m
+

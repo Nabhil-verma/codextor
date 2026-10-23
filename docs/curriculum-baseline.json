@@ -1,0 +1,771 @@
+{
+  "lessons": 103,
+  "tracks": 17,
+  "minutes": 1238,
+  "median": 11,
+  "coreMinutes": 896,
+  "optionalMinutes": 342,
+  "optionalTracks": [
+    "python",
+    "devops",
+    "architecture",
+    "tailwind",
+    "performance"
+  ],
+  "agenticLessons": 13,
+  "agenticMinutes": 166,
+  "agenticLessonShare": 12.62135922330097,
+  "agenticMinuteShare": 13.408723747980615,
+  "agenticCoreShare": 18.526785714285715,
+  "starts": {
+    "agents": {
+      "minutes": 730,
+      "lessons": 62
+    },
+    "workflow": {
+      "minutes": 847,
+      "lessons": 71
+    }
+  },
+  "rawRegistryStarts": {
+    "agents": {
+      "minutes": 1072,
+      "lessons": 90
+    },
+    "workflow": {
+      "minutes": 1189,
+      "lessons": 99
+    }
+  },
+  "exercises": {
+    "debug": 9,
+    "diff": 4,
+    "uniqueDiff": 3,
+    "repo": 3,
+    "rubric": 8,
+    "criteria": 40
+  },
+  "agentsRunnable": [],
+  "agentsDebug": [
+    "agents/verifying-agent-output",
+    "agents/capstone-agent-loop"
+  ],
+  "quizOnly": [
+    {
+      "key": "web/html-semantic",
+      "title": "Semantic HTML: Pages That Mean Something",
+      "minutes": 10,
+      "reading": true
+    },
+    {
+      "key": "web/responsive-deep",
+      "title": "Responsive Design: Mobile-First in Practice",
+      "minutes": 10,
+      "reading": true
+    },
+    {
+      "key": "react/jsx-vdom",
+      "title": "JSX & the Virtual DOM",
+      "minutes": 10,
+      "reading": true
+    },
+    {
+      "key": "react/react-styling-routing",
+      "title": "Tailwind, Routing & App Architecture",
+      "minutes": 11,
+      "reading": true
+    },
+    {
+      "key": "backend/rest-auth",
+      "title": "REST Design, Hashing & JWT",
+      "minutes": 12,
+      "reading": true
+    },
+    {
+      "key": "backend/databases",
+      "title": "Databases: SQL, Documents & ORMs",
+      "minutes": 12,
+      "reading": true
+    },
+    {
+      "key": "dsa/linked-lists-stacks-queues",
+      "title": "Linked Lists, Stacks & Queues",
+      "minutes": 10,
+      "reading": true
+    },
+    {
+      "key": "dsa/trees-recursion",
+      "title": "Trees & Recursion",
+      "minutes": 11,
+      "reading": true
+    },
+    {
+      "key": "python/pandas-numpy",
+      "title": "Data Wrangling: NumPy & pandas",
+      "minutes": 12,
+      "reading": true
+    },
+    {
+      "key": "git/git-basics",
+      "title": "Git Foundations: Staging & Commits",
+      "minutes": 9,
+      "reading": true
+    },
+    {
+      "key": "git/git-branches",
+      "title": "Branches & Resolving Conflicts",
+      "minutes": 10,
+      "reading": true
+    },
+    {
+      "key": "git/git-ci",
+      "title": "CI/CD: Shipping Automatically",
+      "minutes": 9,
+      "reading": true
+    },
+    {
+      "key": "testing/tdd-mocking",
+      "title": "TDD, Mocks & Testing Async Code",
+      "minutes": 11,
+      "reading": true
+    },
+    {
+      "key": "devops/processes-services",
+      "title": "Processes, systemd & Server Hygiene",
+      "minutes": 10,
+      "reading": true
+    },
+    {
+      "key": "devops/nginx-ssl-ci",
+      "title": "Nginx, HTTPS & CI/CD Pipelines",
+      "minutes": 12,
+      "reading": true
+    },
+    {
+      "key": "architecture/monolith-vs-microservices",
+      "title": "Monoliths vs. Microservices",
+      "minutes": 11,
+      "reading": true
+    },
+    {
+      "key": "architecture/websockets-realtime",
+      "title": "WebSockets & Real-Time Systems",
+      "minutes": 10,
+      "reading": true
+    },
+    {
+      "key": "tailwind/design-tokens",
+      "title": "Tokens, Theme Config & Custom Scales",
+      "minutes": 11,
+      "reading": true
+    },
+    {
+      "key": "state/server-state",
+      "title": "Server State ≠ Client State",
+      "minutes": 12,
+      "reading": true
+    },
+    {
+      "key": "api/optimistic",
+      "title": "Optimistic Updates & Cache Invalidation",
+      "minutes": 12,
+      "reading": true
+    },
+    {
+      "key": "typescript/interfaces-types",
+      "title": "Interfaces, Aliases & Object Shapes",
+      "minutes": 11,
+      "reading": true
+    },
+    {
+      "key": "performance/web-vitals",
+      "title": "Core Web Vitals: What Users Actually Feel",
+      "minutes": 11,
+      "reading": true
+    },
+    {
+      "key": "agents/plan-before-code",
+      "title": "Plan Before Code: The Cheapest Place to Catch a Misunderstanding",
+      "minutes": 11,
+      "reading": false
+    },
+    {
+      "key": "agents/permissions-and-sandbox",
+      "title": "Permissions & Sandbox Settings: Least Privilege for an Unattended Tool",
+      "minutes": 12,
+      "reading": false
+    },
+    {
+      "key": "agents/when-not-to-use-agents",
+      "title": "Knowing When Not to Use an Agent",
+      "minutes": 10,
+      "reading": false
+    }
+  ],
+  "quizOnlyMinutes": 270,
+  "validation": {
+    "duplicateKeys": [],
+    "duplicateLessonIds": [],
+    "duplicateTitles": [],
+    "duplicateTracks": [],
+    "nullFields": [],
+    "invalidMinutes": [],
+    "duplicateNumerals": [],
+    "numeralGaps": [
+      17,
+      18
+    ],
+    "numeralsInOrder": true,
+    "sumsAgree": true
+  },
+  "trackRows": [
+    {
+      "order": 1,
+      "id": "web",
+      "numeral": "Ⅰ",
+      "numeralValue": 1,
+      "optional": false,
+      "lessons": 10,
+      "minutes": 119
+    },
+    {
+      "order": 2,
+      "id": "react",
+      "numeral": "Ⅱ",
+      "numeralValue": 2,
+      "optional": false,
+      "lessons": 4,
+      "minutes": 43
+    },
+    {
+      "order": 3,
+      "id": "backend",
+      "numeral": "Ⅲ",
+      "numeralValue": 3,
+      "optional": false,
+      "lessons": 5,
+      "minutes": 55
+    },
+    {
+      "order": 4,
+      "id": "dsa",
+      "numeral": "Ⅳ",
+      "numeralValue": 4,
+      "optional": false,
+      "lessons": 8,
+      "minutes": 83
+    },
+    {
+      "order": 5,
+      "id": "python",
+      "numeral": "Ⅴ",
+      "numeralValue": 5,
+      "optional": true,
+      "lessons": 4,
+      "minutes": 46
+    },
+    {
+      "order": 6,
+      "id": "git",
+      "numeral": "Ⅵ",
+      "numeralValue": 6,
+      "optional": false,
+      "lessons": 4,
+      "minutes": 40
+    },
+    {
+      "order": 7,
+      "id": "testing",
+      "numeral": "Ⅶ",
+      "numeralValue": 7,
+      "optional": false,
+      "lessons": 7,
+      "minutes": 82
+    },
+    {
+      "order": 8,
+      "id": "devops",
+      "numeral": "Ⅷ",
+      "numeralValue": 8,
+      "optional": true,
+      "lessons": 6,
+      "minutes": 69
+    },
+    {
+      "order": 9,
+      "id": "security",
+      "numeral": "Ⅸ",
+      "numeralValue": 9,
+      "optional": false,
+      "lessons": 6,
+      "minutes": 60
+    },
+    {
+      "order": 10,
+      "id": "architecture",
+      "numeral": "Ⅹ",
+      "numeralValue": 10,
+      "optional": true,
+      "lessons": 6,
+      "minutes": 72
+    },
+    {
+      "order": 11,
+      "id": "tailwind",
+      "numeral": "Ⅺ",
+      "numeralValue": 11,
+      "optional": true,
+      "lessons": 6,
+      "minutes": 77
+    },
+    {
+      "order": 12,
+      "id": "state",
+      "numeral": "Ⅻ",
+      "numeralValue": 12,
+      "optional": false,
+      "lessons": 6,
+      "minutes": 83
+    },
+    {
+      "order": 13,
+      "id": "api",
+      "numeral": "XIII",
+      "numeralValue": 13,
+      "optional": false,
+      "lessons": 6,
+      "minutes": 83
+    },
+    {
+      "order": 14,
+      "id": "typescript",
+      "numeral": "XIV",
+      "numeralValue": 14,
+      "optional": false,
+      "lessons": 6,
+      "minutes": 82
+    },
+    {
+      "order": 15,
+      "id": "performance",
+      "numeral": "XV",
+      "numeralValue": 15,
+      "optional": true,
+      "lessons": 6,
+      "minutes": 78
+    },
+    {
+      "order": 16,
+      "id": "agents",
+      "numeral": "ⅩⅥ",
+      "numeralValue": 16,
+      "optional": false,
+      "lessons": 9,
+      "minutes": 117
+    },
+    {
+      "order": 17,
+      "id": "workflow",
+      "numeral": "ⅩⅨ",
+      "numeralValue": 19,
+      "optional": false,
+      "lessons": 4,
+      "minutes": 49
+    }
+  ],
+  "taxonomy": [
+    {
+      "code": "RC",
+      "debug": 2,
+      "diff": 2
+    },
+    {
+      "code": "EC",
+      "debug": 1,
+      "diff": 1
+    },
+    {
+      "code": "SL",
+      "debug": 2,
+      "diff": 1
+    },
+    {
+      "code": "CX",
+      "debug": 2,
+      "diff": 0
+    },
+    {
+      "code": "HA",
+      "debug": 1,
+      "diff": 0
+    },
+    {
+      "code": "ID",
+      "debug": 1,
+      "diff": 0
+    },
+    {
+      "code": "SC",
+      "debug": 0,
+      "diff": 0
+    },
+    {
+      "code": "TG",
+      "debug": 0,
+      "diff": 0
+    },
+    {
+      "code": "NM",
+      "debug": 0,
+      "diff": 0
+    },
+    {
+      "code": "DL",
+      "debug": 0,
+      "diff": 0
+    }
+  ],
+  "concepts": [
+    {
+      "concept": "MCP",
+      "lessons": [],
+      "bodyLessons": [],
+      "rawHits": []
+    },
+    {
+      "concept": "evals",
+      "lessons": [],
+      "bodyLessons": [],
+      "rawHits": []
+    },
+    {
+      "concept": "worktrees / parallel agents",
+      "lessons": [],
+      "bodyLessons": [],
+      "rawHits": []
+    },
+    {
+      "concept": "structured output / JSON schema",
+      "lessons": [],
+      "bodyLessons": [],
+      "rawHits": []
+    },
+    {
+      "concept": "RAG",
+      "lessons": [],
+      "bodyLessons": [],
+      "rawHits": []
+    },
+    {
+      "concept": "prompt injection",
+      "lessons": [],
+      "bodyLessons": [],
+      "rawHits": []
+    },
+    {
+      "concept": "vibe coding",
+      "lessons": [],
+      "bodyLessons": [],
+      "rawHits": []
+    }
+  ],
+  "agenticBodies": [
+    {
+      "key": "agents/specs-and-prompts",
+      "words": 178,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "agents/codebase-archaeology",
+      "words": 185,
+      "exercises": [
+        "repo"
+      ]
+    },
+    {
+      "key": "agents/managing-context",
+      "words": 180,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "agents/instruction-files",
+      "words": 180,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "agents/plan-before-code",
+      "words": 180,
+      "exercises": []
+    },
+    {
+      "key": "agents/permissions-and-sandbox",
+      "words": 201,
+      "exercises": []
+    },
+    {
+      "key": "agents/verifying-agent-output",
+      "words": 194,
+      "exercises": [
+        "debug",
+        "diff"
+      ]
+    },
+    {
+      "key": "agents/when-not-to-use-agents",
+      "words": 165,
+      "exercises": []
+    },
+    {
+      "key": "agents/capstone-agent-loop",
+      "words": 130,
+      "exercises": [
+        "debug",
+        "rubric"
+      ]
+    },
+    {
+      "key": "workflow/pull-requests",
+      "words": 327,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "workflow/reviewing-diffs",
+      "words": 226,
+      "exercises": [
+        "diff"
+      ]
+    },
+    {
+      "key": "workflow/vague-request-ticket",
+      "words": 207,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "workflow/decision-records",
+      "words": 207,
+      "exercises": [
+        "rubric"
+      ]
+    }
+  ],
+  "keys": [
+    "web/html-semantic",
+    "web/box-model-deep",
+    "web/responsive-deep",
+    "web/css-layout",
+    "web/scope-context",
+    "web/es6-syntax",
+    "web/dom-events",
+    "web/async-promises",
+    "web/fetch-api",
+    "web/capstone-utility-belt",
+    "react/jsx-vdom",
+    "react/props-state",
+    "react/hooks-effect",
+    "react/react-styling-routing",
+    "backend/node-event-loop",
+    "backend/express-middleware",
+    "backend/rest-auth",
+    "backend/databases",
+    "backend/api-security",
+    "dsa/big-o",
+    "dsa/hash-maps",
+    "dsa/linked-lists-stacks-queues",
+    "dsa/trees-recursion",
+    "dsa/sorting",
+    "dsa/patterns-two-pointer",
+    "dsa/graphs-bfs-dfs",
+    "dsa/dp-intro",
+    "python/python-syntax",
+    "python/python-oop",
+    "python/pandas-numpy",
+    "python/python-llm-api",
+    "git/git-basics",
+    "git/git-branches",
+    "git/git-workflow-lab",
+    "git/git-ci",
+    "testing/testing-why",
+    "testing/debugging-method",
+    "testing/tdd-mocking",
+    "testing/debug-the-bug",
+    "testing/prod-traces",
+    "testing/prod-logs",
+    "testing/incident-timeline",
+    "devops/bash-basics",
+    "devops/bash-scripting",
+    "devops/file-permissions",
+    "devops/processes-services",
+    "devops/docker-dockerfile",
+    "devops/nginx-ssl-ci",
+    "security/xss",
+    "security/sqli",
+    "security/csrf-auth",
+    "security/cors-headers",
+    "security/rate-limit-secrets",
+    "security/data-boundaries",
+    "architecture/monolith-vs-microservices",
+    "architecture/caching-and-redis",
+    "architecture/load-balancing",
+    "architecture/websockets-realtime",
+    "architecture/sharding-and-queues",
+    "architecture/capstone-system-design",
+    "tailwind/utility-first",
+    "tailwind/layout-flex-grid",
+    "tailwind/responsive-dark",
+    "tailwind/states-motion",
+    "tailwind/design-tokens",
+    "tailwind/capstone-ui-kit",
+    "state/state-shapes",
+    "state/usereducer",
+    "state/context",
+    "state/external-stores",
+    "state/server-state",
+    "state/capstone-state-machine",
+    "api/http-verbs",
+    "api/fetch-async",
+    "api/loading-errors",
+    "api/abort-races",
+    "api/optimistic",
+    "api/capstone-api-client",
+    "typescript/annotations",
+    "typescript/narrowing",
+    "typescript/generics",
+    "typescript/interfaces-types",
+    "typescript/unknown-errors",
+    "typescript/capstone-type-layer",
+    "performance/web-vitals",
+    "performance/layout-shift",
+    "performance/contrast",
+    "performance/keyboard-focus",
+    "performance/critical-rendering",
+    "performance/capstone-audit",
+    "agents/specs-and-prompts",
+    "agents/codebase-archaeology",
+    "agents/managing-context",
+    "agents/instruction-files",
+    "agents/plan-before-code",
+    "agents/permissions-and-sandbox",
+    "agents/verifying-agent-output",
+    "agents/when-not-to-use-agents",
+    "agents/capstone-agent-loop",
+    "workflow/pull-requests",
+    "workflow/reviewing-diffs",
+    "workflow/vague-request-ticket",
+    "workflow/decision-records"
+  ],
+  "titles": [
+    "Semantic HTML: Pages That Mean Something",
+    "The Box Model, Margins & Collapsing",
+    "Responsive Design: Mobile-First in Practice",
+    "Flexbox, Grid & Responsive Strategy",
+    "Execution Context & Scope: let, const, var",
+    "ES6+ Power Syntax: Arrows & Destructuring",
+    "DOM Traversal & Event Delegation",
+    "Promises & async/await",
+    "Fetching Real APIs (with a Mock Server)",
+    "Capstone: Build Your Utility Belt",
+    "JSX & the Virtual DOM",
+    "Props vs State: The Data Contracts",
+    "Hooks in Depth: useEffect & Friends",
+    "Tailwind, Routing & App Architecture",
+    "Node.js & the Event Loop",
+    "Express & the Middleware Pipeline",
+    "REST Design, Hashing & JWT",
+    "Databases: SQL, Documents & ORMs",
+    "API Security: CORS, Validation & Rate Limits",
+    "Big-O: Measuring Growth, Not Seconds",
+    "Hash Maps: The O(1) Cheat Code",
+    "Linked Lists, Stacks & Queues",
+    "Trees & Recursion",
+    "Sorting: Merge & Quick Sort",
+    "Patterns: Two Pointers & Sliding Window",
+    "Graphs: BFS & DFS",
+    "Dynamic Programming: Overlapping Subproblems",
+    "Python Syntax & Core Collections",
+    "OOP: Classes, Inheritance & Exceptions",
+    "Data Wrangling: NumPy & pandas",
+    "Calling LLM APIs from Python",
+    "Git Foundations: Staging & Commits",
+    "Branches & Resolving Conflicts",
+    "The Git Workflow Lab",
+    "CI/CD: Shipping Automatically",
+    "Why Test? The Test Pyramid & First Assertions",
+    "Debugging: A Scientific Method",
+    "TDD, Mocks & Testing Async Code",
+    "Debug the Bug: Fix Three Broken Programs",
+    "Production Stack Traces",
+    "Structured Logs: Reconstructing What Happened",
+    "The Incident Timeline Across Services",
+    "The Linux Filesystem & Essential Bash",
+    "Bash Scripting: Automate Everything Twice",
+    "File Permissions: chmod & chown",
+    "Processes, systemd & Server Hygiene",
+    "Docker: Package It Once, Run It Anywhere",
+    "Nginx, HTTPS & CI/CD Pipelines",
+    "Cross-Site Scripting (XSS)",
+    "SQL Injection & Input Validation",
+    "CSRF & Broken Authentication",
+    "CORS, CSP & Security Headers",
+    "Rate Limiting & Secret Management",
+    "Data Boundaries: What Not to Paste Into AI Tools",
+    "Monoliths vs. Microservices",
+    "Caching & Redis (with an LRU exercise)",
+    "Load Balancing & Horizontal Scaling",
+    "WebSockets & Real-Time Systems",
+    "Database Sharding & Message Queues",
+    "Capstone: Design a URL Shortener (in code)",
+    "Utility-First: The Mental Model",
+    "Layout: Flexbox & Grid in Utilities",
+    "Responsive & Dark Mode Systems",
+    "States, Variants & Motion",
+    "Tokens, Theme Config & Custom Scales",
+    "Capstone: Build a Component Kit",
+    "Choosing a State Shape",
+    "useReducer: State Machines in Disguise",
+    "Context Without the Re-Render Tax",
+    "External Stores & useSyncExternalStore",
+    "Server State ≠ Client State",
+    "Capstone: A Guarded Checkout State Machine",
+    "HTTP, REST & Status Codes",
+    "Errors, Ordering & the Missing Await",
+    "The Four States of Every Request",
+    "Races, Aborts & Debounce",
+    "Optimistic Updates & Cache Invalidation",
+    "Capstone: A Retrying, Resilient API Client",
+    "Annotations, Inference & Structural Typing",
+    "Discriminated Unions & Narrowing",
+    "Generics That Pay Rent",
+    "Interfaces, Aliases & Object Shapes",
+    "unknown, Type Guards & Safe Boundaries",
+    "Capstone: A Type-Safe Data Layer",
+    "Core Web Vitals: What Users Actually Feel",
+    "Fixing CLS: Reserve the Space",
+    "Contrast: Reading Is a Feature",
+    "Keyboard & Semantics: Real Elements Win",
+    "The Rendering Path: Reflow, Repaint, Restyle",
+    "Capstone: The Performance & A11y Audit",
+    "Specs and Prompts: From Vague Task to Executable Spec",
+    "Codebase Archaeology: Finding Where Things Live",
+    "Managing Context: What Goes In, What Stays Out",
+    "Project Instruction Files: Teaching an Agent Your Conventions",
+    "Plan Before Code: The Cheapest Place to Catch a Misunderstanding",
+    "Permissions & Sandbox Settings: Least Privilege for an Unattended Tool",
+    "Verifying Agent Output: Tests Are the Review You Can't Skip",
+    "Knowing When Not to Use an Agent",
+    "Capstone: Run the Full Agent Loop",
+    "Pull Requests: Intent and Tradeoffs",
+    "Reviewing Someone Else's Diff",
+    "Turning a Vague Request into a Ticket",
+    "Explaining Your Decisions in Writing"
+  ]
+}

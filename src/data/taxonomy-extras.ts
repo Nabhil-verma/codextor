@@ -68,7 +68,27 @@ export const LEGACY_DIAGNOSES: Record<string, Diagnosis> = {
   },
 };
 
+const contractChallenge = (id: string, title: string, code: "SC" | "TG" | "NM" | "DL", brief: string, broken: string, fix: string): DebugChallenge => ({
+  id, title, brief, broken, fix, fixCheck: 'output.includes("contract: true")',
+  win: "The adverse case now meets the unchanged contract.",
+  hints: [h(1, "Run the draft and compare its behavior with the stated contract."), h(2, brief), h(3, "Repair the implementation or verification without changing the contract assertion.")],
+  solution: brief + " The reference repair preserves the adverse-case assertion and prints contract: true only when the promised behavior holds.",
+  diagnosis: { prompt: "Which defect violates this executable contract?", codes: ["SC", "TG", "NM", "DL"], answer: code },
+});
+
 export const EXTRA_CHALLENGES: DebugChallenge[] = [
+  contractChallenge("scope-preserve-members", "Archive Without Deleting Membership", "SC", "Archive must preserve membership; removal was an out-of-scope addition.",
+    'function archive(p) { p.members = []; p.archived = true; }\nconst p={members:["Ada"]}; archive(p); console.log("contract:",p.archived===true && p.members[0]==="Ada");',
+    'function archive(p) { p.archived = true; }\nconst p={members:["Ada"]}; archive(p); console.log("contract:",p.archived===true && p.members[0]==="Ada");'),
+  contractChallenge("test-must-catch", "Repair the Vacuous Test", "TG", "The test must reject the wrong total and accept the correct total; returning true proves nothing.",
+    'function check(fn) { fn([2,4]); return true; }\nconsole.log("contract:",check(()=>0)===false && check(()=>6)===true);',
+    'function check(fn) { return fn([2,4])===6; }\nconsole.log("contract:",check(()=>0)===false && check(()=>6)===true);'),
+  contractChallenge("name-dollar-units", "Keep the Dollars Promise", "NM", "totalDollars is a public dollars interface; returning cents contradicts its name and overcharges consumers.",
+    'function totalDollars(cents) { return cents; }\nconsole.log("contract:",totalDollars(250)===2.5 && totalDollars(0)===0);',
+    'function totalDollars(cents) { return cents/100; }\nconsole.log("contract:",totalDollars(250)===2.5 && totalDollars(0)===0);'),
+  contractChallenge("debug-bypass-removal", "Remove the Debug Backdoor", "DL", "Remove the development bypass; guest must remain denied and admin allowed.",
+    'const debugBypass=true;\nfunction allowed(role) { return debugBypass || role==="admin"; }\nconsole.log("contract:",allowed("guest")===false && allowed("admin")===true);',
+    'function allowed(role) { return role==="admin"; }\nconsole.log("contract:",allowed("guest")===false && allowed("admin")===true);'),
   {
     id: "semantics-refactor",
     title: "The Refactor That Changed What the Code Means",

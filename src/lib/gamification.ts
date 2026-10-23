@@ -3,6 +3,7 @@
 /* so nothing new needs to be persisted.                               */
 /* ------------------------------------------------------------------ */
 
+import { certificateLessonKeys } from "./progressKeys";
 import { MANIFEST_TRACKS as tracks } from "../data/manifest";
 /* The level curve lives with the backend rules so client and server agree. */
 import { XP_PER_LEVEL, levelForXp } from "../convex/xpRules";
@@ -634,7 +635,7 @@ export function computeBadges(
 /** Fully-completed tracks, newest-first by position in the curriculum. */
 export function finishedTracks(progress: Progress) {
   return tracks.filter((t) =>
-    t.lessons.every((l) => scoreFor(progress, t.id + "/" + l.id) >= 1)
+    certificateLessonKeys(t).every(key => scoreFor(progress, key) >= 1)
   );
 }
 

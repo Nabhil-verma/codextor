@@ -1,6 +1,6 @@
 # Codextor
 
-> **A 100% free, interactive code teacher.** <!-- counts:words -->Seventeen tracks, 103 hands-on lessons<!-- /counts:words --> —
+> **A 100% free, interactive code teacher.** <!-- counts:words -->Seventeen tracks, 108 hands-on lessons<!-- /counts:words --> —
 > you write and run real code from minute one, in the browser, with easy signup.
 
 **Live:** [codextorcybo4.freebuff.app](https://codextorcybo4.freebuff.app)
@@ -39,15 +39,17 @@ actually does.
 
 ## Why this exists
 
-Most "learn to code" sites teach you to recognise code. You read a snippet, you
-recognise the shape, you move on — and the moment real code appears on your
-screen, you're lost.
+Codextor is built around **judgment over authorship**. AI can draft a change;
+people still have to decide what should change, supply the right context,
+approve the plan, verify the result and operate what ships.
 
-Codextor is built on the opposite assumption: **you cannot learn to code without
-running code.** So every lesson ends in a runner. You write something, you run
-it, and something checks whether it actually worked. Not a human reading your
-answer key — an expression evaluated against your program's real output, your
-program's real compiler diagnostics, or the browser's own layout engine.
+**Vibe coding** is accepting AI output because it looks right.
+**Agentic engineering** is directing an agent through
+**spec → context → plan → delegate → verify → operate**, with the human
+accountable for the result. Codextor teaches that judgment using deterministic
+diff reviews, repair labs, repo traces and rubric-checked artifacts. Real JS,
+the TypeScript compiler and Python execute in the browser where appropriate;
+a live LLM is an optional BYOK tutor, never the main grader.
 
 A few consequences worth calling out, because they're unusual for a learning app:
 
@@ -63,7 +65,7 @@ A few consequences worth calling out, because they're unusual for a learning app
 
 ## Feature overview
 
-- **<!-- counts:pair -->17 curriculum tracks, 103 lessons<!-- /counts:pair -->** — Web foundations, React, Tailwind UI
+- **<!-- counts:pair -->17 curriculum tracks, 108 lessons<!-- /counts:pair -->** — Web foundations, React, Tailwind UI
   engineering, advanced React state, API integration, TypeScript for real
   projects, backend/Node, DSA, Python, Git & testing, DevOps/Linux/Docker, web
   security (OWASP), system design, web performance & accessibility,
@@ -135,30 +137,50 @@ A few consequences worth calling out, because they're unusual for a learning app
 
 ## The curriculum
 
+<!-- curriculum-table:start -->
 | # | Track | ID | Lessons | What it's for |
 | --- | --- | --- | --- | --- |
-| I | Web Development Foundations | `web` | 10 | HTML, CSS, the DOM, events, async, and the bugs everyone hits first |
-| II | Modern Frontend: React | `react` | 4 | Components, props, state, and re-rendering without the guesswork |
-| III | UI Engineering with Tailwind CSS | `tailwind` | 6 | Utility-first styling, responsive layout, dark mode as a token problem |
-| IV | Advanced React State Management | `state` | 6 | Reducers, external stores, persistence, and the rules of immutability |
-| V | API Integration & Data Fetching | `api` | 6 | `fetch`, loading/error/empty/ready, abort races, caching |
-| VI | TypeScript for Real Projects | `typescript` | 6 | Type guards, generics, `unknown`, discriminated unions — compiled for real |
-| VII | Backend Systems & APIs | `backend` | 5 | HTTP, REST, middleware, databases, security basics |
-| VIII | Data Structures & Algorithms | `dsa` | 8 | Arrays through graph traversal, all runnable in-page |
-| IX | Python & Data Fundamentals | `python` | 4 | Python syntax and data thinking, shown alongside the JS you know |
-| X | Git, GitHub & Workflows | `git` | 4 | Commits, branches, merges, conflicts — with a guided terminal simulator |
-| XI | Testing & Debugging | `testing` | 7 | What to test, boundary conditions, reading a failure — then production traces, structured logs, and incident timelines |
-| XII | DevOps, Linux CLI & Cloud | `devops` | 6 | Paths, permissions, containers, and deployment vocabulary |
-| XIII | Web Security & OWASP | `security` | 6 | XSS, CSRF, injection, auth flaws, how each one is exploited, and where the AI data boundary is |
-| XIV | System Design & Architecture | `architecture` | 6 | Caching, LRU, rate limiting, queues, and scaling vocabulary |
-| XV | Web Performance & Accessibility | `performance` | 6 | Core Web Vitals and a11y as *measured* numbers |
-| XVI | Working with Coding Agents | `agents` | 9 | Specs, archaeology, context, instruction files, plan approval, permissions, verification, capstone |
-| XIX | Professional Workflow | `workflow` | 4 | PR descriptions, reviewing someone else's diff, scoping a vague request, decision records |
+| Ⅰ | Web Development Foundations | `web` | 10 | HTML5, CSS3, and modern JavaScript — the bedrock every frontend stands on. |
+| Ⅵ | Git, GitHub & Workflows | `git` | 4 | Version control, branches, PRs, and shipping pipelines — how teams actually work. |
+| Ⅶ | Testing & Debugging | `testing` | 7 | Write tests that catch bugs, hunt down the ones that slip through, and read production incidents. Watch after DevOps — its logs and containers vocabulary carries over. |
+| ⅩⅥ | Working with Coding Agents | `agents` | 13 | Operate the tool: write specs an agent can execute, read unfamiliar code, manage context, approve plans, choose permissions, and verify what ships. |
+| ⅩⅨ | Professional Workflow | `workflow` | 4 | PRs, review, tickets and decision records — the written work that decides whether code ships. |
+| Ⅸ | Web Security & OWASP | `security` | 7 | Think like an attacker: XSS, SQL injection, CSRF, CORS, and the habits that keep apps safe. |
+| XIV | TypeScript for Real Projects | `typescript` | 6 | The real compiler runs in your editor: write types, watch diagnostics with line and column, and ship code the compiler has already argued with. |
+| Ⅲ | Backend Systems & APIs | `backend` | 5 | Node.js, Express, REST design, auth, and databases that don't fall over. |
+| Ⅱ | Modern Frontend: React | `react` | 4 | Components, hooks, and the mental model behind every modern interface. |
+| XIII | API Integration & Data Fetching | `api` | 6 | Talk to real services: HTTP, errors, races, optimistic updates, and a resilient client. |
+| Ⅳ | Data Structures & Algorithms | `dsa` | 8 | Big-O thinking, classic structures, and the patterns interviewers actually ask. |
+| Ⅴ | Python & Data Fundamentals | `python` | 4 | Python syntax, OOP and the pandas/numpy workflow — three lessons now execute in the browser (Pyodide). |
+| Ⅷ | DevOps, Linux CLI & Cloud | `devops` | 6 | Command the terminal, write Bash, containerize with Docker, and ship behind Nginx. |
+| Ⅹ | System Design & Architecture | `architecture` | 6 | Scale, cache, shard, and queue — the trade-off thinking behind big systems. |
+| Ⅺ | UI Engineering with Tailwind CSS | `tailwind` | 6 | Utility-first styling, responsive systems, and shipping a real component kit. |
+| Ⅻ | Advanced React State Management | `state` | 6 | Reducers, context without the re-render tax, external stores, and server state. |
+| XV | Web Performance & Accessibility | `performance` | 6 | Core Web Vitals, layout stability, contrast and keyboard semantics — measured, graded, and shipped as one audit-ready page. |
+<!-- curriculum-table:end -->
 
 Reading lessons teach; the rest end in something runnable. Tracks share no
-numerals, and a test pins that.
+numerals, and a test pins that. Numerals are stable identities, not path positions.
 
-**Optional tracks (Tier 2).** `tailwind`, `python`, `devops`, `architecture`
+### Experimental tracks and rollback
+
+All five big-bet flags are off by default: `VITE_FLAG_AGENT_INTERNALS`,
+`VITE_FLAG_GIT_WORKTREE_LAB`, `VITE_FLAG_FIELD_REPORTS`,
+`VITE_FLAG_REVIEWER_CERTIFICATE`, and `VITE_FLAG_BYOK_INTERROGATION`.
+Set a flag to `1` before generating, building or starting the app. Rebuild with
+`0` to roll back; no track data or progress is deleted. Agent Internals contains
+six deterministic practices, including the moved `python-llm-api` lesson;
+its original URL redirects, its storage key and Python certificate requirements
+stay unchanged. Field Reports includes five incidents and a locally saved,
+redacted own-repository evidence packet. The reviewer certificate accepts only
+server-assigned choices and server-computed grades; practice metrics never issue it.
+BYOK interrogation renders only validated trace citations, not arbitrary model claims.
+
+Default: 108 lessons / 17 tracks. All flags on: 119 lessons / 19 tracks.
+The extra depth content is optional, so core remains 790 authored minutes,
+with Agents + Workflow at 214 minutes (27.1%), not the forecast 37%.
+
+**Optional tracks (Tier 2).** `state`, `dsa`, `tailwind`, `python`, `devops`, `architecture`
 and `performance` are marked `optional` in the registry and split into their
 own section of the Learn page: framework-specific or lower-priority for
 generalist screening, but fully playable and still counted for XP, ranks and
@@ -332,15 +354,15 @@ Worth a section, because this is the part most learning apps fake.
 
 | Layer | Choice |
 | --- | --- |
-| Build | Vite 5 |
+| Build | Vite 6.4 |
 | UI | React 18 + TypeScript 5.6 (strict, `noUnusedLocals`, `noUnusedParameters`) |
-| Routing | React Router 6 (`HashRouter`) |
-| Styling | Tailwind CSS 3.4 + PostCSS + autoprefixer |
+| Routing | React Router 7 (`HashRouter`, declarative mode) |
+| Styling | Tailwind CSS 4.3 + PostCSS (existing token config) |
 | Animation | Framer Motion 13 |
 | Icons | lucide-react |
 | Backend | Convex 1.45 (queries, mutations, HTTP routes) |
 | Auth | Convex Auth (`@convex-dev/auth`) — email/password, no API keys in the frontend |
-| Tests | Vitest 2 + convex-test + Testing Library + jsdom |
+| Tests | Vitest 4.1 + convex-test + Testing Library + jsdom |
 | CI | GitHub Actions |
 
 No runtime API keys ship in the frontend. The only network calls the app makes
@@ -359,8 +381,9 @@ npm run build     # production build → dist/
 Bun works identically and is what CI uses. `npm run build` emits static output
 to `dist/` and exits — it does not start a server.
 
-CI runs the same two checks — `bun run typecheck` and `bun run test` — on every
-push to `main` and every pull request.
+CI runs typecheck, production build, the off/individual/all-on feature route matrix,
+the full test suite, dependency audit and review-freshness warnings on every
+push to `main`, every pull request, and the weekly schedule.
 
 ## Project structure
 
@@ -383,7 +406,7 @@ src/
 ├── data/
 │   ├── index.ts              # the track registry + findTrack/findLesson
 │   ├── types.ts              # Lesson, Check, DebugChallenge, PreviewSpec, …
-│   └── track-*.ts            # <!-- counts:tail -->17 tracks, 103 lessons of content<!-- /counts:tail -->
+│   └── track-*.ts            # <!-- counts:tail -->17 tracks, 108 lessons of content<!-- /counts:tail -->
 ├── lib/
 │   ├── localStore.ts         # the shared localStorage store + pub/sub primitive
 │   ├── progress.ts           # progress store on top of it, v1→v2 migration

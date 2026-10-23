@@ -1,0 +1,572 @@
+{
+  "lessons": 119,
+  "tracks": 19,
+  "minutes": 1420,
+  "median": 12,
+  "coreMinutes": 790,
+  "optionalMinutes": 630,
+  "optionalTracks": [
+    "dsa",
+    "python",
+    "devops",
+    "architecture",
+    "tailwind",
+    "state",
+    "performance",
+    "agent-internals",
+    "field-reports"
+  ],
+  "agenticLessons": 17,
+  "agenticMinutes": 214,
+  "agenticLessonShare": 14.285714285714285,
+  "agenticMinuteShare": 15.070422535211266,
+  "agenticCoreShare": 27.088607594936708,
+  "starts": {
+    "agents": {
+      "minutes": 241,
+      "lessons": 21
+    },
+    "workflow": {
+      "minutes": 406,
+      "lessons": 34
+    }
+  },
+  "rawRegistryStarts": {
+    "agents": {
+      "minutes": 241,
+      "lessons": 21
+    },
+    "workflow": {
+      "minutes": 406,
+      "lessons": 34
+    }
+  },
+  "exercises": {
+    "debug": 13,
+    "diff": 19,
+    "uniqueDiff": 17,
+    "repo": 15,
+    "rubric": 14,
+    "criteria": 69
+  },
+  "agentsRunnable": [
+    "agents/write-the-catching-test"
+  ],
+  "agentsDebug": [
+    "agents/instruction-files",
+    "agents/plan-before-code",
+    "agents/permissions-and-sandbox",
+    "agents/verifying-agent-output",
+    "agents/capstone-agent-loop"
+  ],
+  "quizOnly": [
+    {
+      "key": "testing/tdd-mocking",
+      "title": "TDD, Mocks & Testing Async Code",
+      "minutes": 11,
+      "reading": true
+    },
+    {
+      "key": "agents/agentic-loop-zero",
+      "title": "Vibe coding vs agentic engineering: the loop",
+      "minutes": 12,
+      "reading": true
+    },
+    {
+      "key": "typescript/interfaces-types",
+      "title": "Interfaces, Aliases & Object Shapes",
+      "minutes": 11,
+      "reading": true
+    },
+    {
+      "key": "react/react-styling-routing",
+      "title": "Tailwind, Routing & App Architecture",
+      "minutes": 11,
+      "reading": true
+    },
+    {
+      "key": "api/optimistic",
+      "title": "Optimistic Updates & Cache Invalidation",
+      "minutes": 12,
+      "reading": true
+    },
+    {
+      "key": "python/pandas-numpy",
+      "title": "Data Wrangling: NumPy & pandas",
+      "minutes": 12,
+      "reading": true
+    },
+    {
+      "key": "devops/processes-services",
+      "title": "Processes, systemd & Server Hygiene",
+      "minutes": 10,
+      "reading": true
+    },
+    {
+      "key": "devops/nginx-ssl-ci",
+      "title": "Nginx, HTTPS & CI/CD Pipelines",
+      "minutes": 12,
+      "reading": true
+    },
+    {
+      "key": "architecture/monolith-vs-microservices",
+      "title": "Monoliths vs. Microservices",
+      "minutes": 11,
+      "reading": true
+    },
+    {
+      "key": "architecture/websockets-realtime",
+      "title": "WebSockets & Real-Time Systems",
+      "minutes": 10,
+      "reading": true
+    },
+    {
+      "key": "tailwind/design-tokens",
+      "title": "Tokens, Theme Config & Custom Scales",
+      "minutes": 11,
+      "reading": true
+    },
+    {
+      "key": "performance/web-vitals",
+      "title": "Core Web Vitals: What Users Actually Feel",
+      "minutes": 11,
+      "reading": true
+    }
+  ],
+  "quizOnlyMinutes": 134,
+  "validation": {
+    "duplicateKeys": [],
+    "duplicateLessonIds": [],
+    "duplicateTitles": [],
+    "duplicateTracks": [],
+    "nullFields": [],
+    "invalidMinutes": [],
+    "duplicateNumerals": [],
+    "numeralGaps": [],
+    "numeralsInOrder": false,
+    "sumsAgree": true
+  },
+  "trackRows": [
+    {
+      "order": 1,
+      "id": "web",
+      "numeral": "Ⅰ",
+      "numeralValue": 1,
+      "optional": false,
+      "lessons": 10,
+      "minutes": 119
+    },
+    {
+      "order": 2,
+      "id": "git",
+      "numeral": "Ⅵ",
+      "numeralValue": 6,
+      "optional": false,
+      "lessons": 4,
+      "minutes": 40
+    },
+    {
+      "order": 3,
+      "id": "testing",
+      "numeral": "Ⅶ",
+      "numeralValue": 7,
+      "optional": false,
+      "lessons": 7,
+      "minutes": 82
+    },
+    {
+      "order": 4,
+      "id": "agents",
+      "numeral": "ⅩⅥ",
+      "numeralValue": 16,
+      "optional": false,
+      "lessons": 13,
+      "minutes": 165
+    },
+    {
+      "order": 5,
+      "id": "workflow",
+      "numeral": "ⅩⅨ",
+      "numeralValue": 19,
+      "optional": false,
+      "lessons": 4,
+      "minutes": 49
+    },
+    {
+      "order": 6,
+      "id": "security",
+      "numeral": "Ⅸ",
+      "numeralValue": 9,
+      "optional": false,
+      "lessons": 7,
+      "minutes": 72
+    },
+    {
+      "order": 7,
+      "id": "typescript",
+      "numeral": "XIV",
+      "numeralValue": 14,
+      "optional": false,
+      "lessons": 6,
+      "minutes": 82
+    },
+    {
+      "order": 8,
+      "id": "backend",
+      "numeral": "Ⅲ",
+      "numeralValue": 3,
+      "optional": false,
+      "lessons": 5,
+      "minutes": 55
+    },
+    {
+      "order": 9,
+      "id": "react",
+      "numeral": "Ⅱ",
+      "numeralValue": 2,
+      "optional": false,
+      "lessons": 4,
+      "minutes": 43
+    },
+    {
+      "order": 10,
+      "id": "api",
+      "numeral": "XIII",
+      "numeralValue": 13,
+      "optional": false,
+      "lessons": 6,
+      "minutes": 83
+    },
+    {
+      "order": 11,
+      "id": "dsa",
+      "numeral": "Ⅳ",
+      "numeralValue": 4,
+      "optional": true,
+      "lessons": 8,
+      "minutes": 83
+    },
+    {
+      "order": 12,
+      "id": "python",
+      "numeral": "Ⅴ",
+      "numeralValue": 5,
+      "optional": true,
+      "lessons": 3,
+      "minutes": 32
+    },
+    {
+      "order": 13,
+      "id": "devops",
+      "numeral": "Ⅷ",
+      "numeralValue": 8,
+      "optional": true,
+      "lessons": 6,
+      "minutes": 69
+    },
+    {
+      "order": 14,
+      "id": "architecture",
+      "numeral": "Ⅹ",
+      "numeralValue": 10,
+      "optional": true,
+      "lessons": 6,
+      "minutes": 72
+    },
+    {
+      "order": 15,
+      "id": "tailwind",
+      "numeral": "Ⅺ",
+      "numeralValue": 11,
+      "optional": true,
+      "lessons": 6,
+      "minutes": 77
+    },
+    {
+      "order": 16,
+      "id": "state",
+      "numeral": "Ⅻ",
+      "numeralValue": 12,
+      "optional": true,
+      "lessons": 6,
+      "minutes": 83
+    },
+    {
+      "order": 17,
+      "id": "performance",
+      "numeral": "XV",
+      "numeralValue": 15,
+      "optional": true,
+      "lessons": 6,
+      "minutes": 78
+    },
+    {
+      "order": 18,
+      "id": "agent-internals",
+      "numeral": "ⅩⅦ",
+      "numeralValue": 17,
+      "optional": true,
+      "lessons": 6,
+      "minutes": 64
+    },
+    {
+      "order": 19,
+      "id": "field-reports",
+      "numeral": "ⅩⅧ",
+      "numeralValue": 18,
+      "optional": true,
+      "lessons": 6,
+      "minutes": 72
+    }
+  ],
+  "taxonomy": [
+    {
+      "code": "RC",
+      "debug": 2,
+      "diff": 2
+    },
+    {
+      "code": "EC",
+      "debug": 1,
+      "diff": 1
+    },
+    {
+      "code": "SL",
+      "debug": 1,
+      "diff": 1
+    },
+    {
+      "code": "CX",
+      "debug": 2,
+      "diff": 1
+    },
+    {
+      "code": "HA",
+      "debug": 1,
+      "diff": 3
+    },
+    {
+      "code": "ID",
+      "debug": 2,
+      "diff": 1
+    },
+    {
+      "code": "SC",
+      "debug": 1,
+      "diff": 2
+    },
+    {
+      "code": "TG",
+      "debug": 1,
+      "diff": 2
+    },
+    {
+      "code": "NM",
+      "debug": 1,
+      "diff": 2
+    },
+    {
+      "code": "DL",
+      "debug": 1,
+      "diff": 2
+    }
+  ],
+  "concepts": [
+    {
+      "concept": "MCP",
+      "lessons": [
+        "agent-internals/tool-schemas-mcp"
+      ],
+      "bodyLessons": [
+        "agent-internals/tool-schemas-mcp"
+      ],
+      "rawHits": 7
+    },
+    {
+      "concept": "evals",
+      "lessons": [
+        "agent-internals/evals"
+      ],
+      "bodyLessons": [
+        "agent-internals/evals"
+      ],
+      "rawHits": 9
+    },
+    {
+      "concept": "worktrees / parallel agents",
+      "lessons": [
+        "git/git-workflow-lab"
+      ],
+      "bodyLessons": [
+        "git/git-workflow-lab"
+      ],
+      "rawHits": 1
+    },
+    {
+      "concept": "structured output / JSON schema",
+      "lessons": [
+        "agent-internals/tool-schemas-mcp"
+      ],
+      "bodyLessons": [
+        "agent-internals/tool-schemas-mcp"
+      ],
+      "rawHits": 1
+    },
+    {
+      "concept": "RAG",
+      "lessons": [
+        "agent-internals/retrieval-rag"
+      ],
+      "bodyLessons": [
+        "agent-internals/retrieval-rag"
+      ],
+      "rawHits": 5
+    },
+    {
+      "concept": "prompt injection",
+      "lessons": [
+        "security/agent-guardrails"
+      ],
+      "bodyLessons": [
+        "security/agent-guardrails"
+      ],
+      "rawHits": 3
+    },
+    {
+      "concept": "vibe coding",
+      "lessons": [
+        "agents/agentic-loop-zero"
+      ],
+      "bodyLessons": [
+        "agents/agentic-loop-zero"
+      ],
+      "rawHits": 5
+    }
+  ],
+  "agenticBodies": [
+    {
+      "key": "agents/agentic-loop-zero",
+      "words": 314,
+      "exercises": []
+    },
+    {
+      "key": "agents/specs-and-prompts",
+      "words": 178,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "agents/codebase-archaeology",
+      "words": 185,
+      "exercises": [
+        "repo"
+      ]
+    },
+    {
+      "key": "agents/managing-context",
+      "words": 180,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "agents/instruction-files",
+      "words": 180,
+      "exercises": [
+        "debug",
+        "rubric"
+      ]
+    },
+    {
+      "key": "agents/plan-before-code",
+      "words": 180,
+      "exercises": [
+        "debug",
+        "decisions"
+      ]
+    },
+    {
+      "key": "agents/enforceable-rules",
+      "words": 155,
+      "exercises": [
+        "decisions"
+      ]
+    },
+    {
+      "key": "agents/permissions-and-sandbox",
+      "words": 201,
+      "exercises": [
+        "debug",
+        "decisions"
+      ]
+    },
+    {
+      "key": "agents/headless-and-scheduled-agents",
+      "words": 150,
+      "exercises": [
+        "decisions"
+      ]
+    },
+    {
+      "key": "agents/verifying-agent-output",
+      "words": 194,
+      "exercises": [
+        "debug",
+        "diff",
+        "transcripts"
+      ]
+    },
+    {
+      "key": "agents/when-not-to-use-agents",
+      "words": 165,
+      "exercises": [
+        "decisions"
+      ]
+    },
+    {
+      "key": "agents/write-the-catching-test",
+      "words": 229,
+      "exercises": [
+        "catchTests"
+      ]
+    },
+    {
+      "key": "agents/capstone-agent-loop",
+      "words": 130,
+      "exercises": [
+        "debug",
+        "rubric"
+      ]
+    },
+    {
+      "key": "workflow/pull-requests",
+      "words": 327,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "workflow/reviewing-diffs",
+      "words": 226,
+      "exercises": [
+        "diff",
+        "reviews"
+      ]
+    },
+    {
+      "key": "workflow/vague-request-ticket",
+      "words": 207,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "workflow/decision-records",
+      "words": 207,
+      "exercises": [
+        "rubric"
+      ]
+    }
+  ]
+}

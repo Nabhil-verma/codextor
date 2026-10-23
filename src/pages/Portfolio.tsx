@@ -1,3 +1,6 @@
+import { certificateLessonKeys } from "../lib/progressKeys";
+import ReviewerAssessment from "../components/ReviewerAssessment";
+import { flagEnabled } from "../lib/flags";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -468,7 +471,7 @@ export default function Portfolio() {
   const level = levelFor(xp);
   const streak = computeStreak(progress, todayKey(), previousDayKeys(new Date()));
   const completedTracks = tracks.filter((t) =>
-    t.lessons.every((l) => scoreFor(progress, t.id + "/" + l.id) >= 1)
+    certificateLessonKeys(t).every(key => scoreFor(progress, key) >= 1)
   );
   const completedLessons = tracks.reduce((sum, t) => {
     return (
@@ -653,6 +656,7 @@ export default function Portfolio() {
         <RevealSection className="mt-12">
           <h2 className="eyebrow mb-4">judgment cards</h2>
           <JudgmentCards />
+            {flagEnabled("reviewerCertificate") && <ReviewerAssessment />}
         </RevealSection>
 
         {/* Share */}

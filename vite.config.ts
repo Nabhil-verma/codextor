@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { compilerAssetPlugin } from "./scripts/compiler-asset.mjs";
 import { visualizer } from "rollup-plugin-visualizer";
 
 /*
@@ -10,6 +11,7 @@ import { visualizer } from "rollup-plugin-visualizer";
  */
 export default defineConfig(({ mode }) => ({
   plugins: [
+    compilerAssetPlugin(),
     react(),
     ...(mode === "analyze"
       ? [

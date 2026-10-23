@@ -4,17 +4,17 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Web Security &amp; OWASP — free interactive lessons | Codextor</title>
-<meta name="description" content="Think like an attacker: XSS, SQL injection, CSRF, CORS, and the habits that keep apps safe. 6 hands-on lessons, free forever." />
+<meta name="description" content="Think like an attacker: XSS, SQL injection, CSRF, CORS, and the habits that keep apps safe. 7 hands-on lessons, free forever." />
 <link rel="canonical" href="https://codextorcybo4.freebuff.app/syllabus/security/" />
 <meta property="og:type" content="article" />
 <meta property="og:site_name" content="Codextor" />
 <meta property="og:title" content="Web Security &amp; OWASP — free interactive lessons | Codextor" />
-<meta property="og:description" content="Think like an attacker: XSS, SQL injection, CSRF, CORS, and the habits that keep apps safe. 6 hands-on lessons, free forever." />
+<meta property="og:description" content="Think like an attacker: XSS, SQL injection, CSRF, CORS, and the habits that keep apps safe. 7 hands-on lessons, free forever." />
 <meta property="og:url" content="https://codextorcybo4.freebuff.app/syllabus/security/" />
 <meta property="og:image" content="https://codextorcybo4.freebuff.app/og.png" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Web Security &amp; OWASP — free interactive lessons | Codextor" />
-<meta name="twitter:description" content="Think like an attacker: XSS, SQL injection, CSRF, CORS, and the habits that keep apps safe. 6 hands-on lessons, free forever." />
+<meta name="twitter:description" content="Think like an attacker: XSS, SQL injection, CSRF, CORS, and the habits that keep apps safe. 7 hands-on lessons, free forever." />
 <meta name="twitter:image" content="https://codextorcybo4.freebuff.app/og.png" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -44,7 +44,7 @@ li { margin: 6px 0; }
 nav.tracks a { display: inline-block; margin: 4px 12px 4px 0; }
 footer { margin-top: 64px; color: #7c8798; font-size: .88rem; }
 </style>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"Course","name":"Web Security & OWASP","description":"Think like an attacker: XSS, SQL injection, CSRF, CORS, and the habits that keep apps safe.","url":"https://codextorcybo4.freebuff.app/syllabus/security/","inLanguage":"en","isAccessibleForFree":true,"provider":{"@type":"Organization","name":"Codextor","url":"https://codextorcybo4.freebuff.app"},"hasCourseInstance":{"@type":"CourseInstance","courseMode":"online","courseWorkload":"PT60M"},"syllabusSections":[{"@type":"Syllabus","name":"Cross-Site Scripting (XSS)","position":1},{"@type":"Syllabus","name":"SQL Injection & Input Validation","position":2},{"@type":"Syllabus","name":"CSRF & Broken Authentication","position":3},{"@type":"Syllabus","name":"CORS, CSP & Security Headers","position":4},{"@type":"Syllabus","name":"Rate Limiting & Secret Management","position":5},{"@type":"Syllabus","name":"Data Boundaries: What Not to Paste Into AI Tools","position":6}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Course","name":"Web Security & OWASP","description":"Think like an attacker: XSS, SQL injection, CSRF, CORS, and the habits that keep apps safe.","url":"https://codextorcybo4.freebuff.app/syllabus/security/","inLanguage":"en","isAccessibleForFree":true,"provider":{"@type":"Organization","name":"Codextor","url":"https://codextorcybo4.freebuff.app"},"hasCourseInstance":{"@type":"CourseInstance","courseMode":"online","courseWorkload":"PT72M"},"syllabusSections":[{"@type":"Syllabus","name":"Guardrails: prompt injection, dependencies and secrets","position":1},{"@type":"Syllabus","name":"Cross-Site Scripting (XSS)","position":2},{"@type":"Syllabus","name":"SQL Injection & Input Validation","position":3},{"@type":"Syllabus","name":"CSRF & Broken Authentication","position":4},{"@type":"Syllabus","name":"CORS, CSP & Security Headers","position":5},{"@type":"Syllabus","name":"Rate Limiting & Secret Management","position":6},{"@type":"Syllabus","name":"Data Boundaries: What Not to Paste Into AI Tools","position":7}]}</script>
 </head>
 <body>
 <main class="wrap">
@@ -52,11 +52,12 @@ footer { margin-top: 64px; color: #7c8798; font-size: .88rem; }
 <p class="eyebrow">Track Ⅸ</p>
 <h1>Web Security &amp; OWASP</h1>
 <p class="lede">Think like an attacker: XSS, SQL injection, CSRF, CORS, and the habits that keep apps safe.</p>
-<p class="meta">6 lessons · 60 minutes of guided work · every exercise runs in your browser</p>
+<p class="meta">7 lessons · 72 minutes of guided work · every exercise runs in your browser</p>
 <a class="cta" href="/#/learn">Start this track</a>
 <h2>Learning outcomes</h2>
 <p class="lede">Work through this track and you will be able to do each of these, in order:</p>
 <ul>
+      <li>Guardrails: prompt injection, dependencies and secrets <span class="meta">· 12 min</span></li>
       <li>Cross-Site Scripting (XSS) <span class="meta">· 11 min</span></li>
       <li>SQL Injection &amp; Input Validation <span class="meta">· 10 min</span></li>
       <li>CSRF &amp; Broken Authentication <span class="meta">· 10 min</span></li>
@@ -66,12 +67,13 @@ footer { margin-top: 64px; color: #7c8798; font-size: .88rem; }
 </ul>
 <h2>Outline</h2>
 <ol>
-      <li><strong>1.</strong> Cross-Site Scripting (XSS) <span class="meta">· 11 min</span></li>
-      <li><strong>2.</strong> SQL Injection &amp; Input Validation <span class="meta">· 10 min</span></li>
-      <li><strong>3.</strong> CSRF &amp; Broken Authentication <span class="meta">· 10 min</span></li>
-      <li><strong>4.</strong> CORS, CSP &amp; Security Headers <span class="meta">· 9 min</span></li>
-      <li><strong>5.</strong> Rate Limiting &amp; Secret Management <span class="meta">· 9 min</span></li>
-      <li><strong>6.</strong> Data Boundaries: What Not to Paste Into AI Tools <span class="meta">· 11 min</span></li>
+      <li><strong>1.</strong> Guardrails: prompt injection, dependencies and secrets <span class="meta">· 12 min</span></li>
+      <li><strong>2.</strong> Cross-Site Scripting (XSS) <span class="meta">· 11 min</span></li>
+      <li><strong>3.</strong> SQL Injection &amp; Input Validation <span class="meta">· 10 min</span></li>
+      <li><strong>4.</strong> CSRF &amp; Broken Authentication <span class="meta">· 10 min</span></li>
+      <li><strong>5.</strong> CORS, CSP &amp; Security Headers <span class="meta">· 9 min</span></li>
+      <li><strong>6.</strong> Rate Limiting &amp; Secret Management <span class="meta">· 9 min</span></li>
+      <li><strong>7.</strong> Data Boundaries: What Not to Paste Into AI Tools <span class="meta">· 11 min</span></li>
 </ol>
 <p><a href="/#/learn">Open the interactive lessons</a> — the syllabus above is the reading order; the app adds the editor, console and graded exercises.</p>
 

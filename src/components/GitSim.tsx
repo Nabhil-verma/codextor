@@ -1,3 +1,4 @@
+import WorktreeLab from "./WorktreeLab";
 import { useMemo, useState } from "react";
 import type { GitObjective } from "../data/types";
 
@@ -54,7 +55,12 @@ Automatic merge failed; fix conflicts and then commit the result.`;
  * Objectives complete as their command predicate matches; the terminal
  * prints realistic Git output the whole way.
  */
-export default function GitSim({ objectives }: { objectives: GitObjective[] }) {
+/** One learner-facing terminal entry; scenarios keep their state models isolated. */
+export default function GitSim({ objectives, parallel, onScore }: { objectives: GitObjective[]; parallel?: boolean; onScore?: (score: number) => void }) {
+  return parallel ? <WorktreeLab onScore={onScore} /> : <BasicGitSim objectives={objectives} />;
+}
+
+function BasicGitSim({ objectives }: { objectives: GitObjective[] }) {
   const [state, setState] = useState<SimState>(initialState);
   const [lines, setLines] = useState<string[]>([
     "# git-sim — a sandbox repo is already initialized on branch main",
@@ -78,6 +84,7 @@ export default function GitSim({ objectives }: { objectives: GitObjective[] }) {
   }
 
   function run(raw: string) {
+    if (raw.trim() === "help") raw = "git help";
     const out: string[] = [];
     const promptLine = `${prompt} $ ${raw}`;
     const s = { ...state, files: state.files.map((f) => ({ ...f })) };
@@ -330,7 +337,7 @@ export default function GitSim({ objectives }: { objectives: GitObjective[] }) {
             spellCheck={false}
             autoComplete="off"
             placeholder="git status"
-            className="w-full bg-transparent font-mono text-[13px] text-paper-100 placeholder-ink-600 focus:outline-none"
+            className="w-full bg-transparent font-mono text-[13px] text-paper-100 placeholder-ink-600 focus:outline-hidden"
           />
         </div>
       </div>

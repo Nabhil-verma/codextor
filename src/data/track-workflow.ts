@@ -1,4 +1,5 @@
 import type { Track } from "./types";
+import { REVIEW_GYM } from "./review-gym";
 import { diffChallenge } from "./diff-challenges";
 
 /* ═══════════════════════════════════════════════════════════════
@@ -22,6 +23,9 @@ export const workflowTrack: Track = {
       id: "pull-requests",
       title: "Pull Requests: Intent and Tradeoffs",
       minutes: 12,
+      reviewed: "2026-10",
+      toolDependent: true,
+      reviewBy: "2026-12-30",
       rubric: {
         id: "pr-description",
         title: "Write the PR description",
@@ -154,6 +158,9 @@ Run the migration on a copy of staging, delete a project, confirm it disappears 
       id: "reviewing-diffs",
       title: "Reviewing Someone Else's Diff",
       minutes: 14,
+      reviewed: "2026-10",
+      toolDependent: true,
+      reviewBy: "2026-12-30",
       body: `Review is a **filter with a stated bar**, not a taste contest. The work is to separate three categories, and to say which is which:
 
 1. **Blocking** — this must change before merge. A correctness bug, a security hole, a broken invariant.
@@ -166,6 +173,7 @@ Run the migration on a copy of staging, delete a project, confirm it disappears 
 
 **The comment worth writing** names three things: the line, the scenario that breaks, and the fix you would accept. "This looks wrong" is not reviewable; "this retries a 400, so a malformed request becomes five malformed requests — only retry 5xx" is.`,
       diff: diffChallenge("upload-retry-blocks-400"),
+      reviews: REVIEW_GYM,
       quiz: [
         {
           q: "A teammate's PR has a `console.log` in a hot loop and an unchecked `res.ok`. Which is blocking?",
@@ -233,6 +241,9 @@ Run the migration on a copy of staging, delete a project, confirm it disappears 
       id: "vague-request-ticket",
       title: "Turning a Vague Request into a Ticket",
       minutes: 12,
+      reviewed: "2026-10",
+      toolDependent: true,
+      reviewBy: "2026-12-30",
       rubric: {
         id: "ticket-scoping",
         title: "Scope the request into a ticket",
@@ -361,6 +372,9 @@ Re-measure p95 in the same window after the change, on the same traffic, before 
       id: "decision-records",
       title: "Explaining Your Decisions in Writing",
       minutes: 11,
+      reviewed: "2026-10",
+      toolDependent: true,
+      reviewBy: "2026-12-30",
       rubric: {
         id: "decision-record",
         title: "Write the decision record",

@@ -17,7 +17,7 @@ const STYLES: { id: ThemeStyle; name: string; blurb: string }[] = [
 ];
 
 const inputCls =
-  "w-full rounded-xl border border-paper-300 bg-paper-50 px-4 py-2.5 text-sm text-ink-950 outline-none transition placeholder:text-ink-400 focus:border-gold-400 focus:ring-2 focus:ring-gold-400/25";
+  "w-full rounded-xl border border-paper-300 bg-paper-50 px-4 py-2.5 text-sm text-ink-950 outline-hidden transition placeholder:text-ink-400 focus:border-gold-400 focus:ring-2 focus:ring-gold-400/25";
 
 export default function AiSettingsModal({
   onClose,
@@ -74,7 +74,7 @@ export default function AiSettingsModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/40 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/40 p-4 backdrop-blur-xs"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}

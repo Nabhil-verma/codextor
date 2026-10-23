@@ -36,10 +36,10 @@ describe("bug taxonomy", () => {
     }
   });
 
-  it("keeps the six executed codes and adds exactly four review codes", () => {
-    expect(EXECUTED_CODES).toEqual(["RC", "EC", "HA", "ID", "SL", "CX"]);
+  it("covers all ten codes in executable contracts and reviews", () => {
+    expect(EXECUTED_CODES).toEqual(["RC", "EC", "HA", "ID", "SL", "CX", "SC", "TG", "NM", "DL"]);
     expect(REVIEW_CODES).toHaveLength(10);
-    expect(REVIEW_CODES).toEqual([...EXECUTED_CODES, "SC", "TG", "NM", "DL"]);
+    expect(REVIEW_CODES).toEqual(EXECUTED_CODES);
   });
 });
 
@@ -53,22 +53,22 @@ describe("diff challenge library", () => {
 
   it("plants a defect that exists inside the after side of the named file", () => {
     for (const c of DIFF_CHALLENGES) {
-      const file = c.files.find((f) => f.path === c.planted.file);
-      expect(file, `${c.id}: planted file "${c.planted.file}" is not in the PR`).toBeTruthy();
+      const file = c.files.find((f) => f.path === c.planted!.file);
+      expect(file, `${c.id}: planted file "${c.planted!.file}" is not in the PR`).toBeTruthy();
       const lines = file!.after.split("\n");
       expect(
-        c.planted.line,
-        `${c.id}: planted line ${c.planted.line} is out of bounds (${lines.length} lines)`
+        c.planted!.line,
+        `${c.id}: planted line ${c.planted!.line} is out of bounds (${lines.length} lines)`
       ).toBeGreaterThanOrEqual(1);
-      expect(c.planted.line).toBeLessThanOrEqual(lines.length);
-      expect(lines[c.planted.line - 1].trim().length, `${c.id}: planted line is blank`).toBeGreaterThan(0);
+      expect(c.planted!.line).toBeLessThanOrEqual(lines.length);
+      expect(lines[c.planted!.line - 1].trim().length, `${c.id}: planted line is blank`).toBeGreaterThan(0);
     }
   });
 
   it("uses a valid taxonomy code and ships reference reasoning", () => {
     for (const c of DIFF_CHALLENGES) {
-      expect(REVIEW_CODES, `${c.id}: unknown category`).toContain(c.planted.category);
-      expect(c.planted.why.length, `${c.id}: no why`).toBeGreaterThan(80);
+      expect(REVIEW_CODES, `${c.id}: unknown category`).toContain(c.planted!.category);
+      expect(c.planted!.why.length, `${c.id}: no why`).toBeGreaterThan(80);
     }
   });
 
@@ -76,8 +76,8 @@ describe("diff challenge library", () => {
     for (const c of DIFF_CHALLENGES) {
       expect(c.distractors.length, `${c.id}: needs ≥2 distractors`).toBeGreaterThanOrEqual(2);
       // A distractor in the same file stops "blame the file" from winning.
-      const plantedDir = c.planted.file.split("/").slice(0, -1).join("/");
-      const sameFile = c.distractors.filter((d) => d.includes(c.planted.file));
+      const plantedDir = c.planted!.file.split("/").slice(0, -1).join("/");
+      const sameFile = c.distractors.filter((d) => d.includes(c.planted!.file));
       const sameDir = c.distractors.filter((d) => d.includes(plantedDir));
       expect(
         sameFile.length + (sameDir.length > 0 ? 1 : 0),
@@ -97,7 +97,7 @@ describe("diff challenge library", () => {
 
 describe("diff scoring ladder", () => {
   const ex = DIFF_CHALLENGES[0];
-  const good = { file: ex.planted.file, line: ex.planted.line, category: ex.planted.category };
+  const good = { file: ex.planted!.file, line: ex.planted!.line, category: ex.planted!.category };
 
   it("scores wrong file 0, file 0.4, file+line 0.7, file+line+category 1.0", () => {
     expect(scoreDiffAttempt(ex, { file: "package.json", line: 1, category: "SL" })).toBe(0);
@@ -244,16 +244,20 @@ describe("rubric grading", () => {
 describe("Track XVI — the pilot track", () => {
   const track = tracks.find((t) => t.id === "agents")!;
 
-  it("ships nine lessons in the planned order", () => {
+  it("keeps the pilot lessons in order, with #10 rule and headless lessons inserted", () => {
     expect(track.lessons.map((l) => l.id)).toEqual([
+      "agentic-loop-zero",
       "specs-and-prompts",
       "codebase-archaeology",
       "managing-context",
       "instruction-files",
       "plan-before-code",
+      "enforceable-rules",
       "permissions-and-sandbox",
+      "headless-and-scheduled-agents",
       "verifying-agent-output",
       "when-not-to-use-agents",
+      "write-the-catching-test",
       "capstone-agent-loop",
     ]);
   });

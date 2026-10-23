@@ -7,6 +7,8 @@ export const stateTrack: Track = {
   blurb:
     "Reducers, context without the re-render tax, external stores, and server state.",
   numeral: "Ⅻ",
+  optional: true,
+  optionalWhy: "depth track: learn it once you are supervising agents on real code",
   lessons: [
     {
       id: "state-shapes",

@@ -78,6 +78,15 @@ afterEach(() => {
 });
 
 describe("Learn search and filters", () => {
+  it("starts a fresh account at the first web lesson and renders Agents fourth", async () => {
+    renderLearn();
+    await waitForCatalog();
+    expect(screen.getByRole("link", { name: "Start lesson" }).getAttribute("href")).toBe("/learn/web/html-semantic");
+    const headings = screen.getAllByRole("heading", { level: 2 }).map(h => h.textContent);
+    const coreTitles = MANIFEST_TRACKS.filter(t => !t.optional).map(t => t.title);
+    const catalog = headings.filter(h => coreTitles.includes(h ?? ""));
+    expect(catalog[3]).toBe("Working with Coding Agents");
+  });
   it("shows every track before filtering", async () => {
     renderLearn();
     await waitForCatalog();

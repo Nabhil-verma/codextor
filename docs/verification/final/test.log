@@ -1,0 +1,300 @@
+
+> codextor@0.1.0 test
+> vitest run
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.12 [39m[90m/workspace/chats/101b4a5ca56c23ee41b9852b[39m
+
+ [32m✓[39m tests/curriculum.test.ts [2m([22m[2m15 tests[22m[2m)[22m[33m 15287[2mms[22m[39m
+     [33m[2m✓[22m[39m every predict challenge has a valid answer and runnable code [33m 3822[2mms[22m[39m
+     [33m[2m✓[22m[39m every interactive starter runs cleanly and every check expression compiles [33m 8402[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects the starter but accepts a reference fix [33m 3009[2mms[22m[39m
+ [32m✓[39m tests/debug-challenges.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 7071[2mms[22m[39m
+     [33m[2m✓[22m[39m grades a fix only when the program actually behaves [33m 2360[2mms[22m[39m
+     [33m[2m✓[22m[39m accepts the reference fix for every challenge [33m 2352[2mms[22m[39m
+     [33m[2m✓[22m[39m fails because of a bug, not because it doesn't parse [33m 2350[2mms[22m[39m
+ [32m✓[39m tests/taxonomy-coverage.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 5474[2mms[22m[39m
+     [33m[2m✓[22m[39m fails each broken program on its own check [33m 1839[2mms[22m[39m
+     [33m[2m✓[22m[39m accepts each reference fix [33m 1803[2mms[22m[39m
+     [33m[2m✓[22m[39m fails because of a bug, not a typo hunt [33m 1815[2mms[22m[39m
+ [32m✓[39m tests/new-exercises.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 5282[2mms[22m[39m
+     [33m[2m✓[22m[39m is not already solved by the starter [33m 2769[2mms[22m[39m
+     [33m[2m✓[22m[39m accepts an independently written solution [33m 2506[2mms[22m[39m
+ [32m✓[39m tests/catch-agent.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 3435[2mms[22m[39m
+     [33m[2m✓[22m[39m all four reference tests deliberately fail bad draft and pass fixed, unlike empty tests [33m 2403[2mms[22m[39m
+     [33m[2m✓[22m[39m grades edited test through actual dual-run UI [33m 589[2mms[22m[39m
+     [33m[2m✓[22m[39m does not mistake a typo for a behavioral catch [33m 442[2mms[22m[39m
+ [32m✓[39m tests/learn-filters.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 3311[2mms[22m[39m
+     [33m[2m✓[22m[39m starts a fresh account at the first web lesson and renders Agents fourth [33m 1273[2mms[22m[39m
+     [33m[2m✓[22m[39m shows every track before filtering [33m 456[2mms[22m[39m
+     [33m[2m✓[22m[39m clears every filter at once [33m 410[2mms[22m[39m
+ [32m✓[39m tests/runner.test.ts [2m([22m[2m14 tests[22m[2m)[22m[33m 3404[2mms[22m[39m
+     [33m[2m✓[22m[39m does not leak user variables into later runs [33m 401[2mms[22m[39m
+     [33m[2m✓[22m[39m stops infinite loops with the loop guard [33m 499[2mms[22m[39m
+     [33m[2m✓[22m[39m stops brace-less infinite while loops [33m 501[2mms[22m[39m
+ [32m✓[39m tests/routes.test.tsx [2m([22m[2m14 tests[22m[2m)[22m[33m 2750[2mms[22m[39m
+     [33m[2m✓[22m[39m / — the public landing page [33m 479[2mms[22m[39m
+     [33m[2m✓[22m[39m /auth — signed in, it forwards to the app instead of looping [33m 845[2mms[22m[39m
+     [33m[2m✓[22m[39m /learn/:trackId/:lessonId — a lesson that doesn't exist says so [33m 393[2mms[22m[39m
+ [32m✓[39m tests/python-exercises.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 2213[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps every executed lesson's starter failing its own check [33m 2190[2mms[22m[39m
+ [32m✓[39m tests/agent-internals.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 2142[2mms[22m[39m
+     [33m[2m✓[22m[39m all JS practices reject the starter and accept an independently implemented repair [33m 2136[2mms[22m[39m
+ [32m✓[39m tests/lab-ui.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 1778[2mms[22m[39m
+     [33m[2m✓[22m[39m renders the diff review with its submit control [33m 632[2mms[22m[39m
+     [33m[2m✓[22m[39m renders the workflow diff review with its submit control [33m 645[2mms[22m[39m
+ [32m✓[39m tests/milestones.test.ts [2m([22m[2m16 tests[22m[2m)[22m[33m 1628[2mms[22m[39m
+     [33m[2m✓[22m[39m is not already satisfied by the starter code [33m 808[2mms[22m[39m
+     [33m[2m✓[22m[39m accepts an independently written solution [33m 806[2mms[22m[39m
+ [32m✓[39m tests/proof-runner.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 1435[2mms[22m[39m
+     [33m[2m✓[22m[39m verifies a proof that fails on the draft and passes on the fix [33m 578[2mms[22m[39m
+     [33m[2m✓[22m[39m records 0.5 when the draft does not fail [33m 421[2mms[22m[39m
+     [33m[2m✓[22m[39m records 0 when the test distinguishes nothing [33m 423[2mms[22m[39m
+ [32m✓[39m tests/editor-a11y.test.tsx [2m([22m[2m16 tests[22m[2m)[22m[33m 1191[2mms[22m[39m
+ [32m✓[39m tests/ts-runner.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 1192[2mms[22m[39m
+ [32m✓[39m tests/compiler-asset.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1097[2mms[22m[39m
+     [33m[2m✓[22m[39m typechecks good and bad programs in a browser-like realm [33m 1096[2mms[22m[39m
+Error: [CONVEX Q(clans:mine)] [Request ID: b63590e3db458028] Server Error
+Could not find public function for 'clans:mine'.
+
+  Called by client
+    at Boom (/workspace/chats/101b4a5ca56c23ee41b9852b/tests/resilience-ux.test.tsx:93:9)
+    at renderWithHooks (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:15486:18)
+    at mountIndeterminateComponent (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:20103:13)
+    at beginWork (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:21626:16)
+    at HTMLUnknownElement.callCallback (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:4164:14)
+    at HTMLUnknownElement.callTheUserObjectsOperation (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/generated/idl/EventListener.js:26:30)
+    at innerInvokeEventListeners (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:378:16)
+    at invokeEventListeners (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:320:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:269:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:137:17)
+Error: [CONVEX Q(clans:mine)] [Request ID: b63590e3db458028] Server Error
+Could not find public function for 'clans:mine'.
+
+  Called by client
+    at Boom (/workspace/chats/101b4a5ca56c23ee41b9852b/tests/resilience-ux.test.tsx:93:9)
+    at renderWithHooks (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:15486:18)
+    at mountIndeterminateComponent (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:20103:13)
+    at beginWork (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:21626:16)
+    at HTMLUnknownElement.callCallback (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:4164:14)
+    at HTMLUnknownElement.callTheUserObjectsOperation (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/generated/idl/EventListener.js:26:30)
+    at innerInvokeEventListeners (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:378:16)
+    at invokeEventListeners (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:320:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:269:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:137:17)
+ [32m✓[39m tests/resilience-ux.test.tsx [2m([22m[2m13 tests[22m[2m)[22m[33m 910[2mms[22m[39m
+     [33m[2m✓[22m[39m still renders after the scroll-fade rework, with the toggle in reach [33m 323[2mms[22m[39m
+ [32m✓[39m tests/guardrails.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 809[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects bad wrapper and accepts enforced wrapper [33m 406[2mms[22m[39m
+     [33m[2m✓[22m[39m requires confirmation even for trusted reads and strips arbitrary returned secrets [33m 401[2mms[22m[39m
+ [32m✓[39m tests/stepper.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 812[2mms[22m[39m
+     [33m[2m✓[22m[39m aborts infinite loops via the tick guard [33m 802[2mms[22m[39m
+ [32m✓[39m tests/completion-integration.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 814[2mms[22m[39m
+     [33m[2m✓[22m[39m executes the model mock through the learner fetch interface and resets retries each run [33m 805[2mms[22m[39m
+ [32m✓[39m tests/curriculum-ui.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 785[2mms[22m[39m
+ [32m✓[39m tests/tutor-error-ask.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 666[2mms[22m[39m
+     [33m[2m✓[22m[39m passes the raw error and the open hint tier to the tutor [33m 476[2mms[22m[39m
+ [32m✓[39m tests/clan-ui.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[33m 605[2mms[22m[39m
+Error: Failed to fetch dynamically imported module: https://codexter.test/assets/Learn-8f3c1a.js
+    at /workspace/chats/101b4a5ca56c23ee41b9852b/tests/error-boundary.test.tsx:119:46
+    at lazyInitializer (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react/cjs/react.development.js:1357:20)
+    at mountLazyComponent (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:19973:19)
+    at beginWork (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:21632:16)
+    at beginWork$1 (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:27465:14)
+    at performUnitOfWork (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:26599:12)
+    at workLoopSync (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:26505:5)
+    at renderRootSync (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:26473:7)
+    at performConcurrentWorkOnRoot (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:25777:74)
+    at flushActQueue (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react/cjs/react.development.js:2667:24)
+Error: Failed to fetch dynamically imported module: https://codexter.test/assets/Learn-8f3c1a.js
+    at /workspace/chats/101b4a5ca56c23ee41b9852b/tests/error-boundary.test.tsx:119:46
+    at lazyInitializer (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react/cjs/react.development.js:1357:20)
+    at mountLazyComponent (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:19973:19)
+    at beginWork (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:21632:16)
+    at beginWork$1 (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:27465:14)
+    at performUnitOfWork (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:26599:12)
+    at workLoopSync (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:26505:5)
+    at renderRootSync (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:26473:7)
+    at performConcurrentWorkOnRoot (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:25777:74)
+    at flushActQueue (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react/cjs/react.development.js:2667:24)
+Error: Failed to fetch dynamically imported module: https://codexter.test/assets/Learn-8f3c1a.js
+    at Learn (/workspace/chats/101b4a5ca56c23ee41b9852b/tests/error-boundary.test.tsx:90:11)
+    at renderWithHooks (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:15486:18)
+    at updateFunctionComponent (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:19617:20)
+    at mountLazyComponent (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:19988:17)
+    at beginWork (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:21632:16)
+    at HTMLUnknownElement.callCallback (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:4164:14)
+    at HTMLUnknownElement.callTheUserObjectsOperation (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/generated/idl/EventListener.js:26:30)
+    at innerInvokeEventListeners (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:378:16)
+    at invokeEventListeners (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:320:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:269:9)
+Error: Failed to fetch dynamically imported module: https://codexter.test/assets/Learn-8f3c1a.js
+    at Learn (/workspace/chats/101b4a5ca56c23ee41b9852b/tests/error-boundary.test.tsx:90:11)
+    at renderWithHooks (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:15486:18)
+    at updateFunctionComponent (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:19617:20)
+    at mountLazyComponent (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:19988:17)
+    at beginWork (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:21632:16)
+    at HTMLUnknownElement.callCallback (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:4164:14)
+    at HTMLUnknownElement.callTheUserObjectsOperation (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/generated/idl/EventListener.js:26:30)
+    at innerInvokeEventListeners (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:378:16)
+    at invokeEventListeners (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:320:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:269:9)
+Error: Failed to fetch dynamically imported module: https://codexter.test/assets/Learn-8f3c1a.js
+    at Learn (/workspace/chats/101b4a5ca56c23ee41b9852b/tests/error-boundary.test.tsx:90:11)
+    at renderWithHooks (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:15486:18)
+    at updateFunctionComponent (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:19617:20)
+    at mountLazyComponent (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:19988:17)
+    at beginWork (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:21632:16)
+    at HTMLUnknownElement.callCallback (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:4164:14)
+    at HTMLUnknownElement.callTheUserObjectsOperation (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/generated/idl/EventListener.js:26:30)
+    at innerInvokeEventListeners (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:378:16)
+    at invokeEventListeners (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:320:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:269:9)
+Error: Failed to fetch dynamically imported module: https://codexter.test/assets/Learn-8f3c1a.js
+    at Learn (/workspace/chats/101b4a5ca56c23ee41b9852b/tests/error-boundary.test.tsx:90:11)
+    at renderWithHooks (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:15486:18)
+    at updateFunctionComponent (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:19617:20)
+    at mountLazyComponent (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:19988:17)
+    at beginWork (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:21632:16)
+    at HTMLUnknownElement.callCallback (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:4164:14)
+    at HTMLUnknownElement.callTheUserObjectsOperation (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/generated/idl/EventListener.js:26:30)
+    at innerInvokeEventListeners (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:378:16)
+    at invokeEventListeners (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:320:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:269:9)
+Error: Failed to fetch dynamically imported module: https://codexter.test/assets/Learn-8f3c1a.js
+    at Learn (/workspace/chats/101b4a5ca56c23ee41b9852b/tests/error-boundary.test.tsx:90:11)
+    at renderWithHooks (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:15486:18)
+    at updateFunctionComponent (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:19617:20)
+    at mountLazyComponent (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:19988:17)
+    at beginWork (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:21632:16)
+    at HTMLUnknownElement.callCallback (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:4164:14)
+    at HTMLUnknownElement.callTheUserObjectsOperation (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/generated/idl/EventListener.js:26:30)
+    at innerInvokeEventListeners (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:378:16)
+    at invokeEventListeners (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:320:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:269:9)
+Error: Failed to fetch dynamically imported module: https://codexter.test/assets/Learn-8f3c1a.js
+    at Learn (/workspace/chats/101b4a5ca56c23ee41b9852b/tests/error-boundary.test.tsx:90:11)
+    at renderWithHooks (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:15486:18)
+    at updateFunctionComponent (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:19617:20)
+    at mountLazyComponent (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:19988:17)
+    at beginWork (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:21632:16)
+    at HTMLUnknownElement.callCallback (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:4164:14)
+    at HTMLUnknownElement.callTheUserObjectsOperation (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/generated/idl/EventListener.js:26:30)
+    at innerInvokeEventListeners (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:378:16)
+    at invokeEventListeners (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:320:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:269:9)
+Error: Cannot read properties of undefined (reading 'map')
+    at Boom (/workspace/chats/101b4a5ca56c23ee41b9852b/tests/error-boundary.test.tsx:186:13)
+    at renderWithHooks (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:15486:18)
+    at mountIndeterminateComponent (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:20103:13)
+    at beginWork (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:21626:16)
+    at HTMLUnknownElement.callCallback (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:4164:14)
+    at HTMLUnknownElement.callTheUserObjectsOperation (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/generated/idl/EventListener.js:26:30)
+    at innerInvokeEventListeners (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:378:16)
+    at invokeEventListeners (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:320:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:269:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:137:17)
+Error: Cannot read properties of undefined (reading 'map')
+    at Boom (/workspace/chats/101b4a5ca56c23ee41b9852b/tests/error-boundary.test.tsx:186:13)
+    at renderWithHooks (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:15486:18)
+    at mountIndeterminateComponent (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:20103:13)
+    at beginWork (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:21626:16)
+    at HTMLUnknownElement.callCallback (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/react-dom/cjs/react-dom.development.js:4164:14)
+    at HTMLUnknownElement.callTheUserObjectsOperation (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/generated/idl/EventListener.js:26:30)
+    at innerInvokeEventListeners (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:378:16)
+    at invokeEventListeners (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:320:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:269:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/workspace/chats/101b4a5ca56c23ee41b9852b/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:137:17)
+ [32m✓[39m tests/error-boundary.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 564[2mms[22m[39m
+ [32m✓[39m tests/command-palette.test.tsx [2m([22m[2m14 tests[22m[2m)[22m[33m 569[2mms[22m[39m
+ [32m✓[39m tests/theme-sync.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 459[2mms[22m[39m
+     [33m[2m✓[22m[39m pushes changes made while signed in [33m 408[2mms[22m[39m
+ [32m✓[39m tests/reviewer-flow.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 386[2mms[22m[39m
+     [33m[2m✓[22m[39m drives learner choices through real server grading and persists the certificate [33m 332[2mms[22m[39m
+ [32m✓[39m tests/palette.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 342[2mms[22m[39m
+     [33m[2m✓[22m[39m really compiles every colour class the source uses, through its variable [33m 322[2mms[22m[39m
+ [32m✓[39m tests/ai-settings-ui.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[32m 299[2mms[22m[39m
+ [32m✓[39m tests/curriculum-profile.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 322[2mms[22m[39m
+ [32m✓[39m tests/agentic-release.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 214[2mms[22m[39m
+ [32m✓[39m tests/transcript-lab.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 313[2mms[22m[39m
+ [32m✓[39m tests/rapidfire-timers.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 312[2mms[22m[39m
+ [32m✓[39m tests/socratic-stream.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 246[2mms[22m[39m
+ [32m✓[39m tests/review-gym.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 229[2mms[22m[39m
+ [32m✓[39m tests/decision-artifacts.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[33m 329[2mms[22m[39m
+ [32m✓[39m tests/code-block.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[32m 223[2mms[22m[39m
+ [32m✓[39m tests/ceremony-ui.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 224[2mms[22m[39m
+ [32m✓[39m tests/code-editor.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[32m 196[2mms[22m[39m
+ [32m✓[39m tests/placement.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 218[2mms[22m[39m
+ [32m✓[39m tests/curriculum-review.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 133[2mms[22m[39m
+ [32m✓[39m tests/trace-interrogation.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 186[2mms[22m[39m
+ [32m✓[39m tests/review-card.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 228[2mms[22m[39m
+ [32m✓[39m tests/tutor-narration-gate.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 134[2mms[22m[39m
+[90mstderr[2m | tests/clan-quest-lifecycle.test.ts[2m > [22m[2mclan quest lifecycle[2m > [22m[2mkeeps the activity feed ordered, attributed and private to the guild
+[22m[39mprofiles.sync: would clamp [level>curve, streak>account-age] for 000000000000000000000010000users
+
+[90mstderr[2m | tests/clan-quest-lifecycle.test.ts[2m > [22m[2mclan quest lifecycle[2m > [22m[2menforces the role ladder for promotion and removal
+[22m[39mprofiles.sync: would clamp [level>curve] for 000000000000000000000010001users
+
+[90mstderr[2m | tests/clan-quest-lifecycle.test.ts[2m > [22m[2mclan quest lifecycle[2m > [22m[2mmoves the founder's crown to the highest-XP member when they leave
+[22m[39mprofiles.sync: would clamp [streak>account-age] for 000000000000000000000010001users
+
+ [32m✓[39m tests/clan-quest-lifecycle.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 126[2mms[22m[39m
+ [32m✓[39m tests/worktree-lab.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 115[2mms[22m[39m
+ [32m✓[39m tests/manifest-split.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 96[2mms[22m[39m
+ [32m✓[39m tests/milestone-claims.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 77[2mms[22m[39m
+ [32m✓[39m tests/clan-roster-edges.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 70[2mms[22m[39m
+ [32m✓[39m tests/gamification.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 58[2mms[22m[39m
+ [32m✓[39m tests/unseen-certificate.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+[90mstderr[2m | tests/backend-xp-clamps.test.ts[2m > [22m[2mprofiles.sync in log-only mode (the default)[2m > [22m[2mrecords the violation but stores what the client sent
+[22m[39mprofiles.sync: would clamp [lessons>total, xp>curriculum, xpMonth>xp, xpWeek>xpMonth, level>curve, streak>account-age] for 000000000000000000000010000users
+
+[90mstderr[2m | tests/backend-xp-clamps.test.ts[2m > [22m[2mprofiles.sync with CODEXTOR_XP_CLAMPS=enforce[2m > [22m[2mbounds a forged payload to what the curriculum allows
+[22m[39mprofiles.sync: clamped [lessons>total, xp>curriculum, xpMonth>xp, xpWeek>xpMonth, level>curve, streak>account-age] for 000000000000000000000010000users
+
+[90mstderr[2m | tests/backend-xp-clamps.test.ts[2m > [22m[2mprofiles.sync with CODEXTOR_XP_CLAMPS=enforce[2m > [22m[2mdrops a runaway sync loop instead of overwriting the card
+[22m[39mprofiles.sync: rate limit hit for 000000000000000000000010000users (21/20 per minute)
+
+[90mstderr[2m | tests/backend-xp-clamps.test.ts[2m > [22m[2mprofiles.sync with CODEXTOR_XP_CLAMPS=enforce[2m > [22m[2mdrops a runaway sync loop instead of overwriting the card
+[22m[39mprofiles.sync: rate limit hit for 000000000000000000000010000users (22/20 per minute)
+
+[90mstderr[2m | tests/backend-xp-clamps.test.ts[2m > [22m[2mprofiles.sync with CODEXTOR_XP_CLAMPS=enforce[2m > [22m[2mdrops a runaway sync loop instead of overwriting the card
+[22m[39mprofiles.sync: rate limit hit for 000000000000000000000010000users (23/20 per minute)
+
+[90mstderr[2m | tests/backend-xp-clamps.test.ts[2m > [22m[2mprofiles.sync with CODEXTOR_XP_CLAMPS=enforce[2m > [22m[2mdrops a runaway sync loop instead of overwriting the card
+[22m[39mprofiles.sync: rate limit hit for 000000000000000000000010000users (24/20 per minute)
+
+[90mstderr[2m | tests/backend-xp-clamps.test.ts[2m > [22m[2mprofiles.sync with CODEXTOR_XP_CLAMPS=enforce[2m > [22m[2mdrops a runaway sync loop instead of overwriting the card
+[22m[39mprofiles.sync: rate limit hit for 000000000000000000000010000users (25/20 per minute)
+
+ [32m✓[39m tests/backend-xp-clamps.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 55[2mms[22m[39m
+ [32m✓[39m tests/ai-stream.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 39[2mms[22m[39m
+ [32m✓[39m tests/ai-provider.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 34[2mms[22m[39m
+ [32m✓[39m tests/lab-graders.test.ts [2m([22m[2m27 tests[22m[2m)[22m[32m 35[2mms[22m[39m
+ [32m✓[39m tests/backend-preferences.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+ [32m✓[39m tests/local-store.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m tests/review.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m tests/site-gen.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m tests/agentic-spine.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m tests/highlight.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m tests/shuffle.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m tests/review-wiring.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m tests/telemetry.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m tests/game-layer.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/progress.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/check-expr.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/guild-quests.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/field-reports.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/narration-and-certificate.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/url.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/git-worktree-sim.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/progress-keys.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/ceremony.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/mock-agent-endpoint.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/docs.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/socratic-lang.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m77 passed[39m[22m[90m (77)[39m
+[2m      Tests [22m [1m[32m616 passed[39m[22m[90m (616)[39m
+[2m   Start at [22m 17:49:16
+[2m   Duration [22m 123.05s[2m (transform 4.33s, setup 0ms, import 16.27s, tests 71.23s, environment 24.23s)[22m
+

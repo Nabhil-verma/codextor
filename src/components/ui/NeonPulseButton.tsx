@@ -59,7 +59,7 @@ export default function NeonPulseButton(props: NeonPulseButtonProps) {
   const classes =
     "group inline-flex items-center justify-center rounded-full font-semibold tracking-tight " +
     "transition-all duration-300 ease-snap hover:scale-[1.02] active:scale-[0.97] " +
-    "focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#030305] " +
+    "focus:outline-hidden focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#030305] " +
     "disabled:pointer-events-none disabled:opacity-50 " +
     VARIANT[variant] +
     " " +

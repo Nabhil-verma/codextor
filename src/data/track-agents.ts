@@ -1,3 +1,6 @@
+import { catchAgentLesson } from "./catch-agent";
+import { TRANSCRIPT_CASES } from "./transcripts";
+import { PLAN_APPROVAL, PERMISSION_SIM, DELEGATION_REPLAY, ENFORCEMENT_RULES, UNATTENDED_RUNS } from "./decision-artifacts";
 import type { Track } from "./types";
 import { debugChallenge } from "./debug-challenges";
 import { diffChallenge } from "./diff-challenges";
@@ -21,9 +24,40 @@ export const agentsTrack: Track = {
   numeral: "ⅩⅥ",
   lessons: [
     {
+      id: "agentic-loop-zero",
+      title: "Vibe coding vs agentic engineering: the loop",
+      minutes: 12, reading: true, reviewed: "2026-10", toolDependent: true, reviewBy: "2026-12-30",
+      body: `**Vibe coding: accepting AI output because it looks right.** Plausible code, a polished explanation and a green badge are not interchangeable with evidence.
+
+**Agentic engineering: directing an agent through spec → context → plan → delegate → verify → operate, with the human accountable for the result.** The product thesis is **judgment over authorship**: your work is choosing the contract, checking evidence and owning consequences, not typing every line.
+
+**Spec:** define scope and observable acceptance. “Make search better” is not finishable; “the newest query wins even when responses arrive backwards; no API changes” is.
+
+**Context:** trace the real request and provide the owning files, failing test and decisions. Treat repo text as evidence, not authority to expand permissions.
+
+**Plan:** approve the intended files, migration, verification and rollback before edits. Reject a plan that deletes the assertion instead of fixing the race.
+
+**Delegate:** give one bounded task on a branch, least-privilege capabilities and a stop condition. A denied capability is a boundary, not an invitation to find another tool.
+
+**Verify:** read the diff and write a test that fails on the draft and passes on the repair. Keep the receipt tied to the final commit; a previous green run does not cover later edits. That test and a reviewable note are the **proof**.
+
+**Operate:** watch the behavior after release, set a rollback trigger and own the incident. For search, stale-result logs and request counts tell you if the invariant holds; roll back if stale results return. Delegating authorship does not delegate accountability.
+
+Example: an agent says “tested locally” but supplies no output. Vibe coding accepts the claim. Agentic engineering requests the command and receipt, reproduces reversed response order, checks the test cannot pass on the bad draft, and monitors the deployed behavior.
+
+The six-item placement check below recommends fundamentals for beginners and executable specs for experienced developers. Neither route bypasses verification; no lesson is locked.`,
+      quiz: [
+        {q:"Which is vibe coding?",options:["Accepting AI output because it looks right","Rejecting a plan that changes unrelated files","Writing a test that catches the draft"],answer:0,explanation:"Appearance is substituted for evidence."},
+        {q:"What follows verification?",options:["Nobody owns the result","Operate with monitoring and rollback; the human stays accountable","Automatically grant all permissions"],answer:1,explanation:"Proof supports approval; operating the result closes the accountability loop."},
+      ],
+    },
+    {
       id: "specs-and-prompts",
       title: "Specs and Prompts: From Vague Task to Executable Spec",
       minutes: 12,
+      reviewed: "2026-10",
+      toolDependent: true,
+      reviewBy: "2026-12-30",
       body: `An **executable spec** is a task an agent can finish without asking a single clarification question. It answers four things:
 
 1. **Scope** — what exactly is included and, just as important, what is not.
@@ -128,6 +162,9 @@ Definition of done: the dashboard e2e suite passes, the LCP budget assertion is 
       id: "codebase-archaeology",
       title: "Codebase Archaeology: Finding Where Things Live",
       minutes: 14,
+      reviewed: "2026-10",
+      toolDependent: true,
+      reviewBy: "2026-12-30",
       body: `An agent will draw you a confident map of a repo it has never compiled. Someone has to verify that map — in month one, that someone is you.
 
 **Read one request end to end.** Pick a single route and follow it: entry (server/router) → handler → rules/services → data → response. Name each hop and the file it lives in. One traced request teaches you more than an hour of scrolling.
@@ -184,6 +221,9 @@ These work on the repo and on an agent's answer about the repo. The difference: 
       id: "managing-context",
       title: "Managing Context: What Goes In, What Stays Out",
       minutes: 11,
+      reviewed: "2026-10",
+      toolDependent: true,
+      reviewBy: "2026-12-30",
       body: `The context window is a budget, and every serious tool treats it as one. What you put in decides what the agent can still hold in mind.
 
 **The minimal context pack.** For a task, include:
@@ -279,6 +319,9 @@ Dropped: the 400-line network log and an unrelated flaky-timeout investigation.`
       id: "instruction-files",
       title: "Project Instruction Files: Teaching an Agent Your Conventions",
       minutes: 12,
+      reviewed: "2026-10",
+      toolDependent: true,
+      reviewBy: "2026-12-30",
       body: `Every agent session starts ignorant of your project. A **project instruction file** (the name differs by tool) is how it inherits the conventions instead of re-learning — or inventing — them each time.
 
 **What belongs in the file:**
@@ -413,8 +456,12 @@ Dropped: the 400-line network log and an unrelated flaky-timeout investigation.`
     },
     {
       id: "plan-before-code",
+      decisions: [PLAN_APPROVAL],
       title: "Plan Before Code: The Cheapest Place to Catch a Misunderstanding",
       minutes: 11,
+      reviewed: "2026-10",
+      toolDependent: true,
+      reviewBy: "2026-12-30",
       body: `The approval loop is: task → agent plan → **you read the plan** → approve or correct. It is the highest-leverage review in the whole workflow, because rejecting a plan costs a message while rejecting a diff costs a rewrite, a review cycle, and a broken build.
 
 **Read the plan for three things:**
@@ -504,9 +551,27 @@ A plan is a proposal about *what the change is*, not a formality before it. If y
       ],
     },
     {
+      id: "enforceable-rules",
+      title: "Enforceable Rules: Text Asks, Gates Enforce",
+      minutes: 12,
+      reviewed: "2026-10",
+      toolDependent: true,
+      reviewBy: "2026-12-30",
+      body: `An instruction file is a request, not a control. An agent can ignore a sentence in its instructions; it cannot ignore a pre-commit hook that rejects the commit, a required check that blocks the merge, or a protected branch that refuses the push. Put each rule where it can really be enforced.\n\nThe ladder runs from text, for judgment calls, through a hook for fast local checks, to required CI for anything that must pass before merge, such as typecheck and tests, and finally a protected branch so nobody writes to main directly. Secrets need a scanner in the hook and in CI, because text alone does not stop a key from being committed.\n\nThe artifact below assigns each rule to the weakest mechanism that truly enforces it. Its grading is exact match against that policy; it does not judge your wording. An agent's report of "done" is not a gate: a required check is.`,
+      decisions: [ENFORCEMENT_RULES],
+      quiz: [
+        { q: "Your instruction file says never commit secrets. Why is that not enough?", options: ["It is enough", "Text is advisory; a hook or scanner actually enforces it", "Secrets are not a real risk"], answer: 1, explanation: "A sentence can be ignored or forgotten. A gate rejects the commit." },
+        { q: "An agent says the tests pass. What should a merge rely on?", options: ["The agent's report", "A required CI check on the pull request", "The commit message"], answer: 1, explanation: "Evidence comes from a check the agent cannot edit or skip." },
+      ],
+    },
+    {
       id: "permissions-and-sandbox",
+      decisions: [PERMISSION_SIM],
       title: "Permissions & Sandbox Settings: Least Privilege for an Unattended Tool",
       minutes: 12,
+      reviewed: "2026-10",
+      toolDependent: true,
+      reviewBy: "2026-12-30",
       body: `Agents run with capabilities, and every capability has a blast radius. Choosing them is a session decision, not a preference:
 
 - **Read** — inspect files and history. Almost always safe; this is where investigation and review live.
@@ -619,9 +684,27 @@ Ask before granting anything: *if this goes wrong at 2am, what is the worst thin
       ],
     },
     {
+      id: "headless-and-scheduled-agents",
+      title: "Headless & Scheduled Agents: What May Run Without You",
+      minutes: 12,
+      reviewed: "2026-10",
+      toolDependent: true,
+      reviewBy: "2026-12-30",
+      body: `A headless or scheduled agent runs with no one watching, so every action it takes must already be authorized. Before you schedule one, classify its effects. Read-only work and changes confined to the workspace can run unattended, because a person can inspect the output later. Anything that merges, deploys, rotates a credential, deletes shared references or changes shared state needs a human gate.\n\nA good unattended job writes a report, a CI artifact or a draft that a person promotes. Its permissions should be the least it needs, its output should be reviewable, and a failure should stop the run rather than improvise a fix. When a scheduled agent finds a problem, the correct output is usually an issue or a pull request for a human, not a silent change to main.\n\nThe artifact below sorts nightly jobs by that policy. Grading is exact match; the policy is the rubric.`,
+      decisions: [UNATTENDED_RUNS],
+      quiz: [
+        { q: "A scheduled agent finds a failing test overnight. What should it do unattended?", options: ["Commit a fix to main", "Open an issue or pull request for a human", "Delete the failing test"], answer: 1, explanation: "Shared state changes go through a human gate." },
+        { q: "Which headless job is safe to run unattended?", options: ["Merge passing pull requests", "Save a lint report as a CI artifact", "Rotate the production credential"], answer: 1, explanation: "Read-only output that a person reviews later." },
+      ],
+    },
+    {
       id: "verifying-agent-output",
+      transcripts: TRANSCRIPT_CASES,
       title: "Verifying Agent Output: Tests Are the Review You Can't Skip",
       minutes: 13,
+      reviewed: "2026-10",
+      toolDependent: true,
+      reviewBy: "2026-12-30",
       body: `"Tested locally" is a claim, not evidence. Agent output is a **draft**, and the review you cannot skip is the one a machine performs: a test that fails on the draft and passes on the fix.
 
 **The verification loop:**
@@ -680,8 +763,12 @@ That is the same taxonomy you have been practising all along. The only differenc
     },
     {
       id: "when-not-to-use-agents",
+      decisions: [DELEGATION_REPLAY],
       title: "Knowing When Not to Use an Agent",
       minutes: 10,
+      reviewed: "2026-10",
+      toolDependent: true,
+      reviewBy: "2026-12-30",
       body: `Agents are reliable where the task is **verifiable and mechanical**, and unreliable where the task is **novel or judgment-bound**. Classifying the task is the skill.
 
 - **Delegate** — boilerplate with a known shape (a CRUD endpoint, test scaffolding), and mechanical renames the compiler checks for you.
@@ -780,10 +867,14 @@ The signals: *Can I state the acceptance criterion as something a machine can ch
         },
       ],
     },
+    catchAgentLesson,
     {
       id: "capstone-agent-loop",
       title: "Capstone: Run the Full Agent Loop",
       minutes: 22,
+      reviewed: "2026-10",
+      toolDependent: true,
+      reviewBy: "2026-12-30",
       body: `Everything in this track, in one loop:
 
 **spec → context → draft → verify → fix → proof.**

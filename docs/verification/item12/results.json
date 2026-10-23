@@ -1,0 +1,23 @@
+[
+  {
+    "command": "npm run typecheck",
+    "exitCode": 0,
+    "signal": null,
+    "seconds": 14.85,
+    "log": "docs/verification/item12/typecheck.log"
+  },
+  {
+    "command": "npm test",
+    "exitCode": 0,
+    "signal": null,
+    "seconds": 128.88,
+    "log": "docs/verification/item12/test.log"
+  },
+  {
+    "command": "npm run build",
+    "exitCode": 0,
+    "signal": null,
+    "seconds": 14.6,
+    "log": "docs/verification/item12/build.log"
+  }
+]

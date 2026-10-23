@@ -30,7 +30,7 @@ const KEY = "clr-attempts-v1"; // additive local store; no Convex changes
  * `proof` is the milestone ProofRunner: the dual-run test-of-the-test whose
  * first-submission outcome is the §8.4(b) metric.
  */
-export type AttemptElement = "quiz" | "debug" | "diff" | "repo" | "rubric" | "proof";
+export type AttemptElement = "quiz" | "debug" | "diff" | "repo" | "rubric" | "proof" | "transcript" | "decision" | "worktree";
 
 export type Attempt = {
   /** lesson key: `${trackId}/${lessonId}` */
@@ -42,6 +42,7 @@ export type Attempt = {
   day: string;
   /** epoch ms — ordering within a day */
   at: number;
+  review?: { category: string; defective: boolean; decision: "approve" | "block"; elapsedMs: number };
 };
 
 export type Telemetry = {
@@ -102,11 +103,12 @@ function sanitizeAggs(raw: unknown): AttemptAggs | undefined {
   return Object.keys(out).length > 0 ? out : undefined;
 }
 
-const ELEMENTS: AttemptElement[] = ["quiz", "debug", "diff", "repo", "rubric", "proof"];
+const ELEMENTS: AttemptElement[] = ["quiz", "debug", "diff", "repo", "rubric", "proof", "transcript", "decision", "worktree"];
 
 function sanitizeAttempt(raw: unknown): Attempt | null {
   if (!raw || typeof raw !== "object") return null;
-  const { key, element, score, day, at } = raw as Record<string, unknown>;
+  const { key, element, score, day, at, review } = raw as Record<string, unknown>;
+  const r = review as Attempt["review"];
   if (typeof key !== "string" || key.length === 0 || key.length > 160) return null;
   if (typeof element !== "string" || !ELEMENTS.includes(element as AttemptElement)) {
     return null;
@@ -119,6 +121,7 @@ function sanitizeAttempt(raw: unknown): Attempt | null {
     score: Math.min(1, Math.max(0, n)),
     day: typeof day === "string" ? day.slice(0, 10) : "",
     at: typeof at === "number" && Number.isFinite(at) ? at : 0,
+    ...(r && typeof r.category === "string" && typeof r.defective === "boolean" && (r.decision === "approve" || r.decision === "block") && Number.isFinite(r.elapsedMs) && r.elapsedMs >= 0 ? { review: r } : {}),
   };
 }
 
@@ -169,6 +172,7 @@ export function recordAttempt(input: {
   score: number;
   day: string;
   at?: number;
+  review?: Attempt["review"];
 }): Telemetry {
   const attempt = sanitizeAttempt({
     ...input,
@@ -182,6 +186,26 @@ export function recordAttempt(input: {
 
 export function resetTelemetry() {
   store.reset();
+}
+
+/** First exposure per practice fixture; never used to issue a server certificate. */
+export function practiceReviewerMetrics(t: Telemetry) {
+  const first = new Map<string, Attempt>();
+  for (const a of t.attempts) if (a.review && (!first.has(a.key) || a.at < first.get(a.key)!.at)) first.set(a.key, a);
+  const groups = new Map<string, Attempt[]>();
+  for (const a of first.values()) {
+    const code = a.review!.category;
+    groups.set(code, [...(groups.get(code) ?? []), a]);
+  }
+  return [...groups].map(([code, attempts]) => {
+    const defects = attempts.filter(a => a.review!.defective);
+    const clean = attempts.filter(a => !a.review!.defective);
+    const catches = defects.filter(a => a.score === 1 && a.review!.decision === "block");
+    return { code, count: attempts.length, catchRate: defects.length ? catches.length / defects.length : null,
+      falseAlarmRate: clean.length ? clean.filter(a => a.review!.decision === "block").length / clean.length : null,
+      meanFindMs: catches.length ? catches.reduce((sum, a) => sum + a.review!.elapsedMs, 0) / catches.length : null,
+    };
+  });
 }
 
 /* ------------------------- Cloud sync ------------------------- */

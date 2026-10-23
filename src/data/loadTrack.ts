@@ -1,6 +1,13 @@
 import { wireTrack } from "./wire";
-import { MANIFEST_TRACKS, findLessonMeta } from "./manifest";
+import { MANIFEST_TRACKS, findLessonMeta, findTrackMeta } from "./manifest";
 import type { Track } from "./types";
+
+/** Old URLs continue to open the moved lesson, while disabled builds keep Python unchanged. */
+export function lessonRoute(trackId: string, lessonId: string): LessonRef {
+  if (trackId === "python" && lessonId === "python-llm-api" && findLessonMeta("agent-internals", lessonId)) return { trackId: "agent-internals", lessonId };
+  if (trackId === "agent-internals" && lessonId === "mock-endpoint" && findLessonMeta(trackId, "python-llm-api")) return { trackId, lessonId: "python-llm-api" };
+  return { trackId, lessonId };
+}
 
 /*
  * Lesson content is loaded one track at a time.
@@ -16,6 +23,7 @@ const trackModules = import.meta.glob<Record<string, unknown>>("./track-*.ts");
 
 /** Loads and wires one track, or null when the id is unknown. */
 export function loadTrack(trackId: string): Promise<Track | null> {
+  if (!findTrackMeta(trackId)) return Promise.resolve(null);
   const loader = trackModules[`./track-${trackId}.ts`];
   if (!loader) return Promise.resolve(null);
   return loader().then((mod) => {

@@ -1,0 +1,21 @@
+[
+  {
+    "command": "npm run typecheck",
+    "exitCode": 0,
+    "elapsedSeconds": 14.74,
+    "log": "docs/agentic-typecheck.log"
+  },
+  {
+    "command": "npm test",
+    "exitCode": 0,
+    "elapsedSeconds": 108.68,
+    "log": "docs/agentic-tests.log"
+  },
+  {
+    "command": "npm run build",
+    "exitCode": 137,
+    "elapsedSeconds": null,
+    "log": "docs/agentic-build.log",
+    "note": "Tool reports Killed, exit 137; supervising process also killed before it could record elapsed time."
+  }
+]

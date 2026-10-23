@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync } from "node:fs";
 import postcss from "postcss";
-import tailwindcss from "tailwindcss";
+import tailwindcss from "@tailwindcss/postcss";
 import { describe, expect, it } from "vitest";
 
 /*
@@ -144,8 +144,8 @@ let cachedUtilities: string | null = null;
 async function compiledUtilities(): Promise<string> {
   if (cachedUtilities !== null) return cachedUtilities;
   try {
-    const result = await postcss([tailwindcss(CONFIG_PATH)]).process("@tailwind utilities;", {
-      from: undefined,
+    const result = await postcss([tailwindcss()]).process(readFileSync(CSS_PATH, "utf8"), {
+      from: CSS_PATH,
     });
     cachedUtilities = result.css;
   } catch (error) {

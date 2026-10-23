@@ -23,6 +23,7 @@ export type DiffAttempt = {
   /** 1-based line on the after side */
   line: number | null;
   category: TaxonomyCode | null;
+  decision?: "block" | "approve";
 };
 
 /**
@@ -35,6 +36,8 @@ export function scoreDiffAttempt(
   ex: DiffExercise,
   attempt: DiffAttempt
 ): number {
+  if (!ex.planted) return attempt.decision === "approve" ? 1 : 0;
+  if (attempt.decision === "approve") return 0;
   if (attempt.file !== ex.planted.file) return 0;
   if (attempt.line !== ex.planted.line) return 0.4;
   if (attempt.category !== ex.planted.category) return 0.7;

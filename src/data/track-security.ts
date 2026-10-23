@@ -1,3 +1,4 @@
+import { guardrailsLesson } from "./guardrails";
 import type { Track } from "./types";
 
 export const securityTrack: Track = {
@@ -6,6 +7,7 @@ export const securityTrack: Track = {
   blurb: "Think like an attacker: XSS, SQL injection, CSRF, CORS, and the habits that keep apps safe.",
   numeral: "Ⅸ",
   lessons: [
+    guardrailsLesson,
     {
       id: "xss",
       title: "Cross-Site Scripting (XSS)",

@@ -6,6 +6,8 @@ export const dsaTrack: Track = {
   title: "Data Structures & Algorithms",
   blurb: "Big-O thinking, classic structures, and the patterns interviewers actually ask.",
   numeral: "Ⅳ",
+  optional: true,
+  optionalWhy: "depth track: learn it once you are supervising agents on real code",
   lessons: [
     {
       id: "big-o",

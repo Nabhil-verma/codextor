@@ -31,7 +31,7 @@ import { REVIEW_CODES, taxonomyEntry, type TaxonomyCode } from "../data/bug-taxo
    ═══════════════════════════════════════════════════════════════ */
 
 const ARTIFACT_CODE_FIELD =
-  "block w-full resize-y rounded-xl border border-paper-200 bg-paper-50/70 p-3 font-mono text-[12.5px] leading-relaxed text-ink-900 outline-none transition focus:border-gold-400";
+  "block w-full resize-y rounded-xl border border-paper-200 bg-paper-50/70 p-3 font-mono text-[12.5px] leading-relaxed text-ink-900 outline-hidden transition focus:border-gold-400";
 
 export default function Projects() {
   const progress = useProgressState();
@@ -416,7 +416,7 @@ function MilestoneCard({
                   rows={5}
                   aria-label="The note: what the agent got wrong"
                   placeholder="Describe the failure concretely — what broke, and on which input."
-                  className="mt-1.5 block w-full resize-y rounded-xl border border-paper-200 bg-paper-50/70 p-4 text-sm leading-relaxed text-ink-900 outline-none transition focus:border-gold-400"
+                  className="mt-1.5 block w-full resize-y rounded-xl border border-paper-200 bg-paper-50/70 p-4 text-sm leading-relaxed text-ink-900 outline-hidden transition focus:border-gold-400"
                 />
               </label>
 
@@ -427,7 +427,7 @@ function MilestoneCard({
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value as TaxonomyCode | "")}
-                  className="mt-1.5 block w-full rounded-xl border border-paper-200 bg-paper-50 px-3 py-2 font-mono text-xs text-ink-900 outline-none focus:border-gold-400"
+                  className="mt-1.5 block w-full rounded-xl border border-paper-200 bg-paper-50 px-3 py-2 font-mono text-xs text-ink-900 outline-hidden focus:border-gold-400"
                 >
                   <option value="">choose a category…</option>
                   {REVIEW_CODES.map((code) => (

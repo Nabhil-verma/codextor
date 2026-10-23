@@ -1,6 +1,14 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../tailwind.config.js";
+@source "./";
+@source "../index.html";
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Preserve v3 defaults used by existing component markup. */
+@layer base {
+  *, ::after, ::before, ::backdrop, ::file-selector-button { border-color: var(--color-gray-200, currentColor); }
+  button, [role="button"] { cursor: pointer; }
+}
 
 /* ═══════════════════════════════════════════════════════════════
    Palette. Every Tailwind color in this app resolves through these
@@ -186,13 +194,13 @@ h1, h2, h3 {
 @layer components {
   /* ── Buttons: physical, snappy, accent-lit ── */
   .btn-primary {
-    @apply inline-flex items-center gap-2 rounded-full bg-ink-950 px-6 py-2.5 font-semibold text-paper transition-all duration-300 ease-snap hover:scale-[1.02] hover:shadow-lift focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 active:scale-[0.97];
+    @apply inline-flex items-center gap-2 rounded-full bg-ink-950 px-6 py-2.5 font-semibold text-paper transition-all duration-300 ease-snap hover:scale-[1.02] hover:shadow-lift focus:outline-hidden focus-visible:ring-2 focus-visible:ring-gold-400 active:scale-[0.97];
   }
   .btn-gold {
-    @apply inline-flex items-center gap-2 rounded-full bg-gold-400 px-6 py-2.5 font-semibold text-ink-950 transition-all duration-300 ease-snap hover:scale-[1.02] hover:bg-gold-300 hover:shadow-neon focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 active:scale-[0.97];
+    @apply inline-flex items-center gap-2 rounded-full bg-gold-400 px-6 py-2.5 font-semibold text-ink-950 transition-all duration-300 ease-snap hover:scale-[1.02] hover:bg-gold-300 hover:shadow-neon focus:outline-hidden focus-visible:ring-2 focus-visible:ring-gold-500 active:scale-[0.97];
   }
   .btn-ghost {
-    @apply inline-flex items-center gap-2 rounded-full border border-paper-300/70 bg-paper-50/40 px-6 py-2.5 font-semibold text-ink-900 backdrop-blur-xl transition-all duration-300 ease-snap hover:scale-[1.02] hover:border-gold-400/50 hover:bg-gold-400/5 hover:text-gold-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 active:scale-[0.97];
+    @apply inline-flex items-center gap-2 rounded-full border border-paper-300/70 bg-paper-50/40 px-6 py-2.5 font-semibold text-ink-900 backdrop-blur-xl transition-all duration-300 ease-snap hover:scale-[1.02] hover:border-gold-400/50 hover:bg-gold-400/5 hover:text-gold-600 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-gold-400 active:scale-[0.97];
   }
   .card {
     @apply rounded-2xl border border-paper-200 bg-paper-50;

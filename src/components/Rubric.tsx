@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { evaluateRubric } from "../lib/labGrade";
 import type { RubricExercise } from "../data/types";
@@ -22,7 +22,14 @@ type Props = {
 };
 
 export default function Rubric({ exercise, onScore, onPass }: Props) {
-  const [text, setText] = useState("");
+  const draftKey = exercise.id === "field-report-own-session" ? "clr-own-field-report-v1" : null;
+  const [text, setText] = useState(() => {
+    try { return draftKey ? localStorage.getItem(draftKey) ?? "" : ""; } catch { return ""; }
+  });
+  useEffect(() => {
+    if (!draftKey) return;
+    try { localStorage.setItem(draftKey, text); } catch { /* A blocked store must not prevent reporting. */ }
+  }, [draftKey, text]);
   const [submitted, setSubmitted] = useState(false);
   const [lastSubmitted, setLastSubmitted] = useState("");
   const [claims, setClaims] = useState<Record<string, boolean>>({});
@@ -85,7 +92,7 @@ export default function Rubric({ exercise, onScore, onPass }: Props) {
           rows={9}
           aria-label={exercise.prompt}
           placeholder="Write your deliverable here…"
-          className="block w-full resize-y rounded-2xl border border-paper-200 bg-paper-50/70 p-4 text-sm leading-relaxed text-ink-900 outline-none transition focus:border-gold-400"
+          className="block w-full resize-y rounded-2xl border border-paper-200 bg-paper-50/70 p-4 text-sm leading-relaxed text-ink-900 outline-hidden transition focus:border-gold-400"
         />
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
           <span className="font-mono text-[11px] text-ink-500">
@@ -122,7 +129,7 @@ export default function Rubric({ exercise, onScore, onPass }: Props) {
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             className="px-5 pt-5"
           >
-            <p className="font-mono text-[11px] uppercase tracking-widest text-ink-500">
+            <p role="status" className="font-mono text-[11px] uppercase tracking-widest text-ink-500">
               criteria — {Math.round(result.score * 100)}%
             </p>
             <ul className="mt-3 space-y-2">

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, type MutableRefObject } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { runUserCode } from "../lib/runner";
 import { gradeProofRun } from "../lib/labGrade";
 
@@ -32,9 +32,14 @@ type Props = {
   proof: Proof;
   /** Fires after every run with the dual-run score (0 / 0.5 / 1). */
   onScore?: (score: number) => void;
+  /** Teaching fixtures require a deliberate assertion, not any runtime/syntax error. */
+  assertionPrefix?: string;
+  /** Lets a parent (e.g. the editor's Cmd+Enter) trigger the same dual run. */
+  runRef?: MutableRefObject<(() => void) | null>;
 };
 
-export default function ProofRunner({ proof, onScore }: Props) {
+export default function ProofRunner({ proof, onScore, assertionPrefix, runRef }: Props) {
+  const reduceMotion = useReducedMotion();
   const [running, setRunning] = useState(false);
   const [verdict, setVerdict] = useState<Verdict | null>(null);
 
@@ -44,7 +49,7 @@ export default function ProofRunner({ proof, onScore }: Props) {
     try {
       const buggyRun = await runUserCode(proof.buggy + "\n\n" + proof.test);
       const fixedRun = await runUserCode(proof.fixed + "\n\n" + proof.test);
-      const buggyFailed = buggyRun.error !== null;
+      const buggyFailed = assertionPrefix ? (buggyRun.error?.startsWith(assertionPrefix) ?? false) : buggyRun.error !== null;
       const fixedPassed = fixedRun.error === null;
       const score = gradeProofRun(buggyFailed, fixedPassed);
       setVerdict({ buggyFailed, fixedPassed, score, buggyError: buggyRun.error });
@@ -53,6 +58,8 @@ export default function ProofRunner({ proof, onScore }: Props) {
       setRunning(false);
     }
   };
+
+  if (runRef) runRef.current = () => { void run(); };
 
   const ready =
     proof.buggy.trim().length > 0 &&
@@ -88,7 +95,8 @@ export default function ProofRunner({ proof, onScore }: Props) {
 
       {verdict && (
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
+          role="status"
+          initial={reduceMotion ? false : { opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           className="mt-4 space-y-2"
         >

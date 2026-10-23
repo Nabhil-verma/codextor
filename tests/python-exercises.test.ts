@@ -14,8 +14,7 @@ import { tracks, findLesson } from "../src/data";
  * same learner code would pass or fail on run order.
  */
 
-const python = tracks.find((t) => t.id === "python")!;
-const executed = python.lessons.filter((l) => l.starter && l.lang === "python");
+const executed = tracks.flatMap(t => t.lessons).filter(l => l.starter && l.lang === "python");
 
 /** The fixes a learner is expected to write, applied to each live starter. */
 const REFERENCE_FIXES: Record<string, string> = {
@@ -121,7 +120,7 @@ describe("Python track executes for real", () => {
 
 describe("the LLM fixture is deterministic", () => {
   it("rate-limits exactly twice, then answers — on every run", async () => {
-    const lesson = findLesson("python", "python-llm-api")!;
+    const lesson = tracks.flatMap(t => t.lessons).find(l => l.id === "python-llm-api")!;
     // Three fresh runs of the same probing program must agree, or the lesson
     // would grade on luck.
     const probe = `from client import call_model, RateLimitError

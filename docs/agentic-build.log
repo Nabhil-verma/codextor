@@ -1,0 +1,8 @@
+
+> codextor@0.1.0 build
+> node scripts/sync-pyodide.mjs && node scripts/gen-site.mjs && vite build
+
+sync-pyodide: already up to date
+gen-site: 17 tracks, 103 lessons — syllabus pages, sitemap, llms.txt, manifest and images written (17 tracks · 103 hands-on lessons).
+vite v5.4.21 building for production...
+transforming...

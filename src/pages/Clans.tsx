@@ -16,7 +16,7 @@ import ClanFeed from "../components/clan/ClanFeed";
 const EASE = [0.22, 1, 0.36, 1] as const;
 
 const inputCls =
-  "w-full rounded-xl border border-paper-300 bg-paper-50 px-4 py-2.5 text-sm text-ink-950 outline-none transition placeholder:text-ink-400 focus:border-gold-400 focus:ring-2 focus:ring-gold-400/25";
+  "w-full rounded-xl border border-paper-300 bg-paper-50 px-4 py-2.5 text-sm text-ink-950 outline-hidden transition placeholder:text-ink-400 focus:border-gold-400 focus:ring-2 focus:ring-gold-400/25";
 
 /** Shape returned by `clans.list` / `clans.mine`, defined by the backend. */
 type Guild = ClanView;

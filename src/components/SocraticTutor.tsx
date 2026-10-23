@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Sparkles } from "lucide-react";
 import { loadAiSettings, streamAi, useAiSettings, type TutorMessage } from "../lib/ai";
 import SocraticChatBubble from "./ui/SocraticChatBubble";
+import { validateNarration, type TraceFacts } from "../lib/narrationCheck";
 
 type Props = {
   /** The student's current code in the editor. */
@@ -22,6 +23,8 @@ type Props = {
   openHintTier?: number;
   /** A question to send once automatically, e.g. from the error hand-off. */
   autoAsk?: { id: number; text: string };
+  /** When given, a reply that cites a step, tool or file outside the trace is withheld. */
+  traceFacts?: TraceFacts;
 };
 
 const SOCRATIC_SYSTEM = `You are a Socratic programming tutor. Your ONLY job is to guide the student toward discovering the answer themselves.
@@ -71,6 +74,7 @@ export default function SocraticTutor({
   lang,
   openHintTier,
   autoAsk,
+  traceFacts,
 }: Props) {
   const [messages, setMessages] = useState<TutorMessage[]>([]);
   const [input, setInput] = useState("");
@@ -90,7 +94,7 @@ export default function SocraticTutor({
       const name = settings.tutorName || "student";
       const systemMsg: TutorMessage = {
         role: "system",
-        content: `${SOCRATIC_SYSTEM}\n\nContext: The student${name ? ` (${name})` : ""} is working${topic ? ` on "${topic}"` : ""}.\n\nTheir current code:\n\`\`\`${fenceLang(lang)}\n${clip(code, 2000)}\n\`\`\`\n\n${checkExpr ? `Exercise goal (check expression): ${checkExpr}` : ""}\n${checkHint ? `Exercise hint: ${checkHint}` : ""}\n${openHintTier ? `They have already opened hint tier ${openHintTier} — don't repeat it.` : ""}\n${error ? `Last error: ${error}` : ""}\n${logs?.length ? `Console output:\n${clip(logs.slice(-40).join("\n"), 1500)}` : ""}`,
+        content: `${SOCRATIC_SYSTEM}${traceFacts ? `\nRead-only trace evidence: ${JSON.stringify(traceFacts.events ?? traceFacts)}. Cite only supplied events; do not invent outcomes.` : ""}\n\nContext: The student${name ? ` (${name})` : ""} is working${topic ? ` on "${topic}"` : ""}.\n\nTheir current code:\n\`\`\`${fenceLang(lang)}\n${clip(code, 2000)}\n\`\`\`\n\n${checkExpr ? `Exercise goal (check expression): ${checkExpr}` : ""}\n${checkHint ? `Exercise hint: ${checkHint}` : ""}\n${openHintTier ? `They have already opened hint tier ${openHintTier} — don't repeat it.` : ""}\n${error ? `Last error: ${error}` : ""}\n${logs?.length ? `Console output:\n${clip(logs.slice(-40).join("\n"), 1500)}` : ""}`,
       };
 
       // Sliding window: only the most recent turns go to the provider.
@@ -136,6 +140,7 @@ export default function SocraticTutor({
           newMessages,
           (delta) => {
             streamed += delta;
+            if (traceFacts) return; // Buffer grounded replies until validation completes.
             if (!appended) {
               appended = true;
               setMessages((prev) => [...prev, { role: "assistant", content: streamed }]);
@@ -151,6 +156,10 @@ export default function SocraticTutor({
           },
           settings,
         );
+        if (traceFacts && streamed) {
+          const check = validateNarration(streamed, traceFacts);
+          fail(check.ok ? streamed : `Narration withheld: it cited ${check.unsupported.join(", ")}, which is not in this trace. Re-read the trace directly.`);
+        }
       } catch (err) {
         const errMsg = err instanceof Error ? err.message : "AI call failed";
         fail(
@@ -161,7 +170,7 @@ export default function SocraticTutor({
         scrollToEnd();
       }
     },
-    [code, checkExpr, checkHint, error, logs, messages, topic, lang, openHintTier],
+    [code, checkExpr, checkHint, error, logs, messages, topic, lang, openHintTier, traceFacts],
   );
 
   // The error hand-off asks a question for the learner; fire it exactly once.
@@ -284,7 +293,7 @@ export default function SocraticTutor({
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             rows={2}
-            className="flex-1 resize-none rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-ink-900 outline-none transition-colors duration-300 placeholder:text-ink-400 focus:border-cyan-400/50 focus:bg-white/[0.05]"
+            className="flex-1 resize-none rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-ink-900 outline-hidden transition-colors duration-300 placeholder:text-ink-400 focus:border-cyan-400/50 focus:bg-white/[0.05]"
             placeholder="Ask a question about your code..."
             aria-label="Ask the Socratic tutor"
           />

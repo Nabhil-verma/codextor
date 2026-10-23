@@ -1,0 +1,32 @@
+{"command":"npm run typecheck","exitCode":0,"signal":null,"seconds":11.93,"log":"docs/verification/final/typecheck.log"}
+
+> codextor@0.1.0 typecheck
+> tsc -b --noEmit
+
+
+{"command":"npm test","exitCode":0,"signal":null,"seconds":123.7,"log":"docs/verification/final/test.log"}
+ [32m✓[39m tests/progress-keys.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/ceremony.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/mock-agent-endpoint.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/docs.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/socratic-lang.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m77 passed[39m[22m[90m (77)[39m
+[2m      Tests [22m [1m[32m616 passed[39m[22m[90m (616)[39m
+[2m   Start at [22m 17:49:16
+[2m   Duration [22m 123.05s[2m (transform 4.33s, setup 0ms, import 16.27s, tests 71.23s, environment 24.23s)[22m
+
+
+{"command":"npm run build","exitCode":0,"signal":null,"seconds":11.31,"log":"docs/verification/final/build.log"}
+dist/assets/track-agents-82wj416q.js                52.19 kB │ gzip:  18.11 kB
+dist/assets/Lesson-wuLYkepK.js                     106.96 kB │ gzip:  33.50 kB
+dist/assets/tsRunner-BIBhcDhM.js                   440.03 kB │ gzip:  48.17 kB
+dist/assets/CodeMirrorEditor-DYP9DZkI.js           454.63 kB │ gzip: 159.38 kB
+dist/assets/index-CPvijvqr.js                      615.51 kB │ gzip: 195.63 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 8.05s
+

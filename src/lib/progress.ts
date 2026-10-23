@@ -1,3 +1,4 @@
+import { canonicalProgressKey } from "./progressKeys";
 import { createLocalStore, readRecord, useLocalStore } from "./localStore";
 
 const KEY = "clr-progress-v2";
@@ -14,7 +15,7 @@ export const EMPTY_PROGRESS: Progress = { completed: {} };
 
 /** Stable part of a stored key: `web/html!2026-09-01` → `web/html`. */
 export function lessonIdOf(key: string): string {
-  return key.split("!")[0];
+  return canonicalProgressKey(key.split("!")[0]);
 }
 
 /* ------------------------------------------------------------------ */
@@ -111,7 +112,7 @@ export function recordLesson(key: string, score: number, dateKey: string): Progr
   const p = loadProgress();
   const best = scoreFor(p, key);
   if (score <= best) return p;
-  p.completed[key + "!" + dateKey] = score;
+  p.completed[canonicalProgressKey(key) + "!" + dateKey] = score;
   saveProgress(p);
   return p;
 }
@@ -120,7 +121,7 @@ export function recordLesson(key: string, score: number, dateKey: string): Progr
 export function scoreFor(p: Progress, key: string): number {
   let best = 0;
   for (const [k, v] of Object.entries(p.completed)) {
-    if (lessonIdOf(k) === key) best = Math.max(best, v);
+    if (lessonIdOf(k) === canonicalProgressKey(key)) best = Math.max(best, v);
   }
   return best;
 }

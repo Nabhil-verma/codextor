@@ -166,4 +166,27 @@ export default defineSchema({
     createdAt: v.number(),
   })
     .index("by_clan_time", ["clanId", "createdAt"]),
+
+  /**
+   * Unseen-exercise attempts for the reviewer certificate. Start time and the
+   * "seen before" flag are set on the server, never taken from the client.
+   */
+  unseenAttempts: defineTable({
+    userId: v.id("users"),
+    exerciseId: v.string(),
+    seenBefore: v.boolean(),
+    startedAt: v.number(),
+    finishedAt: v.optional(v.number()),
+    score: v.optional(v.number()),
+    bankVersion: v.optional(v.number()),
+    itemIndex: v.optional(v.number()),
+    shownAt: v.optional(v.number()),
+    decisions: v.optional(v.array(v.object({ correct: v.boolean(), shownAtMs: v.number(), decidedAtMs: v.number() }))),
+    accepted: v.optional(v.boolean()),
+    issues: v.optional(v.array(v.string())),
+  }).index("by_user", ["userId"]),
+  reviewerCertificates: defineTable({
+    userId: v.id("users"), attemptId: v.id("unseenAttempts"),
+    bankVersion: v.number(), issuedAt: v.number(), score: v.number(),
+  }).index("by_user", ["userId"]),
 });

@@ -4,4 +4,4 @@
  * for validation lives here. tests/site-gen.test.ts fails if it drifts.
  */
 export const TRACK_COUNT = 17;
-export const TOTAL_LESSONS = 103;
+export const TOTAL_LESSONS = 108;

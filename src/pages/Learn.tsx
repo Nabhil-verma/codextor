@@ -379,7 +379,7 @@ export default function Learn() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={`Search ${totalLessonCount} lessons — 'hooks', 'flexbox', 'async'…`}
-                className="w-full bg-transparent text-sm text-ink-950 outline-none placeholder:text-ink-400"
+                className="w-full bg-transparent text-sm text-ink-950 outline-hidden placeholder:text-ink-400"
               />
               {filtering && (
                 <button

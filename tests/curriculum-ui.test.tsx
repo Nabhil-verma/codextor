@@ -100,6 +100,11 @@ afterEach(() => {
 });
 
 describe("the lesson step flow", () => {
+  it("shows the review date on the learner-facing agent lesson", async () => {
+    await renderLesson("agents", "specs-and-prompts");
+    expect(screen.getByText(/last reviewed/).textContent).toContain("2026-10");
+    expect(document.querySelector('time[datetime="2026-10"]')).toBeTruthy();
+  });
   it("renders the break-and-fix lab for a `debug` lesson", async () => {
     await renderLesson("state", "state-shapes");
 

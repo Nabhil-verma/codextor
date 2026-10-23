@@ -190,6 +190,7 @@ const timeout = 60;        // incoming branch's version
     },
     {
       id: "git-workflow-lab",
+      worktreeLab: true,
       title: "The Git Workflow Lab",
       minutes: 12,
       sort: {

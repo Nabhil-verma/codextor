@@ -1,3 +1,4 @@
+import { recordAttempt } from "../lib/telemetry";
 import { useRef, useState } from "react";
 import { AnimatePresence, motion, useAnimationControls, useReducedMotion } from "framer-motion";
 import MultiFile from "./MultiFile";
@@ -26,6 +27,7 @@ export default function DiffLab({ exercise, onScore, onPass }: Props) {
   const [activeFile, setActiveFile] = useState(0);
   const [picked, setPicked] = useState<{ file: string; line: number } | null>(null);
   const [category, setCategory] = useState<TaxonomyCode | null>(null);
+  const [decision, setDecision] = useState<"block" | "approve">("block");
   const [score, setScore] = useState<number | null>(null);
   const [attempts, setAttempts] = useState(0);
   const [revealed, setRevealed] = useState(0);
@@ -33,15 +35,20 @@ export default function DiffLab({ exercise, onScore, onPass }: Props) {
   const shake = useAnimationControls();
   const reduceMotion = useReducedMotion();
   const passedOnce = useRef(false);
+  const shownAt = useRef(Date.now());
 
   const solved = score === 1;
 
   const submit = () => {
-    if (!picked || !category) return;
+    if (decision === "block" && (!picked || !category)) return;
     const next = scoreDiffAttempt(exercise, {
-      file: picked.file,
-      line: picked.line,
+      file: picked?.file ?? null,
+      line: picked?.line ?? null,
+      decision,
       category,
+    });
+    recordAttempt({ key: `review/${exercise.id}`, element: "diff", score: next, day: new Date().toISOString().slice(0, 10),
+      review: { category: exercise.planted?.category ?? "clean", defective: exercise.planted !== null, decision, elapsedMs: Math.max(0, Date.now() - shownAt.current) },
     });
     setScore(next);
     setAttempts((a) => a + 1);
@@ -66,6 +73,7 @@ export default function DiffLab({ exercise, onScore, onPass }: Props) {
   };
 
   const reset = () => {
+    setDecision("block");
     setPicked(null);
     setCategory(null);
     setScore(null);
@@ -79,7 +87,7 @@ export default function DiffLab({ exercise, onScore, onPass }: Props) {
       : score >= 1
         ? {
             tone: "pass" as const,
-            text: "Blocked correctly. " + exercise.planted.why,
+            text: exercise.planted ? "Blocked correctly. " + exercise.planted.why : "Approved correctly. " + exercise.approvalWhy,
           }
         : score >= 0.7
           ? {
@@ -93,7 +101,7 @@ export default function DiffLab({ exercise, onScore, onPass }: Props) {
               }
             : {
                 tone: "fail" as const,
-                text: "Not this file — the blocker lives elsewhere in the PR. Read the diff before clicking.",
+                text: decision === "approve" ? "This approval missed a blocker. Recheck the contract and changed behavior." : "This block is not supported by the answer key. Check scope and behavior, including whether approval is justified.",
               };
 
   return (
@@ -150,6 +158,10 @@ export default function DiffLab({ exercise, onScore, onPass }: Props) {
         />
       </div>
 
+      <fieldset className="px-5 pt-5"><legend className="font-semibold text-ink-950">Review decision</legend>
+        <label className="mr-5 text-ink-700"><input type="radio" name={`decision-${exercise.id}`} checked={decision === "block"} onChange={() => setDecision("block")} /> Block with evidence</label>
+        <label className="text-ink-700"><input type="radio" name={`decision-${exercise.id}`} checked={decision === "approve"} onChange={() => setDecision("approve")} /> Approve: no blocking defect</label>
+      </fieldset>
       {/* Category picker */}
       <div className="px-5 pt-5">
         <p className="font-mono text-[11px] uppercase tracking-widest text-ink-500">
@@ -189,7 +201,7 @@ export default function DiffLab({ exercise, onScore, onPass }: Props) {
           <button
             type="button"
             onClick={submit}
-            disabled={!picked || !category}
+            disabled={decision === "block" && (!picked || !category)}
             className="btn-primary !px-5 !py-2 text-sm disabled:opacity-50"
           >
             {attempts === 0 ? "Submit review" : "Submit again"}
@@ -212,10 +224,11 @@ export default function DiffLab({ exercise, onScore, onPass }: Props) {
         {verdict && (
           <motion.div
             key={verdict.tone + String(score)}
-            initial={{ opacity: 0, y: 10 }}
+            initial={reduceMotion ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
+            exit={reduceMotion ? undefined : { opacity: 0, y: -8 }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            role="status"
             className={
               "mx-5 mt-4 rounded-2xl border px-5 py-4 text-sm " +
               (verdict.tone === "pass"

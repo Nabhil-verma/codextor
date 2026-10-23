@@ -135,6 +135,7 @@ export type DiffExercise = {
   /** the agent's PR description — plausible, not necessarily true */
   brief: string;
   files: DiffFile[];
+  /** Null means an approve-worthy PR; there is no hidden blocking line. */
   planted: {
     file: string;
     /** 1-based line on the `after` side */
@@ -142,7 +143,8 @@ export type DiffExercise = {
     category: TaxonomyCode;
     /** reference reasoning, revealed after the attempt */
     why: string;
-  };
+  } | null;
+  approvalWhy?: string;
   distractors: string[];
   hints: Hint[];
 };
@@ -213,6 +215,14 @@ export type Lesson = {
   id: string;
   title: string;
   minutes: number;
+  /** Last content audit, month-grain (YYYY-MM). Duration remains an estimate. */
+  reviewed?: string;
+  /** Depends on agent/tool capabilities; triggers the 90-day review warning. */
+  toolDependent?: boolean;
+  /** V2-PATCH §9.1 deadline; distinct from the last review month. */
+  reviewBy?: string;
+  /** Named product references must be dated; generic concepts need no reference. */
+  toolRefs?: { name: string; asOf: string }[];
   /** Reading lessons have no runnable exercise — body + quiz only */
   reading?: boolean;
   /**
@@ -238,12 +248,21 @@ export type Lesson = {
   sandbox?: boolean;
   /** Mounts the guided Git terminal simulator instead of the code playground */
   gitSim?: GitObjective[];
+  /** Flagged multi-checkout git lab (VITE_FLAG_GIT_WORKTREE_LAB=1); UI in components/WorktreeLab */
+  worktreeLab?: boolean;
   /** Predict-the-output challenges shown after the body */
   predict?: PredictStep[];
   /** Drag-and-drop ordering challenge shown before the quiz */
   sort?: SortChallenge;
   /** Multi-file pull-request review (V2.1 diff/click grader) */
   diff?: DiffExercise;
+  /** Review Gym uses the same partial-credit DiffExercise contract. */
+  reviews?: DiffExercise[];
+  catchTests?: import("./catch-agent").CatchExercise[];
+  /** First-fault transcripts: pick the first bad step, then classify it */
+  transcripts?: import("./transcripts").TranscriptCase[];
+  /** Policy-based decision artifacts graded by exact match */
+  decisions?: import("./decision-artifacts").DecisionArtifact[];
   /** Repo archaeology: locate behaviour in an unfamiliar codebase */
   repo?: RepoExercise;
   /** Written deliverable graded by rubric (auto checks + judgment) */

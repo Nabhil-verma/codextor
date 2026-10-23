@@ -289,7 +289,7 @@ export default function CommandPalette() {
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-start justify-center bg-ink-950/50 p-4 pt-[12vh] backdrop-blur-sm"
+      className="fixed inset-0 z-[60] flex items-start justify-center bg-ink-950/50 p-4 pt-[12vh] backdrop-blur-xs"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) setOpen(false);
       }}
@@ -311,7 +311,7 @@ export default function CommandPalette() {
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={onKeyDown}
           placeholder="Search lessons, tracks, commands…"
-          className="w-full border-b border-paper-200 bg-transparent px-5 py-4 text-base text-ink-950 outline-none placeholder:text-ink-400"
+          className="w-full border-b border-paper-200 bg-transparent px-5 py-4 text-base text-ink-950 outline-hidden placeholder:text-ink-400"
         />
         <ul id="cmdk-listbox" role="listbox" aria-label="Results" className="max-h-80 overflow-y-auto py-2">
           {results.length === 0 && (

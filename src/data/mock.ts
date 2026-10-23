@@ -1,3 +1,4 @@
+import { TRACK_COUNT, TOTAL_LESSONS } from "./manifest";
 import type {
   ChatMessage,
   CourseModule,
@@ -12,8 +13,8 @@ import type {
 /** Sample values for local previews only. Replace with your Convex queries. */
 
 export const sampleStats: StatItem[] = [
-  { value: "15", label: "Tracks" },
-  { value: "74+", label: "Hands-on lessons" },
+  { value: String(TRACK_COUNT), label: "Tracks" },
+  { value: String(TOTAL_LESSONS), label: "Hands-on lessons" },
   { value: "0", label: "Cost to learn" },
   { value: "13", label: "Badges to earn" },
 ];

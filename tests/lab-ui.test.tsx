@@ -134,7 +134,7 @@ describe("the Wave 1 additions render", () => {
     await renderLesson("workflow", "reviewing-diffs");
 
     expect(screen.getByRole("heading", { name: /·\s*Review/ })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Submit review/ })).toBeTruthy();
+    expect(screen.getAllByRole("button", { name: /Submit review/ })).toHaveLength(15);
   });
 
   it("renders the testing station's diff alongside its own repair lab", async () => {

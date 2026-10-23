@@ -120,7 +120,7 @@ export default function CodeEditor({
             tab.onBlur();
             onBlur?.();
           }}
-          className="block w-full resize-y bg-ink-950 p-5 font-mono text-[13px] leading-relaxed text-paper-100 outline-none placeholder:text-ink-600"
+          className="block w-full resize-y bg-ink-950 p-5 font-mono text-[13px] leading-relaxed text-paper-100 outline-hidden placeholder:text-ink-600"
           placeholder={placeholder}
         />
       )}

@@ -124,7 +124,7 @@ export default function RepoLab({ exercise, onScore, onPass }: Props) {
                   <label className="text-xs text-ink-600">
                     file
                     <select
-                      className="mt-1 block rounded-lg border border-paper-200 bg-paper-50 px-3 py-2 font-mono text-xs text-ink-900 outline-none focus:border-gold-400"
+                      className="mt-1 block rounded-lg border border-paper-200 bg-paper-50 px-3 py-2 font-mono text-xs text-ink-900 outline-hidden focus:border-gold-400"
                       value={picked?.file ?? ""}
                       onChange={(e) =>
                         setLocate((l) => ({ ...l, [i]: { file: e.target.value, symbol: "" } }))
@@ -141,7 +141,7 @@ export default function RepoLab({ exercise, onScore, onPass }: Props) {
                   <label className="text-xs text-ink-600">
                     function
                     <select
-                      className="mt-1 block rounded-lg border border-paper-200 bg-paper-50 px-3 py-2 font-mono text-xs text-ink-900 outline-none focus:border-gold-400 disabled:opacity-50"
+                      className="mt-1 block rounded-lg border border-paper-200 bg-paper-50 px-3 py-2 font-mono text-xs text-ink-900 outline-hidden focus:border-gold-400 disabled:opacity-50"
                       value={picked?.symbol ?? ""}
                       disabled={!picked}
                       onChange={(e) =>

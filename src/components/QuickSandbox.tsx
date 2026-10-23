@@ -63,7 +63,7 @@ export default function QuickSandbox() {
         onKeyDown={onKey}
         spellCheck={false}
         rows={6}
-        className="block w-full resize-y bg-ink-950 p-4 font-mono text-[13px] leading-relaxed text-paper-100 outline-none placeholder:text-ink-600"
+        className="block w-full resize-y bg-ink-950 p-4 font-mono text-[13px] leading-relaxed text-paper-100 outline-hidden placeholder:text-ink-600"
         placeholder="Write some JavaScript…"
       />
       <div className="border-t border-ink-800 bg-ink-950 p-4 font-mono text-[13px] leading-relaxed">

@@ -1,4 +1,5 @@
 import type { Track } from "./types";
+import { flagEnabled } from "../lib/flags";
 
 export const pythonTrack: Track = {
   id: "python",
@@ -600,3 +601,9 @@ except BadRequestError:
     },
   ],
 };
+
+/** Keep the authored lesson and stable ID; move its registration only when the flag is enabled. */
+export const pythonLlmLesson = pythonTrack.lessons.find(l => l.id === "python-llm-api")!;
+if (flagEnabled("agentInternals")) {
+  pythonTrack.lessons = pythonTrack.lessons.filter(l => l.id !== pythonLlmLesson.id);
+}

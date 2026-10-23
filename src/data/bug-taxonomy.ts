@@ -5,9 +5,9 @@
    whether the defect lives in an executed program (DebugLab) or in
    a multi-file review surface (DiffLab / RepoLab).
 
-   V2's six codes are the blocker set for executed code. Review adds
-   four that only exist in a diff: scope creep, a missing or vacuous
-   test, name/comment drift, and leftover debug code.
+   All ten codes have executed and diff exercises. Scope creep, vacuous
+   tests, misleading units and leftover debug bypasses can violate executable
+   contracts too; they are not restricted to textual review.
    ═══════════════════════════════════════════════════════════════ */
 
 export type TaxonomyCode =
@@ -72,28 +72,24 @@ export const BUG_TAXONOMY: TaxonomyEntry[] = [
     label: "Scope creep / unrelated change",
     blurb:
       "The diff quietly touches files or behaviour the task never mentioned.",
-    reviewOnly: true,
   },
   {
     code: "TG",
     label: "Missing or vacuous test",
     blurb:
       "The change ships without a test — or with a \"test\" that asserts nothing.",
-    reviewOnly: true,
   },
   {
     code: "NM",
     label: "Misleading name / comment drift",
     blurb:
       "The identifier or comment now says something false about behaviour.",
-    reviewOnly: true,
   },
   {
     code: "DL",
     label: "Leftover debug / dead code",
     blurb:
       "A stray log, commented-out block, or dead flag. Blocks only when it leaks data or bypasses a guard.",
-    reviewOnly: true,
   },
 ];
 

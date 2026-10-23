@@ -1,6 +1,8 @@
+import { REVIEW_BANK, REVIEW_BANK_VERSION, publicReviewItem } from "./reviewerBank";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { MIN_ATTEMPT_MS_PER_ITEM, plausibilityIssues, reviewerMetrics, type ExerciseAttempt } from "../lib/reviewerCertificate";
 
 /**
  * One shipped milestone: the day it was claimed, what was ticked off, and —
@@ -395,5 +397,101 @@ export const wipe = mutation({
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .unique();
     if (row) await ctx.db.delete(row._id);
+    const attempts = await ctx.db.query("unseenAttempts").withIndex("by_user", q => q.eq("userId", userId)).take(101);
+    for (const attempt of attempts) await ctx.db.delete(attempt._id);
+    const certificate = await ctx.db.query("reviewerCertificates").withIndex("by_user", q => q.eq("userId", userId)).unique();
+    if (certificate) await ctx.db.delete(certificate._id);
+  },
+});
+
+/* Server-assigned, server-graded reviewer assessment. Client submits choices only. */
+export const startUnseenExercise = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("sign in to earn a certificate");
+    const rows = await ctx.db.query("unseenAttempts").withIndex("by_user", q => q.eq("userId", userId)).take(101);
+    const active = rows.find(r => r.bankVersion === REVIEW_BANK_VERSION && r.finishedAt === undefined);
+    if (active) return { attemptId: active._id, seenBefore: active.seenBefore, item: publicReviewItem(active.exerciseId, active.itemIndex ?? 0), minReadMs: MIN_ATTEMPT_MS_PER_ITEM };
+    if (rows.length >= 100) throw new Error("Assessment history limit reached; reset progress to clear it.");
+    const exercise = REVIEW_BANK.find(e => !rows.some(r => r.exerciseId === e.id)) ?? REVIEW_BANK[0];
+    const seenBefore = rows.some(r => r.exerciseId === exercise.id);
+    const now = Date.now();
+    const attemptId = await ctx.db.insert("unseenAttempts", {
+      userId, exerciseId: exercise.id, bankVersion: REVIEW_BANK_VERSION, seenBefore,
+      startedAt: now, shownAt: now, itemIndex: 0, decisions: [],
+    });
+    return { attemptId, seenBefore, item: publicReviewItem(exercise.id, 0), minReadMs: MIN_ATTEMPT_MS_PER_ITEM };
+  },
+});
+
+export const finishUnseenExercise = mutation({
+  args: { attemptId: v.id("unseenAttempts"), itemIndex: v.number(), answer: v.number() },
+  handler: async (ctx, { attemptId, itemIndex, answer }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("sign in to earn a certificate");
+    const row = await ctx.db.get(attemptId);
+    if (!row || row.userId !== userId) throw new Error("not your attempt");
+    if (row.finishedAt !== undefined) throw new Error("attempt already finished");
+    const exercise = REVIEW_BANK.find(e => e.id === row.exerciseId);
+    if (!exercise || row.bankVersion !== REVIEW_BANK_VERSION) throw new Error("assessment version expired; start a new assessment");
+    if (itemIndex !== row.itemIndex) throw new Error("stale assessment item");
+    const item = exercise.items[itemIndex];
+    if (!item || !Number.isInteger(answer) || answer < 0 || answer >= item.options.length) throw new Error("invalid answer");
+    const now = Date.now();
+    const shownAt = row.shownAt ?? row.startedAt;
+    if (now - shownAt < MIN_ATTEMPT_MS_PER_ITEM) throw new Error("Read the item before submitting; minimum 20 seconds per item.");
+    const decisions = [...(row.decisions ?? []), { correct: answer === item.answer, shownAtMs: shownAt, decidedAtMs: now }];
+    if (decisions.length !== itemIndex + 1) throw new Error("invalid assessment history");
+    if (itemIndex + 1 < exercise.items.length) {
+      await ctx.db.patch(attemptId, { decisions, itemIndex: itemIndex + 1, shownAt: now });
+      return { done: false as const, item: publicReviewItem(row.exerciseId, itemIndex + 1), minReadMs: MIN_ATTEMPT_MS_PER_ITEM };
+    }
+    const metrics = reviewerMetrics(decisions);
+    const attempt: ExerciseAttempt = { exerciseId: row.exerciseId, seenBefore: row.seenBefore, score: metrics.accuracy, startedAtMs: row.startedAt, finishedAtMs: now, decisions };
+    const issues = plausibilityIssues(attempt);
+    const accepted = issues.length === 0;
+    await ctx.db.patch(attemptId, { finishedAt: now, score: metrics.accuracy, decisions, accepted, issues });
+    let certificate = await ctx.db.query("reviewerCertificates").withIndex("by_user", q => q.eq("userId", userId)).unique();
+    if (!certificate && accepted && !row.seenBefore && metrics.accuracy >= 0.8) {
+      const id = await ctx.db.insert("reviewerCertificates", { userId, attemptId, bankVersion: REVIEW_BANK_VERSION, issuedAt: now, score: metrics.accuracy });
+      certificate = await ctx.db.get(id);
+    }
+    return { done: true as const, accepted, issues, metrics, score: metrics.accuracy, certificate: certificate ? { id: certificate._id, issuedAt: certificate.issuedAt, score: certificate.score } : null };
+  },
+});
+
+export const reviewerStatus = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return null;
+    const rows = await ctx.db.query("unseenAttempts").withIndex("by_user", q => q.eq("userId", userId)).take(101);
+    const certificate = await ctx.db.query("reviewerCertificates").withIndex("by_user", q => q.eq("userId", userId)).unique();
+    const graded = rows.filter(r => r.bankVersion === REVIEW_BANK_VERSION && r.finishedAt !== undefined);
+    const decisions = graded.flatMap(r => r.decisions ?? []);
+    let defects = 0, caught = 0, clean = 0, falseAlarms = 0;
+    const byCode: Record<string, { defects: number; caught: number; clean: number; falseAlarms: number; times: number[] }> = {};
+    for (const row of graded) {
+      const exercise = REVIEW_BANK.find(e => e.id === row.exerciseId);
+      for (const [i, d] of (row.decisions ?? []).entries()) {
+        const item = exercise?.items[i];
+        if (!item) continue;
+        const group = byCode[item.category] ??= { defects: 0, caught: 0, clean: 0, falseAlarms: 0, times: [] };
+        group.times.push(Math.max(0, d.decidedAtMs - d.shownAtMs));
+        if (item.defective) { defects++; group.defects++; if (d.correct) { caught++; group.caught++; } }
+        else { clean++; group.clean++; if (!d.correct) { falseAlarms++; group.falseAlarms++; } }
+      }
+    }
+    return {
+      metrics: { ...reviewerMetrics(decisions), catchRate: defects ? caught / defects : null, falseAlarmRate: clean ? falseAlarms / clean : null },
+      certificate: certificate ? { id: certificate._id, issuedAt: certificate.issuedAt, score: certificate.score } : null,
+      byCode: Object.entries(byCode).map(([code, g]) => ({ code, count: g.times.length,
+        catchRate: g.defects ? g.caught / g.defects : null,
+        falseAlarmRate: g.clean ? g.falseAlarms / g.clean : null,
+        meanDecisionMs: g.times.reduce((a, b) => a + b, 0) / g.times.length,
+      })),
+      attempts: graded.length,
+    };
   },
 });

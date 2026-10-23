@@ -97,7 +97,7 @@ describe("every route renders", () => {
   it("/ — the public landing page", async () => {
     open("#/");
     expect(
-      await screen.findByRole("heading", { name: "The code teacher that runs your code" }, CHUNK)
+      await screen.findByRole("heading", { name: "Judgment over authorship" }, CHUNK)
     ).toBeTruthy();
   });
 
