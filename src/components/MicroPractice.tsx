@@ -425,15 +425,13 @@ function SpotCard({ q, onSolved }: { q: SpotQ; onSolved: () => void }) {
 export default function MicroPractice() {
   const [idx, setIdx] = useState(0);
   const [solved, setSolved] = useState<boolean[]>(() => QUESTIONS.map(() => false));
-  const [hintOpen, setHintOpen] = useState(false);
+  const [hintFor, setHintFor] = useState<number | null>(null);
 
   const q = QUESTIONS[idx];
   const solvedCount = solved.filter(Boolean).length;
   const allSolved = solvedCount === QUESTIONS.length;
-
-  useEffect(() => {
-    setHintOpen(false);
-  }, [idx]);
+  // The hint is open only for the question it was opened on.
+  const hintOpen = hintFor === idx;
 
   const markSolved = (i: number) =>
     setSolved((s) => (s[i] ? s : s.map((v, j) => (j === i ? true : v))));
@@ -441,7 +439,7 @@ export default function MicroPractice() {
   const restart = () => {
     setSolved(QUESTIONS.map(() => false));
     setIdx(0);
-    setHintOpen(false);
+    setHintFor(null);
   };
 
   return (
@@ -522,7 +520,7 @@ export default function MicroPractice() {
         {q.type === "spot" && <SpotCard key={q.id} q={q} onSolved={() => markSolved(idx)} />}
 
         <div className="mt-4">
-          <HintRow hint={q.hint} open={hintOpen} onToggle={() => setHintOpen((v) => !v)} />
+          <HintRow hint={q.hint} open={hintOpen} onToggle={() => setHintFor(hintOpen ? null : idx)} />
         </div>
       </div>
 

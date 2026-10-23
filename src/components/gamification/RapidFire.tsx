@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   AnimatePresence,
   motion,
@@ -6,6 +6,7 @@ import {
   useReducedMotion,
 } from "framer-motion";
 import type { QuizQuestion } from "../../data/types";
+import { useShuffledOptions } from "../../lib/shuffle";
 
 /* ═══════════════════════════════════════════════════════════════
    Same questions as the standard quiz, played as a timed gauntlet:
@@ -21,11 +22,14 @@ export default function RapidFire({
   questions,
   onScore,
   seconds = 10,
+  rng,
 }: {
   questions: QuizQuestion[];
   onScore: (score: number) => void;
   /** Seconds allowed per question before it counts as a miss */
   seconds?: number;
+  /** Random source for each question's option order. Injected by tests. */
+  rng?: () => number;
 }) {
   const [idx, setIdx] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
@@ -48,47 +52,49 @@ export default function RapidFire({
 
   /* Latest-ref pattern: the countdown effect must call the *current* answer
      handler without re-subscribing on every keystroke of state. */
-  answerRef.current = (choice: number | null) => {
-    if (locked || finished) return;
-    setLocked(true);
-    setPicked(choice);
+  useLayoutEffect(() => {
+    answerRef.current = (choice: number | null) => {
+      if (locked || finished) return;
+      setLocked(true);
+      setPicked(choice);
 
-    if (choice === q.answer) {
-      setCorrect((c) => c + 1);
-      setCombo((c) => {
-        const next = c + 1;
-        setBestCombo((b) => Math.max(b, next));
-        return next;
-      });
-      if (!reduceMotion) {
-        void pop.start({
-          scale: [1, 1.035, 1],
-          transition: { duration: 0.32, ease: "easeOut" },
+      if (choice === q.answer) {
+        setCorrect((c) => c + 1);
+        setCombo((c) => {
+          const next = c + 1;
+          setBestCombo((b) => Math.max(b, next));
+          return next;
         });
+        if (!reduceMotion) {
+          void pop.start({
+            scale: [1, 1.035, 1],
+            transition: { duration: 0.32, ease: "easeOut" },
+          });
+        }
+      } else {
+        setCombo(0);
+        if (!reduceMotion) {
+          void shake.start({
+            x: [0, -11, 11, -7, 7, -3, 0],
+            transition: { duration: 0.42 },
+          });
+        }
       }
-    } else {
-      setCombo(0);
-      if (!reduceMotion) {
-        void shake.start({
-          x: [0, -11, 11, -7, 7, -3, 0],
-          transition: { duration: 0.42 },
-        });
-      }
-    }
 
-    window.setTimeout(() => {
-      const next = idxRef.current + 1;
-      setPicked(null);
-      setLocked(false);
-      setRemaining(seconds);
-      if (next >= questions.length) {
-        setFinished(true);
-        return;
-      }
-      idxRef.current = next;
-      setIdx(next);
-    }, REVEAL_MS);
-  };
+      window.setTimeout(() => {
+        const next = idxRef.current + 1;
+        setPicked(null);
+        setLocked(false);
+        setRemaining(seconds);
+        if (next >= questions.length) {
+          setFinished(true);
+          return;
+        }
+        idxRef.current = next;
+        setIdx(next);
+      }, REVEAL_MS);
+    };
+  });
 
   /* Countdown. Hitting zero locks the question as a miss. */
   useEffect(() => {
@@ -262,45 +268,13 @@ export default function RapidFire({
         >
           <p className="font-display text-lg font-medium text-ink-950">{q.q}</p>
 
-          <div className="mt-4 grid gap-2 sm:grid-cols-2">
-            {q.options.map((opt, oi) => {
-              const chosen = picked === oi;
-              const correctOpt = locked && oi === q.answer;
-              const wrongOpt = locked && chosen && oi !== q.answer;
-              return (
-                <motion.button
-                  key={oi}
-                  type="button"
-                  disabled={locked}
-                  onClick={() => answerRef.current(oi)}
-                  className={
-                    "flex items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm transition " +
-                    (correctOpt
-                      ? "border-gold-400 bg-gold-400/15 text-ink-950"
-                      : wrongOpt
-                        ? "border-red-400 bg-red-50 text-red-700"
-                        : locked
-                          ? "border-paper-200 text-ink-400"
-                          : "border-paper-200 text-ink-800 hover:-translate-y-0.5 hover:border-gold-400/70 hover:bg-paper-100 hover:shadow-lift")
-                  }
-                  animate={
-                    correctOpt
-                      ? { scale: [1, 1.03, 1] }
-                      : wrongOpt
-                        ? { x: [0, -5, 5, 0] }
-                        : { scale: 1, x: 0 }
-                  }
-                  transition={{ duration: 0.35 }}
-                  whileTap={locked ? undefined : { scale: 0.98 }}
-                >
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-ink-950 font-mono text-[10px] font-bold text-gold-300">
-                    {LABELS[oi]}
-                  </span>
-                  {opt}
-                </motion.button>
-              );
-            })}
-          </div>
+          <RapidChoices
+            q={q}
+            picked={picked}
+            locked={locked}
+            onPick={(authored) => answerRef.current(authored)}
+            rng={rng}
+          />
         </motion.div>
       </AnimatePresence>
 
@@ -321,5 +295,69 @@ export default function RapidFire({
         )}
       </AnimatePresence>
     </motion.div>
+  );
+}
+
+/**
+ * The answer buttons in this question's shuffled order. The question block is
+ * keyed by index, so every question mounts its own child and draws its own
+ * order; a parent re-render (the clock ticking) never redraws it. Picks are
+ * reported as authored indices, so scoring is unchanged.
+ */
+function RapidChoices({
+  q,
+  picked,
+  locked,
+  onPick,
+  rng,
+}: {
+  q: QuizQuestion;
+  picked: number | null;
+  locked: boolean;
+  onPick: (authoredIndex: number) => void;
+  rng?: () => number;
+}) {
+  const { view } = useShuffledOptions(q.options, q.answer, rng);
+  return (
+    <div className="mt-4 grid gap-2 sm:grid-cols-2">
+      {view.options.map((opt, oi) => {
+        const authored = view.order[oi];
+        const chosen = picked === authored;
+        const correctOpt = locked && authored === q.answer;
+        const wrongOpt = locked && chosen && authored !== q.answer;
+        return (
+          <motion.button
+            key={authored}
+            type="button"
+            disabled={locked}
+            onClick={() => onPick(authored)}
+            className={
+              "flex items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm transition " +
+              (correctOpt
+                ? "border-gold-400 bg-gold-400/15 text-ink-950"
+                : wrongOpt
+                  ? "border-red-400 bg-red-50 text-red-700"
+                  : locked
+                    ? "border-paper-200 text-ink-400"
+                    : "border-paper-200 text-ink-800 hover:-translate-y-0.5 hover:border-gold-400/70 hover:bg-paper-100 hover:shadow-lift")
+            }
+            animate={
+              correctOpt
+                ? { scale: [1, 1.03, 1] }
+                : wrongOpt
+                  ? { x: [0, -5, 5, 0] }
+                  : { scale: 1, x: 0 }
+            }
+            transition={{ duration: 0.35 }}
+            whileTap={locked ? undefined : { scale: 0.98 }}
+          >
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-ink-950 font-mono text-[10px] font-bold text-gold-300">
+              {LABELS[oi]}
+            </span>
+            {opt}
+          </motion.button>
+        );
+      })}
+    </div>
   );
 }

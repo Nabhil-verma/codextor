@@ -110,8 +110,10 @@ export default function CodeMirrorEditor({
 
   /* The editor is created once and driven through refs, so callbacks that
      change identity on every render never tear down the document. */
-  const handlers = useRef({ onChange, onRun, onEscapeTab: onToggleEscapeTab, onBlur, escapeTab });
-  handlers.current = { onChange, onRun, onEscapeTab: onToggleEscapeTab, onBlur, escapeTab };
+  const handlers = useRef({ onChange, onRun, onEscapeTab: onToggleEscapeTab, onBlur, escapeTab, onFail });
+  useEffect(() => {
+    handlers.current = { onChange, onRun, onEscapeTab: onToggleEscapeTab, onBlur, escapeTab, onFail };
+  });
   /* Only the first document is read at mount; later edits arrive as props. */
   const initialDoc = useRef(value);
 
@@ -175,7 +177,7 @@ export default function CodeMirrorEditor({
     } catch {
       // CodeMirror needs real layout; without it the caller must fall back
       // rather than take the page down for a cosmetic enhancement.
-      onFail?.();
+      handlers.current.onFail?.();
       return;
     }
     view.current = instance;

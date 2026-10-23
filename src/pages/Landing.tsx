@@ -113,13 +113,12 @@ function CountUp({ to, suffix = "" }: { to: number; suffix?: string }) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true });
   const reduce = useReducedMotion();
-  const [n, setN] = useState(reduce ? to : 0);
+  const [count, setN] = useState(0);
+  // Reduced motion shows the final number straight away.
+  const n = reduce ? to : count;
 
   useEffect(() => {
-    if (reduce) {
-      setN(to);
-      return;
-    }
+    if (reduce) return;
     if (!inView) return;
     const controls = animate(0, to, {
       duration: 1.4,
@@ -233,13 +232,12 @@ function SocraticShowcase() {
   const inView = useInView(ref, { once: true, margin: "-120px" });
   const reduce = useReducedMotion();
   // 0 idle · 1 learner asks · 2 tutor analyzing · 3 tutor answers
-  const [stage, setStage] = useState<0 | 1 | 2 | 3>(reduce ? 3 : 0);
+  const [stageState, setStage] = useState<0 | 1 | 2 | 3>(0);
+  // Reduced motion shows the finished exchange straight away.
+  const stage = reduce ? 3 : stageState;
 
   useEffect(() => {
-    if (reduce) {
-      setStage(3);
-      return;
-    }
+    if (reduce) return;
     if (!inView) return;
     const timers = [
       setTimeout(() => setStage(1), 350),

@@ -180,7 +180,7 @@ const timeout = 60;        // incoming branch's version
             "Local commits replayed on top — linear history",
             "Everything on main",
             "Merge commits out of your feature work",
-            "Both a and c",
+            "Replayed on top; no merge commits",
           ],
           answer: 3,
           explanation:

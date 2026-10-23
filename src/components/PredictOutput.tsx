@@ -1,13 +1,21 @@
 import { useState } from "react";
 import { runUserCode } from "../lib/runner";
 import type { PredictStep } from "../data/types";
+import { useShuffledOptions } from "../lib/shuffle";
 
 /**
  * Predict-the-output challenges. The learner picks what a snippet prints,
  * then can verify by executing the real code in the sandbox and comparing
  * the captured console output.
  */
-export default function PredictOutput({ steps }: { steps: PredictStep[] }) {
+export default function PredictOutput({
+  steps,
+  rng,
+}: {
+  steps: PredictStep[];
+  /** Random source for each step's option order. Injected by tests. */
+  rng?: () => number;
+}) {
   const [picked, setPicked] = useState<Record<number, number>>({});
   const [ranOut, setRanOut] = useState<Record<number, string[]>>({});
   const [busy, setBusy] = useState<Record<number, boolean>>({});
@@ -56,40 +64,12 @@ export default function PredictOutput({ steps }: { steps: PredictStep[] }) {
                 </pre>
               </div>
 
-              <div className="mt-4 grid gap-2">
-                {step.options.map((opt, oi) => {
-                  const chosenHere = choice === oi;
-                  const revealRight = answered && oi === step.answer;
-                  const revealWrong = chosenHere && !isRight;
-                  return (
-                    <button
-                      key={oi}
-                      type="button"
-                      onClick={() => setPicked((p) => ({ ...p, [i]: oi }))}
-                      className={
-                        "flex items-center gap-3 rounded-xl border px-4 py-2.5 text-left font-mono text-[13px] transition " +
-                        (revealRight
-                          ? "border-gold-400 bg-gold-400/10 text-ink-950"
-                          : revealWrong
-                            ? "border-red-300 bg-red-50 text-ink-700"
-                            : "border-paper-200 text-ink-700 hover:border-gold-400/60 hover:bg-paper-100")
-                      }
-                    >
-                      <span
-                        className={
-                          "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border font-mono text-[10px] " +
-                          (revealRight
-                            ? "border-gold-400 bg-gold-400 text-ink-950"
-                            : "border-paper-300 text-ink-600")
-                        }
-                      >
-                        {revealRight ? "✓" : revealWrong ? "✗" : String.fromCharCode(65 + oi)}
-                      </span>
-                      <span className="min-w-0 break-all">{opt}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              <PredictChoices
+                step={step}
+                choice={choice}
+                onPick={(authored) => setPicked((p) => ({ ...p, [i]: authored }))}
+                rng={rng}
+              />
 
               {answered && (
                 <div
@@ -134,5 +114,63 @@ export default function PredictOutput({ steps }: { steps: PredictStep[] }) {
         })}
       </div>
     </section>
+  );
+}
+
+/**
+ * The step's answer buttons in their shuffled order, one child per step. Picks
+ * are reported as authored indices, so `picked` and the solved count keep the
+ * authored meaning; only the rendering is reordered.
+ */
+function PredictChoices({
+  step,
+  choice,
+  onPick,
+  rng,
+}: {
+  step: PredictStep;
+  choice: number | undefined;
+  onPick: (authoredIndex: number) => void;
+  rng?: () => number;
+}) {
+  const { view } = useShuffledOptions(step.options, step.answer, rng);
+  const answered = choice !== undefined;
+  const isRight = choice === step.answer;
+  return (
+    <div className="mt-4 grid gap-2">
+      {view.options.map((opt, oi) => {
+        const authored = view.order[oi];
+        const chosenHere = choice === authored;
+        const revealRight = answered && authored === step.answer;
+        const revealWrong = chosenHere && !isRight;
+        return (
+          <button
+            key={authored}
+            type="button"
+            onClick={() => onPick(authored)}
+            className={
+              "flex items-center gap-3 rounded-xl border px-4 py-2.5 text-left font-mono text-[13px] transition " +
+              (revealRight
+                ? "border-gold-400 bg-gold-400/10 text-ink-950"
+                : revealWrong
+                  ? "border-red-300 bg-red-50 text-ink-700"
+                  : "border-paper-200 text-ink-700 hover:border-gold-400/60 hover:bg-paper-100")
+            }
+          >
+            <span
+              className={
+                "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border font-mono text-[10px] " +
+                (revealRight
+                  ? "border-gold-400 bg-gold-400 text-ink-950"
+                  : "border-paper-300 text-ink-600")
+              }
+            >
+              {revealRight ? "✓" : revealWrong ? "✗" : String.fromCharCode(65 + oi)}
+            </span>
+            <span className="min-w-0 break-all">{opt}</span>
+          </button>
+        );
+      })}
+    </div>
   );
 }

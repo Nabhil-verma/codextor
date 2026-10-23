@@ -2,6 +2,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { MAX_SYNCS_PER_MINUTE, clampProfile } from "./xpRules";
+import { publicDisplayName } from "../lib/accountIdentity";
 
 /**
  * The public "player card". The client recomputes every number from its
@@ -13,15 +14,15 @@ const MAX_NAME = 40;
 const MAX_TITLE = 24;
 
 /**
- * The plausibility clamps start in LOG-ONLY mode: violations are recorded on
- * the card (`clampedAt` / `clampLog`) and logged, but the client's numbers are
- * stored unchanged, because a legitimate multi-device merge can look odd
- * before there is any evidence to tune against. Setting the deployment
- * environment variable CODEXTOR_XP_CLAMPS=enforce switches to clamping the
- * values themselves; unset (or anything else) rolls straight back.
+ * The plausibility clamps are ENFORCED by default: a sync whose XP, level or
+ * streak is implausible is clamped to the curriculum's bounds, and the
+ * violation is recorded on the card (`clampedAt` / `clampLog`). Setting the
+ * deployment environment variable CODEXTOR_XP_CLAMPS=log switches back to
+ * log-only: violations are recorded and logged, and the client's numbers are
+ * stored unchanged.
  */
 function clampsEnforced(): boolean {
-  return process.env.CODEXTOR_XP_CLAMPS === "enforce";
+  return process.env.CODEXTOR_XP_CLAMPS !== "log";
 }
 
 /** The sync rate-limit window. */
@@ -60,10 +61,8 @@ export const sync = mutation({
 
     // The display name is owned by the auth user so a rename propagates.
     const user = await ctx.db.get(userId);
-    const name =
-      shortString(user?.name, MAX_NAME) ||
-      shortString(user?.email, MAX_NAME) ||
-      "Learner";
+    // Never an email address: a legacy account's email is private.
+    const name = shortString(publicDisplayName(user ?? {}, MAX_NAME), MAX_NAME) || "Learner";
 
     const existing = await ctx.db
       .query("profiles")
@@ -267,5 +266,30 @@ export const setTitle = mutation({
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .unique();
     if (row) await ctx.db.patch(row._id, { title: clean || undefined });
+  },
+});
+
+/**
+ * The public profile page. Everything it returns is already public on the
+ * leaderboard — name, level, title, XP, streak, lessons, guild name and tag —
+ * and nothing that identifies the account: no userId, no email, no sync
+ * bookkeeping, no clamp audit, no guild role. Unknown ids return null.
+ */
+export const publicCard = query({
+  args: { profileId: v.id("profiles") },
+  handler: async (ctx, { profileId }) => {
+    const p = await ctx.db.get(profileId);
+    if (!p) return null;
+    const clan = p.clanId ? await ctx.db.get(p.clanId) : null;
+    return {
+      name: p.name,
+      level: p.level,
+      ascension: p.ascension,
+      title: p.title ?? null,
+      xp: p.xp,
+      streakLongest: p.streakLongest,
+      lessonsDone: p.lessonsDone,
+      clan: clan ? { name: clan.name, tag: clan.tag } : null,
+    };
   },
 });

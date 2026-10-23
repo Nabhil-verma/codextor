@@ -1,5 +1,5 @@
 import { recordAttempt } from "../lib/telemetry";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useAnimationControls, useReducedMotion } from "framer-motion";
 import MultiFile from "./MultiFile";
 import { scoreDiffAttempt } from "../lib/labGrade";
@@ -35,7 +35,12 @@ export default function DiffLab({ exercise, onScore, onPass }: Props) {
   const shake = useAnimationControls();
   const reduceMotion = useReducedMotion();
   const passedOnce = useRef(false);
-  const shownAt = useRef(Date.now());
+  // Time on task starts when the exercise is on screen, not during render:
+  // reading the clock in render would make the component impure.
+  const shownAt = useRef(0);
+  useEffect(() => {
+    shownAt.current = Date.now();
+  }, []);
 
   const solved = score === 1;
 
@@ -73,6 +78,7 @@ export default function DiffLab({ exercise, onScore, onPass }: Props) {
   };
 
   const reset = () => {
+    shownAt.current = Date.now();
     setDecision("block");
     setPicked(null);
     setCategory(null);

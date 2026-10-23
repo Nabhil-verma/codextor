@@ -6,6 +6,7 @@ import type { Check } from "../data/types";
 import HintLadder from "./HintLadder";
 import ErrorNote from "./ErrorNote";
 import TraceVisualizer from "./TraceVisualizer";
+import ShareReplay from "./ShareReplay";
 import { TAB_HINT } from "../lib/useTabTrapEscape";
 import CodeEditor, { EditorToggle } from "./CodeEditor";
 import { summarizeRun } from "../lib/runSummary";
@@ -76,17 +77,28 @@ export default function Playground({
 
   const run = async () => {
     setRunning(true);
-    const r: Outcome =
-      lang === "ts"
-        ? await (await import("../lib/tsRunner")).runTs(code)
-        : lang === "python"
-          ? await (await import("../lib/pythonRunner")).runPython(code, {
-              prelude: pythonPrelude,
-            })
-          : await runUserCode(code);
+    let r: Outcome;
+    let loadFailed = false;
+    try {
+      r =
+        lang === "ts"
+          ? await (await import("../lib/tsRunner")).runTs(code)
+          : lang === "python"
+            ? await (await import("../lib/pythonRunner")).runPython(code, {
+                prelude: pythonPrelude,
+              })
+            : await runUserCode(code);
+    } catch (err) {
+      // A runner that cannot load (e.g. the compiler script failed to fetch)
+      // must end the run with a message, not leave Run stuck on "running…".
+      r = { logs: [], error: err instanceof Error ? err.message : String(err) };
+      loadFailed = true;
+    }
     setResult(r);
     setAnnounce(summarizeRun(r));
-    if (check) {
+    // A runner that failed to load says nothing about the learner's code, so
+    // it must not count toward the two failed attempts that unlock hints.
+    if (check && !loadFailed) {
       const ok =
         !r.error &&
         (r.typeErrors?.length ?? 0) === 0 &&
@@ -282,7 +294,12 @@ export default function Playground({
         </button>
       )}
 
-      {lang === undefined && showTrace && <TraceVisualizer code={code} />}
+      {lang === undefined && showTrace && (
+        <>
+          <TraceVisualizer code={code} />
+          <ShareReplay code={code} />
+        </>
+      )}
 
       {check?.hints?.length ? (
         showHints ? (

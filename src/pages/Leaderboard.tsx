@@ -206,13 +206,13 @@ function Podium() {
       <p className="eyebrow mb-14 text-center">this week's podium</p>
       <div className="grid items-end gap-x-4 gap-y-10 sm:grid-cols-3">
         {arranged.map((row, i) => {
-          const isFirst = row.userId === top[0].userId;
-          const place = (isFirst ? 1 : row.userId === top[1]?.userId ? 2 : 3) as 1 | 2 | 3;
+          const isFirst = row.profileId === top[0].profileId;
+          const place = (isFirst ? 1 : row.profileId === top[1]?.profileId ? 2 : 3) as 1 | 2 | 3;
           const look = PLACES[place];
           const tier = resolveAscension(row.ascension, row.level);
           return (
             <motion.div
-              key={row.userId}
+              key={row.profileId}
               initial={{ opacity: 0, y: 48 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ type: "spring", stiffness: 300, damping: 30, delay: i * 0.12 }}

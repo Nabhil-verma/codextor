@@ -5,7 +5,7 @@ import Nav from "../components/Nav";
 import { Orb } from "../components/motion";
 import { useAccount } from "../AccountProvider";
 
-type Mode = "signin" | "signup";
+type Mode = "signin" | "signup" | "forgot" | "reset";
 
 const inputCls =
   "w-full rounded-xl border border-paper-300 bg-paper-50 px-4 py-2.5 text-sm text-ink-950 outline-hidden transition placeholder:text-ink-400 focus:border-gold-400 focus:ring-2 focus:ring-gold-400/25";
@@ -51,15 +51,20 @@ function sanitizeReturnTo(raw: string | null): string {
 }
 
 export default function AuthPage() {
-  const { user, authReady, signIn, signUp } = useAccount();
+  const { user, authReady, signIn, signUp, requestPasswordReset, completePasswordReset } =
+    useAccount();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const returnTo = sanitizeReturnTo(searchParams.get("returnTo"));
 
   const [mode, setMode] = useState<Mode>("signin");
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [recovery, setRecovery] = useState("");
   const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const firstInput = useRef<HTMLInputElement>(null);
@@ -81,6 +86,7 @@ export default function AuthPage() {
   function switchMode(next: Mode) {
     setMode(next);
     setError(null); // stale "wrong password" shouldn't bleed into sign-up
+    setNotice(null);
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -88,11 +94,27 @@ export default function AuthPage() {
     setError(null);
     setBusy(true);
     try {
-      if (mode === "signin") await signIn(email.trim(), password);
-      else await signUp(name.trim(), email.trim(), password);
-      // The session usually settles inside signIn/signUp; navigate now —
-      // the effect above covers any residual delay.
-      navigate(returnTo, { replace: true });
+      if (mode === "signin") {
+        await signIn(username.trim(), password);
+        // The session usually settles inside signIn/signUp; navigate now —
+        // the effect above covers any residual delay.
+        navigate(returnTo, { replace: true });
+      } else if (mode === "signup") {
+        await signUp(name.trim(), username.trim(), password, recovery.trim() || undefined);
+        navigate(returnTo, { replace: true });
+      } else if (mode === "forgot") {
+        await requestPasswordReset(username.trim());
+        // Same reply whether or not the account exists or has an address on file.
+        setNotice(
+          "If that account has a recovery email, a code is on its way. It expires in 15 minutes.",
+        );
+        setCode("");
+        setNewPassword("");
+        setMode("reset");
+      } else {
+        await completePasswordReset(username.trim(), code, newPassword);
+        navigate(returnTo, { replace: true });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
@@ -100,11 +122,22 @@ export default function AuthPage() {
     }
   }
 
-  const title = mode === "signin" ? "Welcome back" : "Create your account";
+  const title =
+    mode === "signin"
+      ? "Welcome back"
+      : mode === "signup"
+        ? "Create your account"
+        : mode === "forgot"
+          ? "Reset your password"
+          : "Enter your reset code";
   const sub =
     mode === "signin"
       ? "Sign in to sync your progress across devices."
-      : "Free forever. Your quiz scores and completed lessons follow you anywhere.";
+      : mode === "signup"
+        ? "Free forever. Your quiz scores and completed lessons follow you anywhere."
+        : mode === "forgot"
+          ? "Enter your username. If a recovery email is set on the account, we'll send a code there."
+          : "Check your recovery email for the 8-digit code.";
 
   return (
     <div className="min-h-screen">
@@ -235,28 +268,100 @@ export default function AuthPage() {
                       </motion.div>
                     )}
                   </AnimatePresence>
-                  <input
-                    ref={mode === "signin" ? firstInput : undefined}
-                    className={inputCls}
-                    type="email"
-                    required
-                    aria-label="Email address"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    autoComplete="email"
-                  />
-                  <input
-                    className={inputCls}
-                    type="password"
-                    required
-                    minLength={8}
-                    aria-label="Password (at least 8 characters)"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                  />
+                  {mode !== "reset" && (
+                    <input
+                      ref={mode === "signin" || mode === "forgot" ? firstInput : undefined}
+                      className={inputCls}
+                      required
+                      aria-label={mode === "signin" ? "Username or email" : "Username"}
+                      placeholder={mode === "signin" ? "Username" : "Choose a username"}
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      autoComplete="username"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      {...(mode === "signup"
+                        ? {
+                            pattern: "[A-Za-z0-9_]{3,24}",
+                            title: "3–24 letters, numbers or underscores",
+                            minLength: 3,
+                          }
+                        : {})}
+                    />
+                  )}
+                  {mode === "signup" && (
+                    <>
+                      <input
+                        className={inputCls}
+                        type="email"
+                        aria-label="Recovery email (optional)"
+                        placeholder="Recovery email (optional)"
+                        value={recovery}
+                        onChange={(e) => setRecovery(e.target.value)}
+                        autoComplete="email"
+                      />
+                      <p className="text-xs leading-relaxed text-ink-500">
+                        Optional. Used only to send a password-reset code. It is never shown publicly.
+                      </p>
+                    </>
+                  )}
+                  {(mode === "signin" || mode === "signup") && (
+                    <input
+                      className={inputCls}
+                      type="password"
+                      required
+                      minLength={8}
+                      aria-label="Password (at least 8 characters)"
+                      placeholder="Password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                    />
+                  )}
+                  {mode === "signin" && (
+                    <div className="text-right">
+                      <button
+                        type="button"
+                        className="text-xs font-semibold text-gold-600 hover:underline"
+                        onClick={() => switchMode("forgot")}
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
+                  )}
+                  {mode === "reset" && (
+                    <>
+                      {notice && (
+                        <p role="status" className="text-sm leading-relaxed text-ink-600">
+                          {notice}
+                        </p>
+                      )}
+                      <input
+                        ref={firstInput}
+                        className={inputCls}
+                        required
+                        inputMode="numeric"
+                        pattern="[0-9]{8}"
+                        aria-label="Reset code (8 digits)"
+                        placeholder="8-digit code"
+                        value={code}
+                        onChange={(e) => setCode(e.target.value)}
+                        autoComplete="one-time-code"
+                      />
+                      <input
+                        className={inputCls}
+                        type="password"
+                        required
+                        minLength={8}
+                        aria-label="New password (at least 8 characters)"
+                        placeholder="New password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        autoComplete="new-password"
+                      />
+                    </>
+                  )}
                   <AnimatePresence>
                     {error && (
                       <motion.p
@@ -277,12 +382,20 @@ export default function AuthPage() {
                     whileHover={busy ? undefined : { scale: 1.02 }}
                     whileTap={busy ? undefined : { scale: 0.97 }}
                   >
-                    {busy ? "One moment…" : mode === "signin" ? "Sign in" : "Create account"}
+                    {busy
+                      ? "One moment…"
+                      : mode === "signin"
+                        ? "Sign in"
+                        : mode === "signup"
+                          ? "Create account"
+                          : mode === "forgot"
+                            ? "Send reset code"
+                            : "Reset password"}
                   </motion.button>
                 </form>
 
                 <div className="mt-5 space-y-1.5 text-center text-sm">
-                  {mode !== "signup" && (
+                  {mode === "signin" && (
                     <p className="text-ink-600">
                       New here?{" "}
                       <button

@@ -1,4 +1,4 @@
-import { useState, type MutableRefObject } from "react";
+import { useEffect, useState, type MutableRefObject } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { runUserCode } from "../lib/runner";
 import { gradeProofRun } from "../lib/labGrade";
@@ -59,7 +59,17 @@ export default function ProofRunner({ proof, onScore, assertionPrefix, runRef }:
     }
   };
 
-  if (runRef) runRef.current = () => { void run(); };
+  // Published after paint, not during render: writing a ref in render is a
+  // side effect. No dependency list keeps the closure fresh on every render.
+  useEffect(() => {
+    if (!runRef) return;
+    runRef.current = () => {
+      void run();
+    };
+    return () => {
+      runRef.current = null;
+    };
+  });
 
   const ready =
     proof.buggy.trim().length > 0 &&

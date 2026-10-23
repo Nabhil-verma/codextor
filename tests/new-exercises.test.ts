@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import { tracks, findLesson } from "../src/data";
 import { evaluateCheck, runUserCode } from "../src/lib/runner";
 import { runTs } from "../src/lib/tsRunner";
+import { provideTypeScriptCompiler } from "./support/typescript-compiler";
+
+provideTypeScriptCompiler();
 
 /*
  * Two failure modes make an exercise worthless, and neither is caught by the

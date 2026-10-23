@@ -35,7 +35,7 @@ function buildDoc(
   const tailwind =
     spec.framework === "none"
       ? ""
-      : '<script src="https://cdn.tailwindcss.com"><\/script>';
+      : '<script src="https://cdn.tailwindcss.com"></script>';
 
   // Probing runs immediately (the markup above is already parsed) and again
   // after the CDN settles, so an unreachable CDN can never block grading.
@@ -85,8 +85,8 @@ ${html}
       message: (err && err.message) ? err.message : String(err)
     }, "*");
   }
-<\/script>
-<script>${probe}<\/script>
+</script>
+<script>${probe}</script>
 </body>
 </html>`;
 }
@@ -113,7 +113,6 @@ export default function LivePreview({
   const [runId, setRunId] = useState(0);
   const [probe, setProbe] = useState<Probe | null>(null);
   const [frameError, setFrameError] = useState<string | null>(null);
-  const [passed, setPassed] = useState(false);
 
   const frameRef = useRef<HTMLIFrameElement>(null);
   const pop = useAnimationControls();
@@ -156,14 +155,14 @@ export default function LivePreview({
 
   /* Grade on structure, once per successful build. */
   const solved = Boolean(probe) && requires.length > 0 && probe!.missing.length === 0;
+  // The badge follows the grade; the effect below only announces it once.
+  const passed = solved;
 
   useEffect(() => {
     if (!solved) {
       passedOnce.current = false;
-      setPassed(false);
       return;
     }
-    setPassed(true);
     if (!passedOnce.current) {
       passedOnce.current = true;
       if (!reduceMotion) {

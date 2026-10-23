@@ -19,18 +19,28 @@ const GOOD = {
 
 afterEach(cleanup);
 
+/*
+ * Each proof runs the sandbox *twice* — draft+test, then fix+test — and every
+ * run carries its own JS_TIMEOUT_MS (4000) budget plus worker start-up. The
+ * assertions below are exact; only the window is sized for two sandbox runs so
+ * the suite stays deterministic when 75 files share the CPU. Vitest's 5s
+ * default per-test timeout is likewise too tight for the same reason.
+ */
+const DUAL_RUN_MS = 20_000;
+
 describe("ProofRunner", () => {
   it("verifies a proof that fails on the draft and passes on the fix", async () => {
     const onScore = vi.fn();
     render(<ProofRunner proof={GOOD} onScore={onScore} />);
     fireEvent.click(screen.getByRole("button", { name: /run the proof/i }));
 
-    await waitFor(() =>
-      expect(screen.getByText(/dual run verified/i)).toBeTruthy()
+    await waitFor(
+      () => expect(screen.getByText(/dual run verified/i)).toBeTruthy(),
+      { timeout: DUAL_RUN_MS }
     );
     expect(screen.getByText(/failed, as a proof requires/i)).toBeTruthy();
     expect(onScore).toHaveBeenCalledWith(1);
-  });
+  }, DUAL_RUN_MS);
 
   it("records 0.5 when the draft does not fail", async () => {
     const onScore = vi.fn();
@@ -38,11 +48,12 @@ describe("ProofRunner", () => {
     render(<ProofRunner proof={{ ...GOOD, buggy: GOOD.fixed }} onScore={onScore} />);
     fireEvent.click(screen.getByRole("button", { name: /run the proof/i }));
 
-    await waitFor(() =>
-      expect(screen.getByText(/partial: 0.5 recorded/i)).toBeTruthy()
+    await waitFor(
+      () => expect(screen.getByText(/partial: 0.5 recorded/i)).toBeTruthy(),
+      { timeout: DUAL_RUN_MS }
     );
     expect(onScore).toHaveBeenCalledWith(0.5);
-  });
+  }, DUAL_RUN_MS);
 
   it("records 0 when the test distinguishes nothing", async () => {
     const onScore = vi.fn();
@@ -56,9 +67,12 @@ describe("ProofRunner", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: /run the proof/i }));
 
-    await waitFor(() => expect(screen.getByText(/0 recorded/i)).toBeTruthy());
+    await waitFor(
+      () => expect(screen.getByText(/0 recorded/i)).toBeTruthy(),
+      { timeout: DUAL_RUN_MS }
+    );
     expect(onScore).toHaveBeenCalledWith(0);
-  });
+  }, DUAL_RUN_MS);
 
   it("stays disabled until all three fields are present", () => {
     render(<ProofRunner proof={{ buggy: "", test: "", fixed: "" }} />);

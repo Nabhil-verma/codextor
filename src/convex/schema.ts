@@ -2,8 +2,28 @@ import { defineSchema, defineTable } from "convex/server";
 import { authTables } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
+// The auth library owns the `users` table. We extend it (Convex Auth's documented
+// pattern) with the username and the optional recovery email. Keep the fields in
+// sync with authTables.users.
+const { users: _authUsers, ...otherAuthTables } = authTables;
+
 export default defineSchema({
-  ...authTables,
+  ...otherAuthTables,
+  users: defineTable({
+    name: v.optional(v.string()),
+    image: v.optional(v.string()),
+    email: v.optional(v.string()),
+    emailVerificationTime: v.optional(v.number()),
+    phone: v.optional(v.string()),
+    phoneVerificationTime: v.optional(v.number()),
+    isAnonymous: v.optional(v.boolean()),
+    /** Sign-in key for accounts created after usernames (lowercase). */
+    username: v.optional(v.string()),
+    /** Optional; receives password-reset codes only. Never public. */
+    recoveryEmail: v.optional(v.string()),
+  })
+    .index("email", ["email"])
+    .index("phone", ["phone"]),
 
   /** One row per user: the same `completed` map the app keeps in localStorage. */
   progress: defineTable({
@@ -148,6 +168,24 @@ export default defineSchema({
     themeStyle: v.optional(v.union(v.literal("glass"), v.literal("minimal"))),
     updatedAt: v.optional(v.number()),
   }).index("by_user", ["userId"]),
+
+  /**
+   * A verifiable certificate of completion: one row per (user, track), issued
+   * by `certificates.issue` only after every lesson in the track is scored.
+   * `code` is the public handle that `certificates.verify` looks up. The row
+   * never carries the account: only the display name shown at issue time.
+   * Additive table, so deploying it needs no migration.
+   */
+  certificates: defineTable({
+    userId: v.id("users"),
+    trackId: v.string(),
+    trackTitle: v.string(),
+    code: v.string(),
+    displayName: v.string(),
+    issuedAt: v.number(),
+  })
+    .index("by_user_track", ["userId", "trackId"])
+    .index("by_code", ["code"]),
 
   /** Guild activity feed. Written by profile sync, quest completion, join/leave. */
   clanEvents: defineTable({

@@ -126,10 +126,10 @@ export default function Nav() {
                   aria-label="Account menu"
                 >
                   <span className="hidden max-w-[140px] truncate text-xs font-medium text-ink-800 md:block">
-                    {user.displayName || user.email}
+                    {user.displayName || user.username}
                   </span>
                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 to-violet-500 font-display text-xs font-bold text-[#030305]">
-                    {(user.displayName || user.email || "?").charAt(0).toUpperCase()}
+                    {(user.displayName || user.username || "?").charAt(0).toUpperCase()}
                   </span>
                 </button>
                 <AnimatePresence>
@@ -146,7 +146,7 @@ export default function Nav() {
                         <p className="truncate text-sm font-semibold text-ink-950">
                           {user.displayName || "Learner"}
                         </p>
-                        <p className="truncate font-mono text-xs text-ink-600">{user.email}</p>
+                        <p className="truncate font-mono text-xs text-ink-600">{user.username}</p>
                         <p className="mt-2 flex items-center gap-1.5 font-mono text-[11px] text-ink-600">
                           <span className={"h-1.5 w-1.5 rounded-full " + syncDot[sync]} />
                           {syncLabel[sync]}

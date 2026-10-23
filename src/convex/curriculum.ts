@@ -5,3 +5,177 @@
  */
 export const TRACK_COUNT = 17;
 export const TOTAL_LESSONS = 108;
+
+/**
+ * Track titles, so a certificate records what it certifies.
+ */
+export const TRACK_TITLES: Record<string, string> = {
+  "web": "Web Development Foundations",
+  "git": "Git, GitHub & Workflows",
+  "testing": "Testing & Debugging",
+  "agents": "Working with Coding Agents",
+  "workflow": "Professional Workflow",
+  "security": "Web Security & OWASP",
+  "typescript": "TypeScript for Real Projects",
+  "backend": "Backend Systems & APIs",
+  "react": "Modern Frontend: React",
+  "api": "API Integration & Data Fetching",
+  "dsa": "Data Structures & Algorithms",
+  "python": "Python & Data Fundamentals",
+  "devops": "DevOps, Linux CLI & Cloud",
+  "architecture": "System Design & Architecture",
+  "tailwind": "UI Engineering with Tailwind CSS",
+  "state": "Advanced React State Management",
+  "performance": "Web Performance & Accessibility"
+};
+
+/**
+ * Every lesson key per track, as stored in a learner's progress map
+ * (`${track}/${lesson}`). A certificate is only issued when the
+ * server finds all of them scored, so the list must come from here, not from
+ * the client.
+ */
+export const TRACK_LESSON_KEYS: Record<string, string[]> = {
+  "web": [
+    "web/html-semantic",
+    "web/box-model-deep",
+    "web/responsive-deep",
+    "web/css-layout",
+    "web/scope-context",
+    "web/es6-syntax",
+    "web/dom-events",
+    "web/async-promises",
+    "web/fetch-api",
+    "web/capstone-utility-belt"
+  ],
+  "git": [
+    "git/git-basics",
+    "git/git-branches",
+    "git/git-workflow-lab",
+    "git/git-ci"
+  ],
+  "testing": [
+    "testing/testing-why",
+    "testing/debugging-method",
+    "testing/tdd-mocking",
+    "testing/debug-the-bug",
+    "testing/prod-traces",
+    "testing/prod-logs",
+    "testing/incident-timeline"
+  ],
+  "agents": [
+    "agents/agentic-loop-zero",
+    "agents/specs-and-prompts",
+    "agents/codebase-archaeology",
+    "agents/managing-context",
+    "agents/instruction-files",
+    "agents/plan-before-code",
+    "agents/enforceable-rules",
+    "agents/permissions-and-sandbox",
+    "agents/headless-and-scheduled-agents",
+    "agents/verifying-agent-output",
+    "agents/when-not-to-use-agents",
+    "agents/write-the-catching-test",
+    "agents/capstone-agent-loop"
+  ],
+  "workflow": [
+    "workflow/pull-requests",
+    "workflow/reviewing-diffs",
+    "workflow/vague-request-ticket",
+    "workflow/decision-records"
+  ],
+  "security": [
+    "security/agent-guardrails",
+    "security/xss",
+    "security/sqli",
+    "security/csrf-auth",
+    "security/cors-headers",
+    "security/rate-limit-secrets",
+    "security/data-boundaries"
+  ],
+  "typescript": [
+    "typescript/annotations",
+    "typescript/narrowing",
+    "typescript/generics",
+    "typescript/interfaces-types",
+    "typescript/unknown-errors",
+    "typescript/capstone-type-layer"
+  ],
+  "backend": [
+    "backend/node-event-loop",
+    "backend/express-middleware",
+    "backend/rest-auth",
+    "backend/databases",
+    "backend/api-security"
+  ],
+  "react": [
+    "react/jsx-vdom",
+    "react/props-state",
+    "react/hooks-effect",
+    "react/react-styling-routing"
+  ],
+  "api": [
+    "api/http-verbs",
+    "api/fetch-async",
+    "api/loading-errors",
+    "api/abort-races",
+    "api/optimistic",
+    "api/capstone-api-client"
+  ],
+  "dsa": [
+    "dsa/big-o",
+    "dsa/hash-maps",
+    "dsa/linked-lists-stacks-queues",
+    "dsa/trees-recursion",
+    "dsa/sorting",
+    "dsa/patterns-two-pointer",
+    "dsa/graphs-bfs-dfs",
+    "dsa/dp-intro"
+  ],
+  "python": [
+    "python/python-syntax",
+    "python/python-oop",
+    "python/pandas-numpy",
+    "python/python-llm-api"
+  ],
+  "devops": [
+    "devops/bash-basics",
+    "devops/bash-scripting",
+    "devops/file-permissions",
+    "devops/processes-services",
+    "devops/docker-dockerfile",
+    "devops/nginx-ssl-ci"
+  ],
+  "architecture": [
+    "architecture/monolith-vs-microservices",
+    "architecture/caching-and-redis",
+    "architecture/load-balancing",
+    "architecture/websockets-realtime",
+    "architecture/sharding-and-queues",
+    "architecture/capstone-system-design"
+  ],
+  "tailwind": [
+    "tailwind/utility-first",
+    "tailwind/layout-flex-grid",
+    "tailwind/responsive-dark",
+    "tailwind/states-motion",
+    "tailwind/design-tokens",
+    "tailwind/capstone-ui-kit"
+  ],
+  "state": [
+    "state/state-shapes",
+    "state/usereducer",
+    "state/context",
+    "state/external-stores",
+    "state/server-state",
+    "state/capstone-state-machine"
+  ],
+  "performance": [
+    "performance/web-vitals",
+    "performance/layout-shift",
+    "performance/contrast",
+    "performance/keyboard-focus",
+    "performance/critical-rendering",
+    "performance/capstone-audit"
+  ]
+};

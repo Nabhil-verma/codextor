@@ -16,10 +16,10 @@ export function friendly(err: unknown): string {
  */
 export function authMessage(err: unknown): string {
   const msg = err instanceof Error ? err.message : String(err ?? "");
-  if (/invalid/i.test(msg) && /credential|password|email/i.test(msg))
-    return "Wrong email or password.";
+  if (/invalid/i.test(msg) && /credential|password|username|email/i.test(msg))
+    return "Wrong username or password.";
   if (/already exists|already registered/i.test(msg))
-    return "That email already has an account — sign in instead.";
+    return "That username is taken — choose another.";
   if (/weak/i.test(msg)) return "Password too weak — use at least 8 characters.";
   if (/rate limit|too many/i.test(msg))
     return "Too many attempts — wait a minute and retry.";

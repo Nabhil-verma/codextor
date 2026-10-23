@@ -1,4 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
+
+/** True where `matchMedia` exists (jsdom and pre-browser renders have none). */
+function available(): boolean {
+  return typeof window !== "undefined" && typeof window.matchMedia === "function";
+}
 
 /**
  * Subscribes to a media query and re-renders when it flips.
@@ -8,28 +13,27 @@ import { useEffect, useState } from "react";
  * default and nothing crashes in tests.
  */
 export function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
-      return false;
-    }
-    return window.matchMedia(query).matches;
-  });
+  const subscribe = useCallback(
+    (onChange: () => void) => {
+      if (!available()) return () => {};
+      const mql = window.matchMedia(query);
+      // Safari < 14 only has the deprecated addListener/removeListener pair.
+      if (typeof mql.addEventListener === "function") {
+        mql.addEventListener("change", onChange);
+        return () => mql.removeEventListener("change", onChange);
+      }
+      mql.addListener(onChange);
+      return () => mql.removeListener(onChange);
+    },
+    [query],
+  );
 
-  useEffect(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
-    const mql = window.matchMedia(query);
-    setMatches(mql.matches);
-    const onChange = (event: MediaQueryListEvent) => setMatches(event.matches);
-    // Safari < 14 only has the deprecated addListener/removeListener pair.
-    if (typeof mql.addEventListener === "function") {
-      mql.addEventListener("change", onChange);
-      return () => mql.removeEventListener("change", onChange);
-    }
-    mql.addListener(onChange);
-    return () => mql.removeListener(onChange);
-  }, [query]);
+  const getSnapshot = useCallback(
+    () => (available() ? window.matchMedia(query).matches : false),
+    [query],
+  );
 
-  return matches;
+  return useSyncExternalStore(subscribe, getSnapshot, () => false);
 }
 
 /**

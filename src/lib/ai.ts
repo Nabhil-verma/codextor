@@ -168,7 +168,7 @@ export function explainProviderError(
     return `${name} is rate-limiting this key right now. Wait a minute and try again.`;
   }
   if (status === 404 || (status === 400 && /model/i.test(body))) {
-    return `${name} doesn't accept the model \"${model}\". Pick another model in Settings.`;
+    return `${name} doesn't accept the model "${model}". Pick another model in Settings.`;
   }
   if (status >= 500) {
     return `${name} is having trouble right now (error ${status}). Try again later.`;

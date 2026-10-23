@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { finishedTracks, levelFor, totalXp } from "../../lib/gamification";
@@ -24,10 +24,9 @@ export default function Ceremony() {
   const reviewDays = useReviewDays();
   const seen = useCeremonySeen();
   const dismissRef = useRef<HTMLButtonElement | null>(null);
-  /* Dismissing writes to the store; the ref keeps this render correct even if
+  /* Dismissing writes to the store; this set keeps the render correct even if
      storage refused the write (private mode), so nothing loops forever. */
-  const dismissed = useRef<Set<string>>(new Set());
-  const [, bump] = useState(0);
+  const [dismissed, setDismissed] = useState<ReadonlySet<string>>(() => new Set<string>());
 
   const level = levelFor(totalXp(progress, reviewDays)).level;
   const finished = useMemo(() => finishedTracks(progress), [progress]);
@@ -54,7 +53,13 @@ export default function Ceremony() {
     [seen, level, finished]
   );
 
-  const event: CeremonyEvent | null = pending.find((e) => !dismissed.current.has(e.id)) ?? null;
+  const event: CeremonyEvent | null = pending.find((e) => !dismissed.has(e.id)) ?? null;
+
+  const dismiss = useCallback(() => {
+    if (!event) return;
+    setDismissed((prev) => new Set(prev).add(event.id));
+    markCeremonySeen(event);
+  }, [event]);
 
   useEffect(() => {
     if (!event) return;
@@ -64,14 +69,7 @@ export default function Ceremony() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [event]);
-
-  function dismiss() {
-    if (!event) return;
-    dismissed.current.add(event.id);
-    markCeremonySeen(event);
-    bump((n) => n + 1);
-  }
+  }, [event, dismiss]);
 
   if (!event) return null;
 

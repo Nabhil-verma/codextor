@@ -43,18 +43,19 @@ function Bridge() {
   const weekKey = isoWeekKey(todayKey());
   const metric = questDefForWeek(weekKey).metric;
   const counters = weeklyCounters(progress);
+  // Pulled out of the object so the effect depends on numbers, not on the
+  // freshly built object: re-reporting happens when a counter moves.
+  const { lessons, xp, flawless } = counters;
+  const amount = counters[metric];
 
   useEffect(() => {
-    const amount = counters[metric];
     if (amount > 0) {
-      void report({ lessons: counters.lessons, xp: counters.xp, flawless: counters.flawless }).catch(
-        () => {
-          // Offline or the backend is cold — progress and quests are unaffected.
-        }
-      );
+      void report({ lessons, xp, flawless }).catch(() => {
+        // Offline or the backend is cold — progress and quests are unaffected.
+      });
     }
     // Re-report whenever any counter moves; the server max-merges.
-  }, [counters.lessons, counters.xp, counters.flawless, metric, report]);
+  }, [amount, metric, lessons, xp, flawless, report]);
 
   return null;
 }

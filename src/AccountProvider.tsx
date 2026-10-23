@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { ConvexProvider, ConvexReactClient, useMutation, useQuery } from "convex/react"; // eslint-disable-line -- ConvexReactClient used below
+import { ConvexProvider, ConvexReactClient, useMutation, useQuery } from "convex/react";
 import { ConvexAuthProvider, useAuthActions } from "@convex-dev/auth/react";
 import { useConvexAuth } from "convex/react";
 import { api } from "./convex/_generated/api";
@@ -57,15 +57,35 @@ import {
 type SyncState = "idle" | "syncing" | "synced" | "error";
 
 /** Minimal user shape the UI needs — no vendor types leak into components. */
-type AccountUser = { displayName: string; email: string };
+type AccountUser = {
+  displayName: string;
+  /** The sign-in key (lowercase). For legacy accounts, their email. */
+  username: string;
+  /** Private to the signed-in user; receives reset codes only. */
+  recoveryEmail: string | null;
+};
 
 type AccountCtx = {
   user: AccountUser | null;
   /** False until the initial auth state is known. */
   authReady: boolean;
   sync: SyncState;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (name: string, email: string, password: string) => Promise<void>;
+  /** `identifier` is a username (or, for legacy accounts, their email). */
+  signIn: (identifier: string, password: string) => Promise<void>;
+  signUp: (
+    name: string,
+    username: string,
+    password: string,
+    recoveryEmail?: string,
+  ) => Promise<void>;
+  /** Emails a reset code to the account's recovery address, if it has one. */
+  requestPasswordReset: (identifier: string) => Promise<void>;
+  completePasswordReset: (
+    identifier: string,
+    code: string,
+    newPassword: string,
+  ) => Promise<void>;
+  setRecoveryEmail: (email: string) => Promise<void>;
   signOutUser: () => Promise<void>;
   /** Wipe local progress AND the signed-in account's cloud progress. */
   resetEverything: () => Promise<void>;
@@ -89,6 +109,7 @@ function ConvexAccount({ children }: { children: ReactNode }) {
   const saveAttemptsRow = useMutation(api.progress.saveAttempts);
   const wipeRow = useMutation(api.progress.wipe);
   const saveProfile = useMutation(api.profiles.sync);
+  const setRecoveryRow = useMutation(api.users.setRecoveryEmail);
 
   const [sync, setSync] = useState<SyncState>("idle");
   const lastPulled = useRef("");
@@ -275,10 +296,12 @@ function ConvexAccount({ children }: { children: ReactNode }) {
     };
   }, [signedIn, saveProfile]);
 
+  // The Password provider reads `email` as the account's login key, so the
+  // username (or a legacy email) is passed in that field.
   const signIn = useCallback(
-    async (email: string, password: string) => {
+    async (identifier: string, password: string) => {
       try {
-        await act.signIn("password", { email, password, flow: "signIn" });
+        await act.signIn("password", { email: identifier, password, flow: "signIn" });
         await waitForUser(waiters);
       } catch (err) {
         throw new Error(authMessage(err));
@@ -288,15 +311,63 @@ function ConvexAccount({ children }: { children: ReactNode }) {
   );
 
   const signUp = useCallback(
-    async (name: string, email: string, password: string) => {
+    async (name: string, username: string, password: string, recoveryEmail?: string) => {
       try {
-        await act.signIn("password", { name, email, password, flow: "signUp" });
+        const recovery = recoveryEmail?.trim();
+        await act.signIn("password", {
+          name,
+          email: username,
+          password,
+          ...(recovery ? { recoveryEmail: recovery } : {}),
+          flow: "signUp",
+        });
         await waitForUser(waiters);
       } catch (err) {
         throw new Error(authMessage(err));
       }
     },
     [act]
+  );
+
+  // Whatever the cause (unknown account, no recovery address, mail not
+  // configured), the reply is the same, so the form never reveals which.
+  const requestPasswordReset = useCallback(
+    async (identifier: string) => {
+      try {
+        await act.signIn("password", { email: identifier, flow: "reset" });
+      } catch {
+        throw new Error("We couldn't start a reset just now. Try again shortly.");
+      }
+    },
+    [act]
+  );
+
+  const completePasswordReset = useCallback(
+    async (identifier: string, code: string, newPassword: string) => {
+      try {
+        await act.signIn("password", {
+          email: identifier,
+          code: code.trim(),
+          newPassword,
+          flow: "reset-verification",
+        });
+        await waitForUser(waiters);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "";
+        if (/invalid code|could not verify|expired/i.test(msg)) {
+          throw new Error("That code is wrong or has expired. Request a new one.");
+        }
+        throw new Error(authMessage(err));
+      }
+    },
+    [act]
+  );
+
+  const setRecoveryEmail = useCallback(
+    async (email: string) => {
+      await setRecoveryRow({ email: email.trim() || undefined });
+    },
+    [setRecoveryRow]
   );
 
   const signOutUser = useCallback(async () => {
@@ -342,15 +413,31 @@ function ConvexAccount({ children }: { children: ReactNode }) {
 
   const value = useMemo<AccountCtx>(
     () => ({
-      user: me ? { displayName: me.name, email: me.email } : null,
+      user: me
+        ? { displayName: me.name, username: me.username, recoveryEmail: me.recoveryEmail }
+        : null,
       authReady,
       sync,
       signIn,
       signUp,
+      requestPasswordReset,
+      completePasswordReset,
+      setRecoveryEmail,
       signOutUser,
       resetEverything,
     }),
-    [me, authReady, sync, signIn, signUp, signOutUser, resetEverything]
+    [
+      me,
+      authReady,
+      sync,
+      signIn,
+      signUp,
+      requestPasswordReset,
+      completePasswordReset,
+      setRecoveryEmail,
+      signOutUser,
+      resetEverything,
+    ]
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

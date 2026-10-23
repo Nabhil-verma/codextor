@@ -14,7 +14,7 @@ export function isAbsoluteUrl(url: unknown): boolean {
   if (typeof url !== "string") return false;
   const value = url.trim();
   // Scheme, then // and a host — and no whitespace or control characters.
-  if (/[\s\u0000-\u001f]/.test(value)) return false;
+  if (/\s/.test(value) || [...value].some((ch) => ch.charCodeAt(0) <= 0x1f)) return false;
   const m = value.match(/^[a-z][a-z0-9+.-]*:\/\/([^/?#]+)/i);
   return !!m && m[1].length > 0;
 }

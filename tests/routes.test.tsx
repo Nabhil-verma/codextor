@@ -105,7 +105,7 @@ describe("every route renders", () => {
     auth.signedIn = false;
     open("#/auth");
     expect(await screen.findByRole("heading", { name: /Welcome back/ }, CHUNK)).toBeTruthy();
-    expect(screen.getByLabelText("Email address")).toBeTruthy();
+    expect(screen.getByLabelText("Username or email")).toBeTruthy();
     expect(screen.getByLabelText(/Password/)).toBeTruthy();
   });
 
@@ -162,6 +162,11 @@ describe("every route renders", () => {
     expect(
       await screen.findByRole("heading", { name: "Global leaderboard" }, CHUNK)
     ).toBeTruthy();
+  });
+
+  it("/replay — with no link, it says what to do instead of a blank page", async () => {
+    open("#/replay");
+    expect(await screen.findByText(/Nothing to show/, {}, CHUNK)).toBeTruthy();
   });
 
   it("/ascent — the public ladder page", async () => {

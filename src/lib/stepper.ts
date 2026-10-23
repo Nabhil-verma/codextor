@@ -16,6 +16,8 @@
  * infinite loops fail fast instead of freezing the stepper.
  */
 
+import { runInSandbox } from "./sandboxClient";
+
 export type StepSnapshot = {
   /** 1-based source line about to execute */
   line: number;
@@ -64,7 +66,7 @@ function rewriteLine(raw: string, line: number): string {
   // Split into code prefix and trailing comment (naive but safe for echoes:
   // we only use it to detect comment positions, never to transform them).
   let echo = "";
-  let body = raw;
+  const body = raw;
 
   // Skip pure comment/blank lines.
   const t = body.trim();
@@ -272,7 +274,19 @@ function paramPairs(params: string): string {
 /* Runner                                                              */
 /* ------------------------------------------------------------------ */
 
-export async function traceCode(code: string, timeoutMs = 5000): Promise<TraceResult> {
+/**
+ * Traces learner code inside the sandbox worker. The hooks below run in that
+ * worker, not on the page, so the trace obeys the same isolation as a run.
+ */
+export function traceCode(code: string, timeoutMs = 5000): Promise<TraceResult> {
+  return runInSandbox({ kind: "trace", code, timeoutMs });
+}
+
+/**
+ * The trace itself. Pure apart from its own timers: `handleSandboxRequest`
+ * calls it inside the worker, and nothing else should call it on the page.
+ */
+export async function traceCore(code: string, timeoutMs = 5000): Promise<TraceResult> {
   const steps: StepSnapshot[] = [];
   const logs: string[] = [];
   const stack: FrameState[] = [{ name: "global", vars: new Map() }];
@@ -360,9 +374,8 @@ export async function traceCode(code: string, timeoutMs = 5000): Promise<TraceRe
   };
 
   try {
-    // Learner code, executed in the page's realm on purpose: the visualizer
-    // needs a synchronous hook per line, which an out-of-process sandbox
-    // cannot provide. See the trust-boundary note on runUserCode.
+    // Learner code, executed inside the sandbox worker (see traceCode). The
+    // hooks are synchronous and live in the same thread as the code.
     const src = addTickGuards(instrument(code));
     const fn = new Function(
       "__step__",
