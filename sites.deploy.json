@@ -1,0 +1,12 @@
+{
+  "entrypoint": "worker.js",
+  "compatibilityDate": "2026-10-01",
+  "modules": [
+    {
+      "name": "worker.js",
+      "type": "esm",
+      "path": "sites/worker.js"
+    }
+  ],
+  "assetsDirectory": "sites/build-nopy"
+}

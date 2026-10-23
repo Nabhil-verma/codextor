@@ -8,9 +8,12 @@
    Two execution paths, one contract:
 
    - **Browser:** a module worker that loads Pyodide from
-     `public/pyodide/`. The worker exists so a runaway program can be
-     terminated (`worker.terminate()`) instead of hanging the page —
-     Python cannot be instrumented the way the JS runner guards loops.
+     `public/pyodide/`, falling back to the pinned CDN in
+     `pyodideSource.ts` when the host omits those 13 MB (Freebuff Sites
+     keeps deployments under ~10 MiB). The worker exists so a runaway
+     program can be terminated (`worker.terminate()`) instead of hanging
+     the page — Python cannot be instrumented the way the JS runner
+     guards loops.
    - **No worker available (Node, jsdom tests):** load Pyodide in
      process from `node_modules`. Same API; no termination, so tests
      only run finite programs.

@@ -10,7 +10,13 @@
 
    Loaded as a module worker (`new Worker(new URL(...), { type: "module" })`)
    so the Pyodide ESM loader can be imported directly.
+
+   The loader prefers this origin's own copy and falls back to a pinned CDN
+   (see `pyodideSource.ts`), because a host with a small asset budget cannot
+   carry 13 MB of interpreter.
    ═══════════════════════════════════════════════════════════════ */
+
+import { loadWithFallback, pyodideSources } from "./pyodideSource";
 
 type Pyodide = {
   runPython: (code: string, options?: { globals?: unknown }) => unknown;
@@ -24,17 +30,20 @@ let ready: Promise<Pyodide> | null = null;
 /** Load once per worker; the asset is cached by the browser after that. */
 function load(): Promise<Pyodide> {
   if (!ready) {
-    ready = (async () => {
-      // Served from public/pyodide (see scripts/sync-pyodide.mjs) — no CDN.
-      // The specifier lives in a variable so the bundler leaves it alone:
-      // this is a runtime fetch from the app's own origin, not a module to
-      // resolve and bundle.
-      const spec = "/pyodide/pyodide.mjs";
-      const mod = (await import(/* @vite-ignore */ spec)) as {
-        loadPyodide: (opts: { indexURL: string }) => Promise<Pyodide>;
-      };
-      return mod.loadPyodide({ indexURL: "/pyodide/" });
-    })();
+    ready = loadWithFallback(
+      pyodideSources().map((source) => ({
+        label: source.label,
+        load: async () => {
+          // The specifier lives in a variable so the bundler leaves it alone:
+          // this is a runtime fetch, not a module to resolve and bundle.
+          const spec = source.spec;
+          const mod = (await import(/* @vite-ignore */ spec)) as {
+            loadPyodide: (opts: { indexURL: string }) => Promise<Pyodide>;
+          };
+          return mod.loadPyodide({ indexURL: source.indexURL });
+        },
+      }))
+    );
   }
   return ready;
 }
