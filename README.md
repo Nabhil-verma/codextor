@@ -3,7 +3,7 @@
 > **A 100% free, interactive code teacher.** <!-- counts:words -->Seventeen tracks, 118 hands-on lessons<!-- /counts:words --> —
 > you write and run real code from minute one, in the browser, with easy signup.
 
-**Live:** [codextorcybo4.freebuff.app](https://codextorcybo4.freebuff.app)
+**Live:** [codextorcybo4.freebuff.app](https://codextorcybo4.freebuff.app) or what will probably have to be the next and new domain/url [codextor](https://codextor.freebuff.page)
 
 No paywalls, no waste of time , no code snippets you can only
 read. Every exercise runs *in your browser* and is graded by what your program
