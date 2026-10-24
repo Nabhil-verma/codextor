@@ -127,4 +127,6 @@ async function main() {
   writeFileSync(join(root, 'docs/agentic-curriculum-charts.html'), charts(baseline, current));
   console.log(JSON.stringify({ ...current, keys: undefined, titles: undefined, concepts: current.concepts.map(c => ({ ...c, rawHits: c.rawHits.length })) }, null, 2));
 }
-if (process.argv[1] && resolve(process.argv[1]) === resolve(new URL(import.meta.url).pathname)) await main();
+// Compare canonical file URLs: on Windows `new URL(import.meta.url).pathname`
+// yields "/C:/..." and a plain `resolve` comparison silently skips main().
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) await main();
