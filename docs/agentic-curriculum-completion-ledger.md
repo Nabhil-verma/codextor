@@ -179,9 +179,14 @@ Dropped features remain dropped. Baseline and final targets recomputed rather th
 
 ## Remaining external actions and risks
 
-1. **Convex:** open the Convex dashboard, pick the intended project's Production deployment, Settings → Deploy Keys, generate a key, and add it under this project's Settings → Secrets as `CONVEX_DEPLOY_KEY`; ask to deploy again. The client currently targets the existing hard-coded `accomplished-hyena-726` deployment; confirm the intended target before deployment. Never paste keys into chat. No interactive `convex login`/`convex dev` was attempted.
-2. **Hosted CI:** authorize a commit/push or connect GitHub and run the workflow; local runs are not hosted run evidence.
-3. **Interactive acceptance:** check both visual styles/light-dark/reduced motion and real sign-in in the preview; configure BYOK through Settings → AI and try a provider request. Those cannot be established by HTTP or mocked provider tests. The Igloo reference returns only a JS shell to the available reader; no direct rendered comparison is claimed.
+Owner-verified checklist as of 2026-10-24. Each item needs the owner, not this workspace.
+
+1. **Push to GitHub** (blocked here). `main` sits at `a6620e2`; this branch is 12 commits ahead, 0 behind, and the push is a plain fast-forward. Two credentials were tried and both landed in Sites → Secrets, which the deployed worker can read and this sandbox cannot: `env` contains no `GH_*` variable at all. Either merge `artifacts/codextor-main-full.bundle` locally (tip `1d13f9e` or later; `git fetch <bundle> HEAD:codextor-work && git merge --ff-only codextor-work`) or add a project-level credential and say retry.
+2. **Convex deployment** (blocked: `CONVEX_DEPLOY_KEY` not set). Open the Convex dashboard, pick the intended project's Production deployment, Settings → Deploy Keys, generate a key, and add it under **this project's Settings → Secrets** as `CONVEX_DEPLOY_KEY` — the project's secrets, not Sites → Secrets, which feeds only the deployed worker — then ask to deploy again. The client targets the hard-coded `accomplished-hyena-726` deployment; confirm that is the intended target first. Never paste keys into chat. No interactive `convex login`/`convex dev` was attempted. Until this runs, certificate issuance, unseen-exercise metrics and the server-side plausibility checks in `src/convex/progress.ts` are local-verified only.
+3. **Browser acceptance** (blocked here). Light/dark, both visual styles, prefers-reduced-motion and a real sign-in need a human browser: this VM's Chromium cannot start (missing font libraries). BYOK should also be tried through Settings → AI with a real provider request. None of this can be established by HTTP or mocked provider tests, and the Igloo reference returns only a JS shell to the available reader, so no direct rendered comparison is claimed.
+4. **Hosted CI** (runs on push). The workflow exists and its local equivalents pass, including the all-flags leg fixed in `8730d7f`; no run has executed on GitHub yet.
+5. **Housekeeping.** `GH_TOKEN` and `GH_TOKEN_2` remain on the Sites production environment, read by no code. They only consume the 25-variable allowance and can be deleted in Sites → Secrets.
+6. **Evidence gap.** "No run-volume streaks" holds by inspection — nothing implements them — but no test asserts their absence.
 
 ## Merge with `origin/main` (2026-10-24)
 
@@ -201,7 +206,7 @@ Checks after the merge: `npx tsc -b --noEmit` exit 0; `npm test` 107 files / 903
 
 **Redeployed 2026-10-24 12:10 UTC** with the 118-lesson build (payload `sites/build-nopy/`, 7.0 MB without Pyodide; operation `5f5e20ca` succeeded). Live re-verification after the deploy: `/` 200 showing "17 tracks · 118 hands-on lessons", `/syllabus/` 200, `/syllabus/agents/` 200 listing the operation lessons, `/manifest.json` 200, and the entry bundle 200 `text/javascript`.
 
-**Push outstanding.** `main` is 11 commits behind this branch and 0 ahead, so the push from the branch tip is a plain fast-forward. Two credential attempts failed the same way: `GH_TOKEN` and `GH_TOKEN_2` were added under Sites → Secrets, which are Worker runtime secrets for the deployed site. The cloud shell sees 13 system variables and no injected secret, and Sites secret values are never exposed to tools. No site code reads `GH_TOKEN`; both entries only consume the 25-variable allowance.
+**Push outstanding.** `main` is 12 commits behind this branch and 0 ahead, so the push from the branch tip is a plain fast-forward. Two credential attempts failed the same way: `GH_TOKEN` and `GH_TOKEN_2` were added under Sites → Secrets, which are Worker runtime secrets for the deployed site. The cloud shell sees 13 system variables and no injected secret, and Sites secret values are never exposed to tools. No site code reads `GH_TOKEN`; both entries only consume the 25-variable allowance.
 
 **Fallback.** `artifacts/codextor-main-full.bundle` (3.2 MB, untracked, packed from the branch tip at export — `git bundle list-heads` prints the commit it carries) was verified by cloning it and fast-forwarding a `main` at `a6620e2` to that tip:
 
@@ -211,4 +216,4 @@ Checks after the merge: `npx tsc -b --noEmit` exit 0; `npm test` 107 files / 903
 
 ## Repo state
 
-The work is committed, not an uncommitted worktree: `c5a84b6`, `4dceeca`, the merge `b469c92`, the merge `e5505e3`, `d3e6614`, `c2de005`, the ledger updates and the operation-lessons commit that adds `src/data/agentic-core-lessons.ts` — 11 commits ahead of `origin/main`, 0 behind. Imported restoration showed widespread pre-existing CRLF changes and unrelated modified skill files, which were not staged. Hosted CI, the Convex deployment and interactive browser checks remain unverified for the reasons above.
+The work is committed, not an uncommitted worktree: `c5a84b6`, `4dceeca`, the merge `b469c92`, the merge `e5505e3`, `d3e6614`, `c2de005`, the ledger updates and the operation-lessons commit that adds `src/data/agentic-core-lessons.ts` — 12 commits ahead of `origin/main`, 0 behind. Imported restoration showed widespread pre-existing CRLF changes and unrelated modified skill files, which were not staged. Hosted CI, the Convex deployment and interactive browser checks remain unverified for the reasons above.
