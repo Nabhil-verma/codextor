@@ -6,16 +6,16 @@ Verified against restored repository state on **2026-10-23**. This replaces earl
 
 ## Final checks
 
-Receipts: `docs/verification/final/`.
+Receipts: `docs/verification/final/` holds the original run logs; the test rows below were re-measured on 2026-10-24 and are not backed by those logs.
 
 | Command / configuration | Result |
 | --- | --- |
 | `npm ci` | Restored dependencies; initial audit found two moderate advisories |
 | Targeted Vitest update | `vitest@4.1.12`; fixes GHSA-qxg6-89mg-rqv8 / GHSA-xp26-3454-mjgp |
 | `npm run typecheck` | PASS, exit 0; final sequential gate 11.93 s; rerun after restoring default manifest also passes |
-| `npm test` default | PASS, 77 files / 616 tests, 123.05 s (123.70 s command wall time) |
+| `npm test` default | PASS, 107 files / 903 tests, 26.6 s (re-measured 2026-10-24) |
 | `npm run build` default | PASS, exit 0, 11.31 s command wall time |
-| `npm test` all flags on | PASS, 77 files / 616 tests, 121.63 s |
+| `npm test` all flags on | 902 of 903 pass; `quiz-bias` ratchet fails on the flagged tracks |
 | All-on checks after final worktree safeguard | 8 affected route/worktree tests pass; all-on production build passes |
 | `node scripts/check-features.mjs` | PASS: off, five individual flags, all on; actual loader/DOM routes and syllabus rollback |
 | `npm audit --package-lock-only` and `npm audit --json` | PASS, zero advisories |
@@ -113,6 +113,25 @@ The Phase 5 line "core stays near 900 minutes, agentic share ~37%" was never rea
 
 Only five of the forecast ~14 lessons landed in core; the other eleven became the two flagged depth tracks (Agent Internals 64 minutes, Field Reports 72). Relabelling those 136 optional minutes as core would print 37.8% immediately and is refused: depth stays optional, authored durations stay unchanged, and the target is corrected instead. Delivered figures stand at 790 core minutes and 27.1% (`214 / 790`); the 37% line survives only as a labelled forecast in the chart and tables, never as a result.
 
+### Candidate core agentic lessons (proposal, not built)
+
+Ten 12-minute lessons would take core to 910 minutes and the share to 36.7%, which is as close to the forecast as honest arithmetic allows. None of these is authored yet. Each is chosen for a gap that no current core lesson closes, and the "nearest existing" column is the overlap that has to be judged before writing it — a lesson that only restates a neighbour is padding, not content.
+
+| # | Working title | What it teaches | Why the core needs it / nearest existing |
+| --- | --- | --- | --- |
+| 1 | Characterization tests before you let the agent refactor | Pin current behaviour of untested code with snapshots, then let the agent change it and prove nothing moved | `agents/verifying-agent-output` assumes a suite exists; legacy repos are the common case |
+| 2 | Reading a generated migration | Reversibility, backfills, locks and destructive defaults in schema diffs; approve, amend or reject | No lesson anywhere covers data migrations; they are the costliest agent mistake in production |
+| 3 | Rollback drills | `git revert` vs `reset`, bisect to the first bad commit, kill switches for shipped features | `workflow` teaches writing changes, not undoing them; `git/git-branches` stops at branching |
+| 4 | The lockfile is a security artifact | Reviewing dependency and lockfile diffs, provenance, why `npm ci` must stay frozen | `agents/instruction-files` covers fabricated names, not version pinning or transitive churn |
+| 5 | Runtime evidence: logs, traces and metrics for agent runs | Deciding what to log so a run can be proven after the fact, and reading it as evidence | `agents/headless-and-scheduled` sets budgets and kill switches, not observability |
+| 6 | Version reality | Checking an agent's API claim against installed types and versions instead of trusting fluent prose | Distinct from hinted-at existence: this is drift between the model's memory and the installed tree |
+| 7 | Decomposition contracts | Slicing work into units an agent can finish and verify independently, with explicit interfaces | The mechanics stay flagged in `git-workflow-lab`; the decision of where to cut is core |
+| 8 | Placing approval gates | Which irreversible actions need a human checkpoint, and how to place one without blocking the loop | Nearest: `agents/permissions-and-sandbox`, which sets permissions but not checkpoint placement |
+| 9 | The failing-test loop | Reproduce, minimize, fix, prove — the loop to run with an agent instead of around it | Nearest: `agents/write-the-catching-test`, which writes the proof but not the debugging path |
+| 10 | Definition of done | The evidence packet (diff, run output, scope note, rollback line) that lets a reviewer accept instead of hope | Nearest: `workflow` PR intent and decision records; this closes the loop with evidence |
+
+Two of these — #7 and #10 — sit closest to existing material and are the first to cut if review judges them restatements: eight lessons give core 886 minutes and 34.3%, and the forecast then stands unmet for a documented reason rather than an unnoticed one.
+
 Profiles: `docs/curriculum-profile.json`, `docs/curriculum-profile-all-on.json`. Baseline: `docs/curriculum-baseline.json`.
 
 ## Feature flags and rollback
@@ -147,7 +166,7 @@ Files: flags/feature generator, Agent Internals/mock endpoint/Python relocation,
 
 ### Phases 4–5
 
-Dropped features remain dropped. Baseline and final targets recomputed rather than rounded to forecasts. Final default suite 616 passing tests, all-on suite also 616; final build/audit/matrix passing as detailed above. Hosted integration checks still need credentials and interactive review.
+Dropped features remain dropped. Baseline and final targets recomputed rather than rounded to forecasts. Final default suite 107 files / 903 tests, re-measured 2026-10-24; the all-flags suite passes 902 of 903, with the quiz-bias ratchet the single failure. Final build, audit and matrix pass as detailed above. Hosted integration checks still need credentials and interactive review.
 
 ## Corrections to previous claims
 
@@ -168,7 +187,7 @@ Dropped features remain dropped. Baseline and final targets recomputed rather th
 
 `main` had moved on without this branch: `3c4251e` (atlas learning paths, adds `three`) and `a6620e2` (rotated Convex secret in CI). The branch merged it in `e5505e3` and resolved the three conflicts in favour of the newer toolchain kept here (`react-router-dom` 7, Vite 6, Tailwind 4) plus the atlas additions (`three` 0.186.1, `@types/three` 0.186.0).
 
-Checks after the merge: `npx tsc -b --noEmit` exit 0; `npm test` 107 files / 903 tests pass; `npm run build` exit 0. The 616-test figure above is the pre-merge state.
+Checks after the merge: `npx tsc -b --noEmit` exit 0; `npm test` 107 files / 903 tests pass; `npm run build` exit 0. The 616-test figures that used to sit in the Final checks table recorded this pre-merge state and were replaced by the 2026-10-24 measurements above.
 
 ## Release and push status (2026-10-24)
 
