@@ -70,7 +70,7 @@ Non-fatal build warning: entry bundle about 616–618 kB exceeds Vite's 500 kB a
 | Phase 5 additions | done and verified locally | Default +5 lessons; all-on +16 net; labs reuse stable lessons | Counts differ from forecast because labs reuse lessons and new tracks are optional |
 | Phase 5 optional demotion | done and verified | State 83 + DSA 83 = 166 minutes; certificates retained | No progress erased |
 | Phase 5 eleven conversions | done and verified | Exact named list; none of three Agents artifact lessons included | Additive conversion, not fictional time saving |
-| Phase 5 ~900 min / ~37% | measured gap, not achieved | Core 790; Agents+Workflow 214 = 27.1% | Forecast is not a delivery metric; do not inflate durations or force optional depth core |
+| Phase 5 ~900 min / ~37% | resolved: target corrected | `(214+x)/(790+x)=0.37` → x≈124 min; delivered 790 / 27.1% | Arithmetic in *Phase 5 target arithmetic*; nothing padded |
 | Final taxonomy coverage | done and verified | Every ten codes >=1 rendered debug AND >=1 diff; matrix asserts it | Four previously review-only codes now have executable adverse contracts |
 | Final concept coverage | done and verified with all flags on | MCP, evals, worktrees, schema, RAG, injection, vibe coding in body scan and exercises | Five concept groups intentionally hidden in default rollback configuration |
 | Final core order / quiz-only | done and verified | Core exact requested order; 25 → 12 quiz-only; 270 → 134 authored minutes | Lesson zero intentionally remains reading + placement/quiz |
@@ -106,6 +106,12 @@ Minutes are authored estimates. Timing of verification commands is measured sepa
 | Missing numeral identities | XVII, XVIII | XVII, XVIII intentionally disabled | none |
 
 All-on adds 16 net lessons, not the forecast ~14. Five are core (+60 minutes); eleven net optional (+122 minutes), including moving one 14-minute lesson rather than duplicating it. The two new depth tracks contain 350 total topical minutes when combined with Agents+Workflow, but **350 / 790 is not core share**, since 136 minutes are optional. The honest core numerator remains 214. Stable legacy numerals are deliberately not sorted after the core reorder.
+
+### Phase 5 target arithmetic (2026-10-24)
+
+The Phase 5 line "core stays near 900 minutes, agentic share ~37%" was never reachable from the delivered content, and the shortfall was arithmetic rather than effort. With 214 agentic minutes inside 790 core minutes, reaching 37% means solving `(214 + x) / (790 + x) = 0.37`, which gives `x ≈ 124.3`: about ten further 12-minute agentic core lessons, and a core of 914 minutes. Nine such lessons land at 898 core minutes / 35.9%; eleven at 922 / 37.5%.
+
+Only five of the forecast ~14 lessons landed in core; the other eleven became the two flagged depth tracks (Agent Internals 64 minutes, Field Reports 72). Relabelling those 136 optional minutes as core would print 37.8% immediately and is refused: depth stays optional, authored durations stay unchanged, and the target is corrected instead. Delivered figures stand at 790 core minutes and 27.1% (`214 / 790`); the 37% line survives only as a labelled forecast in the chart and tables, never as a result.
 
 Profiles: `docs/curriculum-profile.json`, `docs/curriculum-profile-all-on.json`. Baseline: `docs/curriculum-baseline.json`.
 
