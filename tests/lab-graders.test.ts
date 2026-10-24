@@ -244,7 +244,7 @@ describe("rubric grading", () => {
 describe("Track XVI — the pilot track", () => {
   const track = tracks.find((t) => t.id === "agents")!;
 
-  it("keeps the pilot lessons in order, with #10 rule and headless lessons inserted", () => {
+  it("keeps the pilot lessons in order, with #10 rules, operation lessons and the capstone last", () => {
     expect(track.lessons.map((l) => l.id)).toEqual([
       "agentic-loop-zero",
       "specs-and-prompts",
@@ -257,6 +257,16 @@ describe("Track XVI — the pilot track", () => {
       "headless-and-scheduled-agents",
       "verifying-agent-output",
       "when-not-to-use-agents",
+      "characterization-tests",
+      "review-generated-migration",
+      "rollback-drills",
+      "lockfile-is-an-artifact",
+      "runtime-evidence",
+      "version-reality",
+      "decomposition-contracts",
+      "approval-gates",
+      "failing-test-loop",
+      "definition-of-done",
       "write-the-catching-test",
       "capstone-agent-loop",
     ]);

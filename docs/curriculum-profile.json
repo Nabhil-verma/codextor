@@ -1,9 +1,9 @@
 {
-  "lessons": 108,
+  "lessons": 118,
   "tracks": 17,
-  "minutes": 1298,
+  "minutes": 1418,
   "median": 12,
-  "coreMinutes": 790,
+  "coreMinutes": 910,
   "optionalMinutes": 508,
   "optionalTracks": [
     "dsa",
@@ -14,19 +14,19 @@
     "state",
     "performance"
   ],
-  "agenticLessons": 17,
-  "agenticMinutes": 214,
-  "agenticLessonShare": 15.74074074074074,
-  "agenticMinuteShare": 16.486902927580893,
-  "agenticCoreShare": 27.088607594936708,
+  "agenticLessons": 27,
+  "agenticMinutes": 334,
+  "agenticLessonShare": 22.88135593220339,
+  "agenticMinuteShare": 23.554301833568406,
+  "agenticCoreShare": 36.7032967032967,
   "starts": {
     "agents": {
       "minutes": 241,
       "lessons": 21
     },
     "workflow": {
-      "minutes": 406,
-      "lessons": 34
+      "minutes": 526,
+      "lessons": 44
     }
   },
   "rawRegistryStarts": {
@@ -35,8 +35,8 @@
       "lessons": 21
     },
     "workflow": {
-      "minutes": 406,
-      "lessons": 34
+      "minutes": 526,
+      "lessons": 44
     }
   },
   "exercises": {
@@ -44,8 +44,8 @@
     "diff": 19,
     "uniqueDiff": 17,
     "repo": 15,
-    "rubric": 8,
-    "criteria": 40
+    "rubric": 18,
+    "criteria": 81
   },
   "agentsRunnable": [
     "agents/write-the-catching-test"
@@ -181,8 +181,8 @@
       "numeral": "ⅩⅥ",
       "numeralValue": 16,
       "optional": false,
-      "lessons": 13,
-      "minutes": 165
+      "lessons": 23,
+      "minutes": 285
     },
     {
       "order": 5,
@@ -506,7 +506,7 @@
         },
         {
           "file": "src/data/manifest.ts",
-          "line": 116,
+          "line": 126,
           "snippet": "{ id: \"agent-guardrails\", title: \"Guardrails: prompt injection, dependencies and secrets\", minutes: 12, interaction: \"reading\", quizCount: 2, hasPredict: false, hasDebug: true, debugCode: \"ID\" },"
         }
       ]
@@ -527,22 +527,22 @@
         },
         {
           "file": "src/data/track-agents.ts",
-          "line": 28,
+          "line": 29,
           "snippet": "title: \"Vibe coding vs agentic engineering: the loop\","
         },
         {
           "file": "src/data/track-agents.ts",
-          "line": 30,
+          "line": 31,
           "snippet": "body: `**Vibe coding: accepting AI output because it looks right.** Plausible code, a polished explanation and a green badge are not interchangeable with evidence."
         },
         {
           "file": "src/data/track-agents.ts",
-          "line": 46,
+          "line": 47,
           "snippet": "Example: an agent says “tested locally” but supplies no output. Vibe coding accepts the claim. Agentic engineering requests the command and receipt, reproduces reversed response order, checks the test cannot pass on the bad draft, and monitors the deployed behavior."
         },
         {
           "file": "src/data/track-agents.ts",
-          "line": 50,
+          "line": 51,
           "snippet": "{q:\"Which is vibe coding?\",options:[\"Accepting AI output because it looks right\",\"Rejecting a plan that changes unrelated files\",\"Writing a test that catches the draft\"],answer:0,explanation:\"Appearance is substituted for evidence.\"},"
         }
       ]
@@ -630,6 +630,76 @@
       ]
     },
     {
+      "key": "agents/characterization-tests",
+      "words": 254,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "agents/review-generated-migration",
+      "words": 291,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "agents/rollback-drills",
+      "words": 272,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "agents/lockfile-is-an-artifact",
+      "words": 329,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "agents/runtime-evidence",
+      "words": 283,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "agents/version-reality",
+      "words": 259,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "agents/decomposition-contracts",
+      "words": 262,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "agents/approval-gates",
+      "words": 283,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "agents/failing-test-loop",
+      "words": 285,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "agents/definition-of-done",
+      "words": 289,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
       "key": "agents/write-the-catching-test",
       "words": 229,
       "exercises": [
@@ -707,6 +777,16 @@
     "agents/headless-and-scheduled-agents",
     "agents/verifying-agent-output",
     "agents/when-not-to-use-agents",
+    "agents/characterization-tests",
+    "agents/review-generated-migration",
+    "agents/rollback-drills",
+    "agents/lockfile-is-an-artifact",
+    "agents/runtime-evidence",
+    "agents/version-reality",
+    "agents/decomposition-contracts",
+    "agents/approval-gates",
+    "agents/failing-test-loop",
+    "agents/definition-of-done",
     "agents/write-the-catching-test",
     "agents/capstone-agent-loop",
     "workflow/pull-requests",
@@ -817,6 +897,16 @@
     "Headless & Scheduled Agents: What May Run Without You",
     "Verifying Agent Output: Tests Are the Review You Can't Skip",
     "Knowing When Not to Use an Agent",
+    "Characterization Tests Before the Refactor",
+    "Reading a Generated Migration",
+    "Rollback Drills: Revert, Bisect, Kill Switch",
+    "The Lockfile Is a Security Artifact",
+    "Runtime Evidence: Logs, Traces and Metrics",
+    "Version Reality: Checking the Agent's API Claims",
+    "Decomposition Contracts: Slicing Work for Agents",
+    "Placing Approval Gates on Irreversible Actions",
+    "The Failing-Test Loop",
+    "Definition of Done: The Evidence Packet",
     "Write the test that catches the agent",
     "Capstone: Run the Full Agent Loop",
     "Pull Requests: Intent and Tradeoffs",

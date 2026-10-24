@@ -1,6 +1,6 @@
 # Codextor
 
-> **A 100% free, interactive code teacher.** <!-- counts:words -->Seventeen tracks, 108 hands-on lessons<!-- /counts:words --> —
+> **A 100% free, interactive code teacher.** <!-- counts:words -->Seventeen tracks, 118 hands-on lessons<!-- /counts:words --> —
 > you write and run real code from minute one, in the browser, with easy signup.
 
 **Live:** [codextorcybo4.freebuff.app](https://codextorcybo4.freebuff.app)
@@ -65,7 +65,7 @@ A few consequences worth calling out, because they're unusual for a learning app
 
 ## Feature overview
 
-- **<!-- counts:pair -->17 curriculum tracks, 108 lessons<!-- /counts:pair -->** — Web foundations, React, Tailwind UI
+- **<!-- counts:pair -->17 curriculum tracks, 118 lessons<!-- /counts:pair -->** — Web foundations, React, Tailwind UI
   engineering, advanced React state, API integration, TypeScript for real
   projects, backend/Node, DSA, Python, Git & testing, DevOps/Linux/Docker, web
   security (OWASP), system design, web performance & accessibility,
@@ -143,7 +143,7 @@ A few consequences worth calling out, because they're unusual for a learning app
 | Ⅰ | Web Development Foundations | `web` | 10 | HTML5, CSS3, and modern JavaScript — the bedrock every frontend stands on. |
 | Ⅵ | Git, GitHub & Workflows | `git` | 4 | Version control, branches, PRs, and shipping pipelines — how teams actually work. |
 | Ⅶ | Testing & Debugging | `testing` | 7 | Write tests that catch bugs, hunt down the ones that slip through, and read production incidents. Watch after DevOps — its logs and containers vocabulary carries over. |
-| ⅩⅥ | Working with Coding Agents | `agents` | 13 | Operate the tool: write specs an agent can execute, read unfamiliar code, manage context, approve plans, choose permissions, and verify what ships. |
+| ⅩⅥ | Working with Coding Agents | `agents` | 23 | Operate the tool: write specs an agent can execute, read unfamiliar code, manage context, approve plans, choose permissions, and verify what ships. |
 | ⅩⅨ | Professional Workflow | `workflow` | 4 | PRs, review, tickets and decision records — the written work that decides whether code ships. |
 | Ⅸ | Web Security & OWASP | `security` | 7 | Think like an attacker: XSS, SQL injection, CSRF, CORS, and the habits that keep apps safe. |
 | XIV | TypeScript for Real Projects | `typescript` | 6 | The real compiler runs in your editor: write types, watch diagnostics with line and column, and ship code the compiler has already argued with. |
@@ -406,7 +406,7 @@ src/
 ├── data/
 │   ├── index.ts              # the track registry + findTrack/findLesson
 │   ├── types.ts              # Lesson, Check, DebugChallenge, PreviewSpec, …
-│   └── track-*.ts            # <!-- counts:tail -->17 tracks, 108 lessons of content<!-- /counts:tail -->
+│   └── track-*.ts            # <!-- counts:tail -->17 tracks, 118 lessons of content<!-- /counts:tail -->
 ├── lib/
 │   ├── localStore.ts         # the shared localStorage store + pub/sub primitive
 │   ├── progress.ts           # progress store on top of it, v1→v2 migration

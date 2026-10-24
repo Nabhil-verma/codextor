@@ -3,6 +3,7 @@ import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { tracks } from "../src/data";
+import { flagEnabled } from "../src/lib/flags";
 import { isPinnedOption } from "../src/lib/shuffle";
 
 /*
@@ -46,7 +47,32 @@ type Surface = {
 type Snapshot = {
   tracks: Record<string, { quiz: Surface; predict: Surface }>;
   global: { quiz: Surface; predict: Surface };
+  /**
+   * Global surfaces per flag configuration. A single `global` cannot serve both
+   * the default build and the all-flags build: they contain different tracks,
+   * so the denominators differ. Each configuration ratchets against its own
+   * entry; `global` stays as the fallback for baselines written before this.
+   */
+  globals?: Record<string, { quiz: Surface; predict: Surface }>;
+  /**
+   * Per-track surfaces per flag configuration. Track membership itself moves
+   * with the flags — `python-llm-api` relocates to Agent Internals when that
+   * track is enabled — so one set of per-track numbers cannot cover both
+   * builds. Each configuration ratchets against the tracks it actually has.
+   */
+  tracksByConfig?: Record<string, Record<string, { quiz: Surface; predict: Surface }>>;
 };
+
+/**
+ * Which build this run represents. The all-flags portfolio includes tracks the
+ * default build hides, so it needs its own global entry — and every track it
+ * can expose needs its own per-track entry, which is why the baseline is
+ * generated with all flags on before the default build is recorded.
+ */
+const CONFIG_LABEL =
+  (["agentInternals", "fieldReports", "gitWorktreeLab", "byokInterrogation", "reviewerCertificate"] as const)
+    .filter((name) => flagEnabled(name))
+    .join("+") || "default";
 
 const round4 = (x: number) => Math.round(x * 10000) / 10000;
 
@@ -109,11 +135,13 @@ function regressions(current: Snapshot, baseline: Snapshot): string[] {
       }
     }
   };
-  compare("global quiz", current.global.quiz, baseline.global.quiz);
-  compare("global predict", current.global.predict, baseline.global.predict);
+  const global = baseline.globals?.[CONFIG_LABEL] ?? baseline.global;
+  compare("global quiz", current.global.quiz, global.quiz);
+  compare("global predict", current.global.predict, global.predict);
   for (const [id, now] of Object.entries(current.tracks)) {
-    compare(`${id} quiz`, now.quiz, baseline.tracks[id]?.quiz);
-    compare(`${id} predict`, now.predict, baseline.tracks[id]?.predict);
+    const was = baseline.tracksByConfig?.[CONFIG_LABEL]?.[id] ?? baseline.tracks[id];
+    compare(`${id} quiz`, now.quiz, was?.quiz);
+    compare(`${id} predict`, now.predict, was?.predict);
   }
   return problems;
 }
@@ -214,8 +242,23 @@ describe("quiz answer bias ratchet", () => {
 
     if (process.env.UPDATE_QUIZ_BIAS_BASELINE === "1") {
       mkdirSync(dirname(BASELINE_PATH), { recursive: true });
-      writeFileSync(BASELINE_PATH, JSON.stringify(current, null, 2) + "\n");
-      console.info(`[quiz-bias] baseline regenerated at ${BASELINE_PATH}`);
+      // Merge rather than replace: regenerating under one flag set must not
+      // delete the entries that cover the other one. `global` keeps the first
+      // configuration recorded so older baselines still resolve.
+      let existing: Snapshot | null = null;
+      try {
+        existing = JSON.parse(readFileSync(BASELINE_PATH, "utf8")) as Snapshot;
+      } catch {
+        existing = null;
+      }
+      const merged: Snapshot = {
+        tracks: { ...(existing?.tracks ?? {}), ...current.tracks },
+        global: existing?.global ?? current.global,
+        globals: { ...(existing?.globals ?? {}), [CONFIG_LABEL]: current.global },
+        tracksByConfig: { ...(existing?.tracksByConfig ?? {}), [CONFIG_LABEL]: current.tracks },
+      };
+      writeFileSync(BASELINE_PATH, JSON.stringify(merged, null, 2) + "\n");
+      console.info(`[quiz-bias] baseline regenerated for ${CONFIG_LABEL} at ${BASELINE_PATH}`);
       return;
     }
 

@@ -81,17 +81,17 @@
     },
     "agents": {
       "quiz": {
-        "n": 50,
+        "n": 80,
         "indexShares": [
-          0.28,
-          0.52,
-          0.16,
-          0.04
+          0.2875,
+          0.45,
+          0.2125,
+          0.05
         ],
-        "maxIndexShare": 0.52,
-        "longestShare": 0.64,
-        "longestOrTiedCount": 32,
-        "longestOrTiedShare": 0.64
+        "maxIndexShare": 0.45,
+        "longestShare": 0.6375,
+        "longestOrTiedCount": 51,
+        "longestOrTiedShare": 0.6375
       },
       "predict": {
         "n": 0,
@@ -435,21 +435,71 @@
         "longestOrTiedCount": 0,
         "longestOrTiedShare": 0
       }
+    },
+    "agent-internals": {
+      "quiz": {
+        "n": 15,
+        "indexShares": [
+          0.0667,
+          0.8667,
+          0.0667,
+          0
+        ],
+        "maxIndexShare": 0.8667,
+        "longestShare": 0.8,
+        "longestOrTiedCount": 12,
+        "longestOrTiedShare": 0.8
+      },
+      "predict": {
+        "n": 1,
+        "indexShares": [
+          0,
+          1,
+          0,
+          0
+        ],
+        "maxIndexShare": 1,
+        "longestShare": 1,
+        "longestOrTiedCount": 1,
+        "longestOrTiedShare": 1
+      }
+    },
+    "field-reports": {
+      "quiz": {
+        "n": 12,
+        "indexShares": [
+          0.5833,
+          0.4167,
+          0
+        ],
+        "maxIndexShare": 0.5833,
+        "longestShare": 0.9167,
+        "longestOrTiedCount": 11,
+        "longestOrTiedShare": 0.9167
+      },
+      "predict": {
+        "n": 0,
+        "indexShares": [],
+        "maxIndexShare": 0,
+        "longestShare": 0,
+        "longestOrTiedCount": 0,
+        "longestOrTiedShare": 0
+      }
     }
   },
   "global": {
     "quiz": {
-      "n": 504,
+      "n": 556,
       "indexShares": [
-        0.125,
-        0.7937,
-        0.0754,
-        0.006
+        0.1439,
+        0.7626,
+        0.0845,
+        0.009
       ],
-      "maxIndexShare": 0.7937,
-      "longestShare": 0.8353,
-      "longestOrTiedCount": 432,
-      "longestOrTiedShare": 0.8571
+      "maxIndexShare": 0.7626,
+      "longestShare": 0.8255,
+      "longestOrTiedCount": 470,
+      "longestOrTiedShare": 0.8453
     },
     "predict": {
       "n": 25,
@@ -463,6 +513,992 @@
       "longestShare": 0.72,
       "longestOrTiedCount": 18,
       "longestOrTiedShare": 0.72
+    }
+  },
+  "globals": {
+    "agentInternals+fieldReports+gitWorktreeLab+byokInterrogation+reviewerCertificate": {
+      "quiz": {
+        "n": 556,
+        "indexShares": [
+          0.1439,
+          0.7626,
+          0.0845,
+          0.009
+        ],
+        "maxIndexShare": 0.7626,
+        "longestShare": 0.8255,
+        "longestOrTiedCount": 470,
+        "longestOrTiedShare": 0.8453
+      },
+      "predict": {
+        "n": 25,
+        "indexShares": [
+          0.16,
+          0.76,
+          0.08,
+          0
+        ],
+        "maxIndexShare": 0.76,
+        "longestShare": 0.72,
+        "longestOrTiedCount": 18,
+        "longestOrTiedShare": 0.72
+      }
+    },
+    "default": {
+      "quiz": {
+        "n": 534,
+        "indexShares": [
+          0.1348,
+          0.7678,
+          0.088,
+          0.0094
+        ],
+        "maxIndexShare": 0.7678,
+        "longestShare": 0.824,
+        "longestOrTiedCount": 451,
+        "longestOrTiedShare": 0.8446
+      },
+      "predict": {
+        "n": 25,
+        "indexShares": [
+          0.16,
+          0.76,
+          0.08,
+          0
+        ],
+        "maxIndexShare": 0.76,
+        "longestShare": 0.72,
+        "longestOrTiedCount": 18,
+        "longestOrTiedShare": 0.72
+      }
+    }
+  },
+  "tracksByConfig": {
+    "agentInternals+fieldReports+gitWorktreeLab+byokInterrogation+reviewerCertificate": {
+      "web": {
+        "quiz": {
+          "n": 50,
+          "indexShares": [
+            0.1,
+            0.8,
+            0.1,
+            0
+          ],
+          "maxIndexShare": 0.8,
+          "longestShare": 0.72,
+          "longestOrTiedCount": 40,
+          "longestOrTiedShare": 0.8
+        },
+        "predict": {
+          "n": 7,
+          "indexShares": [
+            0,
+            0.7143,
+            0.2857,
+            0
+          ],
+          "maxIndexShare": 0.7143,
+          "longestShare": 0.5714,
+          "longestOrTiedCount": 4,
+          "longestOrTiedShare": 0.5714
+        }
+      },
+      "git": {
+        "quiz": {
+          "n": 20,
+          "indexShares": [
+            0.1,
+            0.8,
+            0.05,
+            0.05
+          ],
+          "maxIndexShare": 0.8,
+          "longestShare": 0.9,
+          "longestOrTiedCount": 18,
+          "longestOrTiedShare": 0.9
+        },
+        "predict": {
+          "n": 0,
+          "indexShares": [],
+          "maxIndexShare": 0,
+          "longestShare": 0,
+          "longestOrTiedCount": 0,
+          "longestOrTiedShare": 0
+        }
+      },
+      "testing": {
+        "quiz": {
+          "n": 32,
+          "indexShares": [
+            0.0625,
+            0.875,
+            0.0625,
+            0
+          ],
+          "maxIndexShare": 0.875,
+          "longestShare": 0.9063,
+          "longestOrTiedCount": 29,
+          "longestOrTiedShare": 0.9063
+        },
+        "predict": {
+          "n": 2,
+          "indexShares": [
+            0.5,
+            0.5,
+            0,
+            0
+          ],
+          "maxIndexShare": 0.5,
+          "longestShare": 0.5,
+          "longestOrTiedCount": 1,
+          "longestOrTiedShare": 0.5
+        }
+      },
+      "agents": {
+        "quiz": {
+          "n": 80,
+          "indexShares": [
+            0.2875,
+            0.45,
+            0.2125,
+            0.05
+          ],
+          "maxIndexShare": 0.45,
+          "longestShare": 0.6375,
+          "longestOrTiedCount": 51,
+          "longestOrTiedShare": 0.6375
+        },
+        "predict": {
+          "n": 0,
+          "indexShares": [],
+          "maxIndexShare": 0,
+          "longestShare": 0,
+          "longestOrTiedCount": 0,
+          "longestOrTiedShare": 0
+        }
+      },
+      "workflow": {
+        "quiz": {
+          "n": 17,
+          "indexShares": [
+            0,
+            0.8824,
+            0.1176,
+            0
+          ],
+          "maxIndexShare": 0.8824,
+          "longestShare": 1,
+          "longestOrTiedCount": 17,
+          "longestOrTiedShare": 1
+        },
+        "predict": {
+          "n": 0,
+          "indexShares": [],
+          "maxIndexShare": 0,
+          "longestShare": 0,
+          "longestOrTiedCount": 0,
+          "longestOrTiedShare": 0
+        }
+      },
+      "security": {
+        "quiz": {
+          "n": 37,
+          "indexShares": [
+            0.2973,
+            0.7027,
+            0,
+            0
+          ],
+          "maxIndexShare": 0.7027,
+          "longestShare": 0.9189,
+          "longestOrTiedCount": 34,
+          "longestOrTiedShare": 0.9189
+        },
+        "predict": {
+          "n": 3,
+          "indexShares": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "maxIndexShare": 1,
+          "longestShare": 1,
+          "longestOrTiedCount": 3,
+          "longestOrTiedShare": 1
+        }
+      },
+      "typescript": {
+        "quiz": {
+          "n": 30,
+          "indexShares": [
+            0.1667,
+            0.7,
+            0.1333,
+            0
+          ],
+          "maxIndexShare": 0.7,
+          "longestShare": 0.9667,
+          "longestOrTiedCount": 29,
+          "longestOrTiedShare": 0.9667
+        },
+        "predict": {
+          "n": 0,
+          "indexShares": [],
+          "maxIndexShare": 0,
+          "longestShare": 0,
+          "longestOrTiedCount": 0,
+          "longestOrTiedShare": 0
+        }
+      },
+      "backend": {
+        "quiz": {
+          "n": 25,
+          "indexShares": [
+            0.12,
+            0.84,
+            0.04,
+            0
+          ],
+          "maxIndexShare": 0.84,
+          "longestShare": 0.8,
+          "longestOrTiedCount": 21,
+          "longestOrTiedShare": 0.84
+        },
+        "predict": {
+          "n": 2,
+          "indexShares": [
+            0.5,
+            0.5,
+            0,
+            0
+          ],
+          "maxIndexShare": 0.5,
+          "longestShare": 1,
+          "longestOrTiedCount": 2,
+          "longestOrTiedShare": 1
+        }
+      },
+      "react": {
+        "quiz": {
+          "n": 20,
+          "indexShares": [
+            0.05,
+            0.9,
+            0.05,
+            0
+          ],
+          "maxIndexShare": 0.9,
+          "longestShare": 0.85,
+          "longestOrTiedCount": 17,
+          "longestOrTiedShare": 0.85
+        },
+        "predict": {
+          "n": 0,
+          "indexShares": [],
+          "maxIndexShare": 0,
+          "longestShare": 0,
+          "longestOrTiedCount": 0,
+          "longestOrTiedShare": 0
+        }
+      },
+      "api": {
+        "quiz": {
+          "n": 25,
+          "indexShares": [
+            0,
+            0.8,
+            0.2,
+            0
+          ],
+          "maxIndexShare": 0.8,
+          "longestShare": 0.8,
+          "longestOrTiedCount": 21,
+          "longestOrTiedShare": 0.84
+        },
+        "predict": {
+          "n": 0,
+          "indexShares": [],
+          "maxIndexShare": 0,
+          "longestShare": 0,
+          "longestOrTiedCount": 0,
+          "longestOrTiedShare": 0
+        }
+      },
+      "dsa": {
+        "quiz": {
+          "n": 40,
+          "indexShares": [
+            0.05,
+            0.875,
+            0.075,
+            0
+          ],
+          "maxIndexShare": 0.875,
+          "longestShare": 0.625,
+          "longestOrTiedCount": 28,
+          "longestOrTiedShare": 0.7
+        },
+        "predict": {
+          "n": 2,
+          "indexShares": [
+            0.5,
+            0.5,
+            0,
+            0
+          ],
+          "maxIndexShare": 0.5,
+          "longestShare": 1,
+          "longestOrTiedCount": 2,
+          "longestOrTiedShare": 1
+        }
+      },
+      "python": {
+        "quiz": {
+          "n": 15,
+          "indexShares": [
+            0.1333,
+            0.8667,
+            0,
+            0
+          ],
+          "maxIndexShare": 0.8667,
+          "longestShare": 0.9333,
+          "longestOrTiedCount": 14,
+          "longestOrTiedShare": 0.9333
+        },
+        "predict": {
+          "n": 2,
+          "indexShares": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "maxIndexShare": 1,
+          "longestShare": 0.5,
+          "longestOrTiedCount": 1,
+          "longestOrTiedShare": 0.5
+        }
+      },
+      "devops": {
+        "quiz": {
+          "n": 30,
+          "indexShares": [
+            0.1,
+            0.8667,
+            0.0333,
+            0
+          ],
+          "maxIndexShare": 0.8667,
+          "longestShare": 0.8333,
+          "longestOrTiedCount": 27,
+          "longestOrTiedShare": 0.9
+        },
+        "predict": {
+          "n": 3,
+          "indexShares": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "maxIndexShare": 1,
+          "longestShare": 1,
+          "longestOrTiedCount": 3,
+          "longestOrTiedShare": 1
+        }
+      },
+      "architecture": {
+        "quiz": {
+          "n": 30,
+          "indexShares": [
+            0.0333,
+            0.9667,
+            0,
+            0
+          ],
+          "maxIndexShare": 0.9667,
+          "longestShare": 0.9667,
+          "longestOrTiedCount": 29,
+          "longestOrTiedShare": 0.9667
+        },
+        "predict": {
+          "n": 2,
+          "indexShares": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "maxIndexShare": 1,
+          "longestShare": 0.5,
+          "longestOrTiedCount": 1,
+          "longestOrTiedShare": 0.5
+        }
+      },
+      "tailwind": {
+        "quiz": {
+          "n": 24,
+          "indexShares": [
+            0.125,
+            0.8333,
+            0.0417,
+            0
+          ],
+          "maxIndexShare": 0.8333,
+          "longestShare": 0.9167,
+          "longestOrTiedCount": 22,
+          "longestOrTiedShare": 0.9167
+        },
+        "predict": {
+          "n": 0,
+          "indexShares": [],
+          "maxIndexShare": 0,
+          "longestShare": 0,
+          "longestOrTiedCount": 0,
+          "longestOrTiedShare": 0
+        }
+      },
+      "state": {
+        "quiz": {
+          "n": 24,
+          "indexShares": [
+            0,
+            0.9167,
+            0.0833,
+            0
+          ],
+          "maxIndexShare": 0.9167,
+          "longestShare": 1,
+          "longestOrTiedCount": 24,
+          "longestOrTiedShare": 1
+        },
+        "predict": {
+          "n": 1,
+          "indexShares": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "maxIndexShare": 1,
+          "longestShare": 0,
+          "longestOrTiedCount": 0,
+          "longestOrTiedShare": 0
+        }
+      },
+      "performance": {
+        "quiz": {
+          "n": 30,
+          "indexShares": [
+            0.3,
+            0.6667,
+            0.0333,
+            0
+          ],
+          "maxIndexShare": 0.6667,
+          "longestShare": 0.8667,
+          "longestOrTiedCount": 26,
+          "longestOrTiedShare": 0.8667
+        },
+        "predict": {
+          "n": 0,
+          "indexShares": [],
+          "maxIndexShare": 0,
+          "longestShare": 0,
+          "longestOrTiedCount": 0,
+          "longestOrTiedShare": 0
+        }
+      },
+      "agent-internals": {
+        "quiz": {
+          "n": 15,
+          "indexShares": [
+            0.0667,
+            0.8667,
+            0.0667,
+            0
+          ],
+          "maxIndexShare": 0.8667,
+          "longestShare": 0.8,
+          "longestOrTiedCount": 12,
+          "longestOrTiedShare": 0.8
+        },
+        "predict": {
+          "n": 1,
+          "indexShares": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "maxIndexShare": 1,
+          "longestShare": 1,
+          "longestOrTiedCount": 1,
+          "longestOrTiedShare": 1
+        }
+      },
+      "field-reports": {
+        "quiz": {
+          "n": 12,
+          "indexShares": [
+            0.5833,
+            0.4167,
+            0
+          ],
+          "maxIndexShare": 0.5833,
+          "longestShare": 0.9167,
+          "longestOrTiedCount": 11,
+          "longestOrTiedShare": 0.9167
+        },
+        "predict": {
+          "n": 0,
+          "indexShares": [],
+          "maxIndexShare": 0,
+          "longestShare": 0,
+          "longestOrTiedCount": 0,
+          "longestOrTiedShare": 0
+        }
+      }
+    },
+    "default": {
+      "web": {
+        "quiz": {
+          "n": 50,
+          "indexShares": [
+            0.1,
+            0.8,
+            0.1,
+            0
+          ],
+          "maxIndexShare": 0.8,
+          "longestShare": 0.72,
+          "longestOrTiedCount": 40,
+          "longestOrTiedShare": 0.8
+        },
+        "predict": {
+          "n": 7,
+          "indexShares": [
+            0,
+            0.7143,
+            0.2857,
+            0
+          ],
+          "maxIndexShare": 0.7143,
+          "longestShare": 0.5714,
+          "longestOrTiedCount": 4,
+          "longestOrTiedShare": 0.5714
+        }
+      },
+      "git": {
+        "quiz": {
+          "n": 20,
+          "indexShares": [
+            0.1,
+            0.8,
+            0.05,
+            0.05
+          ],
+          "maxIndexShare": 0.8,
+          "longestShare": 0.9,
+          "longestOrTiedCount": 18,
+          "longestOrTiedShare": 0.9
+        },
+        "predict": {
+          "n": 0,
+          "indexShares": [],
+          "maxIndexShare": 0,
+          "longestShare": 0,
+          "longestOrTiedCount": 0,
+          "longestOrTiedShare": 0
+        }
+      },
+      "testing": {
+        "quiz": {
+          "n": 32,
+          "indexShares": [
+            0.0625,
+            0.875,
+            0.0625,
+            0
+          ],
+          "maxIndexShare": 0.875,
+          "longestShare": 0.9063,
+          "longestOrTiedCount": 29,
+          "longestOrTiedShare": 0.9063
+        },
+        "predict": {
+          "n": 2,
+          "indexShares": [
+            0.5,
+            0.5,
+            0,
+            0
+          ],
+          "maxIndexShare": 0.5,
+          "longestShare": 0.5,
+          "longestOrTiedCount": 1,
+          "longestOrTiedShare": 0.5
+        }
+      },
+      "agents": {
+        "quiz": {
+          "n": 80,
+          "indexShares": [
+            0.2875,
+            0.45,
+            0.2125,
+            0.05
+          ],
+          "maxIndexShare": 0.45,
+          "longestShare": 0.6375,
+          "longestOrTiedCount": 51,
+          "longestOrTiedShare": 0.6375
+        },
+        "predict": {
+          "n": 0,
+          "indexShares": [],
+          "maxIndexShare": 0,
+          "longestShare": 0,
+          "longestOrTiedCount": 0,
+          "longestOrTiedShare": 0
+        }
+      },
+      "workflow": {
+        "quiz": {
+          "n": 17,
+          "indexShares": [
+            0,
+            0.8824,
+            0.1176,
+            0
+          ],
+          "maxIndexShare": 0.8824,
+          "longestShare": 1,
+          "longestOrTiedCount": 17,
+          "longestOrTiedShare": 1
+        },
+        "predict": {
+          "n": 0,
+          "indexShares": [],
+          "maxIndexShare": 0,
+          "longestShare": 0,
+          "longestOrTiedCount": 0,
+          "longestOrTiedShare": 0
+        }
+      },
+      "security": {
+        "quiz": {
+          "n": 37,
+          "indexShares": [
+            0.2973,
+            0.7027,
+            0,
+            0
+          ],
+          "maxIndexShare": 0.7027,
+          "longestShare": 0.9189,
+          "longestOrTiedCount": 34,
+          "longestOrTiedShare": 0.9189
+        },
+        "predict": {
+          "n": 3,
+          "indexShares": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "maxIndexShare": 1,
+          "longestShare": 1,
+          "longestOrTiedCount": 3,
+          "longestOrTiedShare": 1
+        }
+      },
+      "typescript": {
+        "quiz": {
+          "n": 30,
+          "indexShares": [
+            0.1667,
+            0.7,
+            0.1333,
+            0
+          ],
+          "maxIndexShare": 0.7,
+          "longestShare": 0.9667,
+          "longestOrTiedCount": 29,
+          "longestOrTiedShare": 0.9667
+        },
+        "predict": {
+          "n": 0,
+          "indexShares": [],
+          "maxIndexShare": 0,
+          "longestShare": 0,
+          "longestOrTiedCount": 0,
+          "longestOrTiedShare": 0
+        }
+      },
+      "backend": {
+        "quiz": {
+          "n": 25,
+          "indexShares": [
+            0.12,
+            0.84,
+            0.04,
+            0
+          ],
+          "maxIndexShare": 0.84,
+          "longestShare": 0.8,
+          "longestOrTiedCount": 21,
+          "longestOrTiedShare": 0.84
+        },
+        "predict": {
+          "n": 2,
+          "indexShares": [
+            0.5,
+            0.5,
+            0,
+            0
+          ],
+          "maxIndexShare": 0.5,
+          "longestShare": 1,
+          "longestOrTiedCount": 2,
+          "longestOrTiedShare": 1
+        }
+      },
+      "react": {
+        "quiz": {
+          "n": 20,
+          "indexShares": [
+            0.05,
+            0.9,
+            0.05,
+            0
+          ],
+          "maxIndexShare": 0.9,
+          "longestShare": 0.85,
+          "longestOrTiedCount": 17,
+          "longestOrTiedShare": 0.85
+        },
+        "predict": {
+          "n": 0,
+          "indexShares": [],
+          "maxIndexShare": 0,
+          "longestShare": 0,
+          "longestOrTiedCount": 0,
+          "longestOrTiedShare": 0
+        }
+      },
+      "api": {
+        "quiz": {
+          "n": 25,
+          "indexShares": [
+            0,
+            0.8,
+            0.2,
+            0
+          ],
+          "maxIndexShare": 0.8,
+          "longestShare": 0.8,
+          "longestOrTiedCount": 21,
+          "longestOrTiedShare": 0.84
+        },
+        "predict": {
+          "n": 0,
+          "indexShares": [],
+          "maxIndexShare": 0,
+          "longestShare": 0,
+          "longestOrTiedCount": 0,
+          "longestOrTiedShare": 0
+        }
+      },
+      "dsa": {
+        "quiz": {
+          "n": 40,
+          "indexShares": [
+            0.05,
+            0.875,
+            0.075,
+            0
+          ],
+          "maxIndexShare": 0.875,
+          "longestShare": 0.625,
+          "longestOrTiedCount": 28,
+          "longestOrTiedShare": 0.7
+        },
+        "predict": {
+          "n": 2,
+          "indexShares": [
+            0.5,
+            0.5,
+            0,
+            0
+          ],
+          "maxIndexShare": 0.5,
+          "longestShare": 1,
+          "longestOrTiedCount": 2,
+          "longestOrTiedShare": 1
+        }
+      },
+      "python": {
+        "quiz": {
+          "n": 20,
+          "indexShares": [
+            0.1,
+            0.85,
+            0.05,
+            0
+          ],
+          "maxIndexShare": 0.85,
+          "longestShare": 0.9,
+          "longestOrTiedCount": 18,
+          "longestOrTiedShare": 0.9
+        },
+        "predict": {
+          "n": 3,
+          "indexShares": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "maxIndexShare": 1,
+          "longestShare": 0.6667,
+          "longestOrTiedCount": 2,
+          "longestOrTiedShare": 0.6667
+        }
+      },
+      "devops": {
+        "quiz": {
+          "n": 30,
+          "indexShares": [
+            0.1,
+            0.8667,
+            0.0333,
+            0
+          ],
+          "maxIndexShare": 0.8667,
+          "longestShare": 0.8333,
+          "longestOrTiedCount": 27,
+          "longestOrTiedShare": 0.9
+        },
+        "predict": {
+          "n": 3,
+          "indexShares": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "maxIndexShare": 1,
+          "longestShare": 1,
+          "longestOrTiedCount": 3,
+          "longestOrTiedShare": 1
+        }
+      },
+      "architecture": {
+        "quiz": {
+          "n": 30,
+          "indexShares": [
+            0.0333,
+            0.9667,
+            0,
+            0
+          ],
+          "maxIndexShare": 0.9667,
+          "longestShare": 0.9667,
+          "longestOrTiedCount": 29,
+          "longestOrTiedShare": 0.9667
+        },
+        "predict": {
+          "n": 2,
+          "indexShares": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "maxIndexShare": 1,
+          "longestShare": 0.5,
+          "longestOrTiedCount": 1,
+          "longestOrTiedShare": 0.5
+        }
+      },
+      "tailwind": {
+        "quiz": {
+          "n": 24,
+          "indexShares": [
+            0.125,
+            0.8333,
+            0.0417,
+            0
+          ],
+          "maxIndexShare": 0.8333,
+          "longestShare": 0.9167,
+          "longestOrTiedCount": 22,
+          "longestOrTiedShare": 0.9167
+        },
+        "predict": {
+          "n": 0,
+          "indexShares": [],
+          "maxIndexShare": 0,
+          "longestShare": 0,
+          "longestOrTiedCount": 0,
+          "longestOrTiedShare": 0
+        }
+      },
+      "state": {
+        "quiz": {
+          "n": 24,
+          "indexShares": [
+            0,
+            0.9167,
+            0.0833,
+            0
+          ],
+          "maxIndexShare": 0.9167,
+          "longestShare": 1,
+          "longestOrTiedCount": 24,
+          "longestOrTiedShare": 1
+        },
+        "predict": {
+          "n": 1,
+          "indexShares": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "maxIndexShare": 1,
+          "longestShare": 0,
+          "longestOrTiedCount": 0,
+          "longestOrTiedShare": 0
+        }
+      },
+      "performance": {
+        "quiz": {
+          "n": 30,
+          "indexShares": [
+            0.3,
+            0.6667,
+            0.0333,
+            0
+          ],
+          "maxIndexShare": 0.6667,
+          "longestShare": 0.8667,
+          "longestOrTiedCount": 26,
+          "longestOrTiedShare": 0.8667
+        },
+        "predict": {
+          "n": 0,
+          "indexShares": [],
+          "maxIndexShare": 0,
+          "longestShare": 0,
+          "longestOrTiedCount": 0,
+          "longestOrTiedShare": 0
+        }
+      }
     }
   }
 }

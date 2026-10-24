@@ -4,7 +4,7 @@
  * for validation lives here. tests/site-gen.test.ts fails if it drifts.
  */
 export const TRACK_COUNT = 17;
-export const TOTAL_LESSONS = 108;
+export const TOTAL_LESSONS = 118;
 
 /**
  * Track titles, so a certificate records what it certifies.
@@ -75,6 +75,16 @@ export const TRACK_LESSON_KEYS: Record<string, string[]> = {
     "agents/headless-and-scheduled-agents",
     "agents/verifying-agent-output",
     "agents/when-not-to-use-agents",
+    "agents/characterization-tests",
+    "agents/review-generated-migration",
+    "agents/rollback-drills",
+    "agents/lockfile-is-an-artifact",
+    "agents/runtime-evidence",
+    "agents/version-reality",
+    "agents/decomposition-contracts",
+    "agents/approval-gates",
+    "agents/failing-test-loop",
+    "agents/definition-of-done",
     "agents/write-the-catching-test",
     "agents/capstone-agent-loop"
   ],

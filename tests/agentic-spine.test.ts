@@ -38,7 +38,9 @@ describe("agentic core spine and identity compatibility", () => {
     expect(before("agents")).toBe(241);
     // Lesson zero adds twelve authored minutes after the #1 verified checkpoint.
     // #10 adds two twelve-minute Agents lessons (enforceable rules, headless runs): +24.
-    expect(before("workflow")).toBe(406);
-    expect(core.flatMap(t => t.lessons).reduce((n,l) => n+l.minutes,0)).toBe(790);
+    // The ten operation lessons add 120 authored minutes inside Agents, so
+    // Workflow now starts at 241 + 285 and core reaches the Phase 5 target.
+    expect(before("workflow")).toBe(526);
+    expect(core.flatMap(t => t.lessons).reduce((n,l) => n+l.minutes,0)).toBe(910);
   });
 });

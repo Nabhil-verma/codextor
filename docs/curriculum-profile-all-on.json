@@ -1,9 +1,9 @@
 {
-  "lessons": 119,
+  "lessons": 129,
   "tracks": 19,
-  "minutes": 1420,
+  "minutes": 1540,
   "median": 12,
-  "coreMinutes": 790,
+  "coreMinutes": 910,
   "optionalMinutes": 630,
   "optionalTracks": [
     "dsa",
@@ -16,19 +16,19 @@
     "agent-internals",
     "field-reports"
   ],
-  "agenticLessons": 17,
-  "agenticMinutes": 214,
-  "agenticLessonShare": 14.285714285714285,
-  "agenticMinuteShare": 15.070422535211266,
-  "agenticCoreShare": 27.088607594936708,
+  "agenticLessons": 27,
+  "agenticMinutes": 334,
+  "agenticLessonShare": 20.930232558139537,
+  "agenticMinuteShare": 21.688311688311686,
+  "agenticCoreShare": 36.7032967032967,
   "starts": {
     "agents": {
       "minutes": 241,
       "lessons": 21
     },
     "workflow": {
-      "minutes": 406,
-      "lessons": 34
+      "minutes": 526,
+      "lessons": 44
     }
   },
   "rawRegistryStarts": {
@@ -37,8 +37,8 @@
       "lessons": 21
     },
     "workflow": {
-      "minutes": 406,
-      "lessons": 34
+      "minutes": 526,
+      "lessons": 44
     }
   },
   "exercises": {
@@ -46,8 +46,8 @@
     "diff": 19,
     "uniqueDiff": 17,
     "repo": 15,
-    "rubric": 14,
-    "criteria": 69
+    "rubric": 24,
+    "criteria": 110
   },
   "agentsRunnable": [
     "agents/write-the-catching-test"
@@ -180,8 +180,8 @@
       "numeral": "ⅩⅥ",
       "numeralValue": 16,
       "optional": false,
-      "lessons": 13,
-      "minutes": 165
+      "lessons": 23,
+      "minutes": 285
     },
     {
       "order": 5,
@@ -380,43 +380,7 @@
       "bodyLessons": [
         "agent-internals/tool-schemas-mcp"
       ],
-      "rawHits": [
-        {
-          "file": "src/data/manifest.ts",
-          "line": 298,
-          "snippet": "{ id: \"tool-schemas-mcp\", title: \"Tool Schemas and MCP Servers\", minutes: 10, interaction: \"interactive\", quizCount: 2, hasPredict: false, hasDebug: false },"
-        },
-        {
-          "file": "src/data/track-agent-internals.ts",
-          "line": 17,
-          "snippet": "\"tool-schemas-mcp\": {"
-        },
-        {
-          "file": "src/data/track-agent-internals.ts",
-          "line": 18,
-          "snippet": "starter: `// Validate tool name and read-only path before executing; MCP does not grant authority."
-        },
-        {
-          "file": "src/data/track-agent-internals.ts",
-          "line": 75,
-          "snippet": "id: \"tool-schemas-mcp\","
-        },
-        {
-          "file": "src/data/track-agent-internals.ts",
-          "line": 76,
-          "snippet": "title: \"Tool Schemas and MCP Servers\","
-        },
-        {
-          "file": "src/data/track-agent-internals.ts",
-          "line": 79,
-          "snippet": "body: `A tool is a name, a description and a typed argument schema. Structured output uses JSON schema to require an object such as {name: 'read_file', path: 'README.md'} with required properties and no extras. Validate both the schema and the allowlisted path at execution time; well-formed JSON is not authorization. The model chooses among the schemas it is given, so a vague description causes wrong calls. Keep schemas narrow: a path, not a free-form shell string.\\n\\nThe Model Context Protocol (MCP) lets a server publish tools and resources over a standard interface. A client may expose a selected subset of the server's tools. Review that subset and permit only read-only resources in this lab; publishing a tool does not itself authorize execution.`,"
-        },
-        {
-          "file": "src/data/track-agent-internals.ts",
-          "line": 82,
-          "snippet": "{ q: \"What should you do before connecting an MCP server?\", options: [\"Trust it because it is popular\", \"Review the published tools and expose only approved read-only capabilities\", \"Disable schema validation\"], answer: 1, explanation: \"The client and wrapper must restrict which published capabilities the model can actually use.\" },"
-        }
-      ]
+      "rawHits": 7
     },
     {
       "concept": "evals",
@@ -426,53 +390,7 @@
       "bodyLessons": [
         "agent-internals/evals"
       ],
-      "rawHits": [
-        {
-          "file": "src/data/manifest.ts",
-          "line": 292,
-          "snippet": "blurb: \"What happens inside the loop: requests, tool schemas, budgets, retrieval, and evals.\","
-        },
-        {
-          "file": "src/data/manifest.ts",
-          "line": 301,
-          "snippet": "{ id: \"evals\", title: \"Evals: Measuring an Agent Without Trusting It\", minutes: 10, interaction: \"interactive\", quizCount: 2, hasPredict: false, hasDebug: false },"
-        },
-        {
-          "file": "src/data/track-agent-internals.ts",
-          "line": 38,
-          "snippet": "\"evals\": {"
-        },
-        {
-          "file": "src/data/track-agent-internals.ts",
-          "line": 58,
-          "snippet": "blurb: \"What happens inside the loop: requests, tool schemas, budgets, retrieval, and evals.\","
-        },
-        {
-          "file": "src/data/track-agent-internals.ts",
-          "line": 108,
-          "snippet": "id: \"evals\","
-        },
-        {
-          "file": "src/data/track-agent-internals.ts",
-          "line": 109,
-          "snippet": "title: \"Evals: Measuring an Agent Without Trusting It\","
-        },
-        {
-          "file": "src/data/track-agent-internals.ts",
-          "line": 112,
-          "snippet": "body: `An eval is a fixed set of tasks with checks you can run again. Its value is repeatability: the same input gives the same score, so a change in score means a change in behaviour, not in mood.\\n\\nAn agent that grades its own work is not an eval. Use executable checks where possible, and keep a held-out set that the agent never sees while you tune it. Report the failures, not just the pass rate.`,"
-        },
-        {
-          "file": "src/data/track-agent-internals.ts",
-          "line": 114,
-          "snippet": "{ q: \"What makes an eval useful?\", options: [\"The agent grades its own output\", \"Fixed tasks and checks that can be rerun\", \"A high pass rate on tasks it has seen\"], answer: 1, explanation: \"Repeatable, unseen, executable checks measure behaviour.\" },"
-        },
-        {
-          "file": "src/data/track-agent-internals.ts",
-          "line": 115,
-          "snippet": "{ q: \"Why hold out a set of eval tasks?\", options: [\"To save tokens\", \"To detect overfitting while tuning\", \"Because held-out tasks are always easier\"], answer: 1, explanation: \"Tuning on the same tasks inflates the score.\" },"
-        }
-      ]
+      "rawHits": 9
     },
     {
       "concept": "worktrees / parallel agents",
@@ -482,13 +400,7 @@
       "bodyLessons": [
         "git/git-workflow-lab"
       ],
-      "rawHits": [
-        {
-          "file": "src/data/wire.ts",
-          "line": 31,
-          "snippet": "...(lesson.worktreeLab && flagEnabled(\"gitWorktreeLab\") ? { body: lesson.body + \"\\n\\nParallel agents need independent units and one branch or worktree per agent. A worktree shares Git objects but keeps its own working files and staging area. Never check out one branch in two worktrees. Integrate with rebase: replay each branch change onto main, stop at conflicts, edit the resolution, git add it in the conflicted worktree, then rebase --continue. Review the resulting diff and the behavior contract for every PR, not just the final branch. Use help in the parallel lab for its supported commands.\" } : {}),"
-        }
-      ]
+      "rawHits": 1
     },
     {
       "concept": "structured output / JSON schema",
@@ -498,13 +410,7 @@
       "bodyLessons": [
         "agent-internals/tool-schemas-mcp"
       ],
-      "rawHits": [
-        {
-          "file": "src/data/track-agent-internals.ts",
-          "line": 79,
-          "snippet": "body: `A tool is a name, a description and a typed argument schema. Structured output uses JSON schema to require an object such as {name: 'read_file', path: 'README.md'} with required properties and no extras. Validate both the schema and the allowlisted path at execution time; well-formed JSON is not authorization. The model chooses among the schemas it is given, so a vague description causes wrong calls. Keep schemas narrow: a path, not a free-form shell string.\\n\\nThe Model Context Protocol (MCP) lets a server publish tools and resources over a standard interface. A client may expose a selected subset of the server's tools. Review that subset and permit only read-only resources in this lab; publishing a tool does not itself authorize execution.`,"
-        }
-      ]
+      "rawHits": 1
     },
     {
       "concept": "RAG",
@@ -514,33 +420,7 @@
       "bodyLessons": [
         "agent-internals/retrieval-rag"
       ],
-      "rawHits": [
-        {
-          "file": "src/data/manifest.ts",
-          "line": 300,
-          "snippet": "{ id: \"retrieval-rag\", title: \"Retrieval (RAG) and Its Failure Modes\", minutes: 10, interaction: \"interactive\", quizCount: 2, hasPredict: false, hasDebug: false },"
-        },
-        {
-          "file": "src/data/track-agent-internals.ts",
-          "line": 31,
-          "snippet": "\"retrieval-rag\": {"
-        },
-        {
-          "file": "src/data/track-agent-internals.ts",
-          "line": 97,
-          "snippet": "id: \"retrieval-rag\","
-        },
-        {
-          "file": "src/data/track-agent-internals.ts",
-          "line": 98,
-          "snippet": "title: \"Retrieval (RAG) and Its Failure Modes\","
-        },
-        {
-          "file": "src/data/track-agent-internals.ts",
-          "line": 101,
-          "snippet": "body: `Retrieval-augmented generation (RAG) adds source documents to a model request before it produces an answer. Retrieval adds documents to the request that match the question. It fails in three predictable ways: the right document is not retrieved, a stale document is retrieved, or a retrieved document contains instructions the model obeys.\\n\\nTreat retrieved text as evidence, not authority. Cite the source, check its date, and keep the instruction boundary from the guardrails lesson: a document can inform a decision but cannot grant permissions.`,"
-        }
-      ]
+      "rawHits": 5
     },
     {
       "concept": "prompt injection",
@@ -550,23 +430,7 @@
       "bodyLessons": [
         "security/agent-guardrails"
       ],
-      "rawHits": [
-        {
-          "file": "src/data/guardrails.ts",
-          "line": 32,
-          "snippet": "id:'agent-guardrails',title:'Guardrails: prompt injection, dependencies and secrets',minutes:12,reviewed:'2026-10',toolDependent:true,reviewBy:'2026-12-30',"
-        },
-        {
-          "file": "src/data/guardrails.ts",
-          "line": 33,
-          "snippet": "body:`**Prompt injection** is an attempt to make untrusted content act like instructions. An indirect injection arrives through a README, issue, retrieved document or tool output rather than the human task. The transcript below shows the exact boundary crossing: reading is allowed; adopting the document's command as authority is not."
-        },
-        {
-          "file": "src/data/manifest.ts",
-          "line": 116,
-          "snippet": "{ id: \"agent-guardrails\", title: \"Guardrails: prompt injection, dependencies and secrets\", minutes: 12, interaction: \"reading\", quizCount: 2, hasPredict: false, hasDebug: true, debugCode: \"ID\" },"
-        }
-      ]
+      "rawHits": 3
     },
     {
       "concept": "vibe coding",
@@ -576,33 +440,7 @@
       "bodyLessons": [
         "agents/agentic-loop-zero"
       ],
-      "rawHits": [
-        {
-          "file": "src/data/manifest.ts",
-          "line": 83,
-          "snippet": "{ id: \"agentic-loop-zero\", title: \"Vibe coding vs agentic engineering: the loop\", minutes: 12, interaction: \"reading\", quizCount: 2, hasPredict: false, hasDebug: false },"
-        },
-        {
-          "file": "src/data/track-agents.ts",
-          "line": 28,
-          "snippet": "title: \"Vibe coding vs agentic engineering: the loop\","
-        },
-        {
-          "file": "src/data/track-agents.ts",
-          "line": 30,
-          "snippet": "body: `**Vibe coding: accepting AI output because it looks right.** Plausible code, a polished explanation and a green badge are not interchangeable with evidence."
-        },
-        {
-          "file": "src/data/track-agents.ts",
-          "line": 46,
-          "snippet": "Example: an agent says “tested locally” but supplies no output. Vibe coding accepts the claim. Agentic engineering requests the command and receipt, reproduces reversed response order, checks the test cannot pass on the bad draft, and monitors the deployed behavior."
-        },
-        {
-          "file": "src/data/track-agents.ts",
-          "line": 50,
-          "snippet": "{q:\"Which is vibe coding?\",options:[\"Accepting AI output because it looks right\",\"Rejecting a plan that changes unrelated files\",\"Writing a test that catches the draft\"],answer:0,explanation:\"Appearance is substituted for evidence.\"},"
-        }
-      ]
+      "rawHits": 5
     }
   ],
   "agenticBodies": [
@@ -687,6 +525,76 @@
       ]
     },
     {
+      "key": "agents/characterization-tests",
+      "words": 254,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "agents/review-generated-migration",
+      "words": 291,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "agents/rollback-drills",
+      "words": 272,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "agents/lockfile-is-an-artifact",
+      "words": 329,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "agents/runtime-evidence",
+      "words": 283,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "agents/version-reality",
+      "words": 259,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "agents/decomposition-contracts",
+      "words": 262,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "agents/approval-gates",
+      "words": 283,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "agents/failing-test-loop",
+      "words": 285,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
+      "key": "agents/definition-of-done",
+      "words": 289,
+      "exercises": [
+        "rubric"
+      ]
+    },
+    {
       "key": "agents/write-the-catching-test",
       "words": 229,
       "exercises": [
@@ -730,247 +638,5 @@
         "rubric"
       ]
     }
-  ],
-  "keys": [
-    "web/html-semantic",
-    "web/box-model-deep",
-    "web/responsive-deep",
-    "web/css-layout",
-    "web/scope-context",
-    "web/es6-syntax",
-    "web/dom-events",
-    "web/async-promises",
-    "web/fetch-api",
-    "web/capstone-utility-belt",
-    "git/git-basics",
-    "git/git-branches",
-    "git/git-workflow-lab",
-    "git/git-ci",
-    "testing/testing-why",
-    "testing/debugging-method",
-    "testing/tdd-mocking",
-    "testing/debug-the-bug",
-    "testing/prod-traces",
-    "testing/prod-logs",
-    "testing/incident-timeline",
-    "agents/agentic-loop-zero",
-    "agents/specs-and-prompts",
-    "agents/codebase-archaeology",
-    "agents/managing-context",
-    "agents/instruction-files",
-    "agents/plan-before-code",
-    "agents/enforceable-rules",
-    "agents/permissions-and-sandbox",
-    "agents/headless-and-scheduled-agents",
-    "agents/verifying-agent-output",
-    "agents/when-not-to-use-agents",
-    "agents/write-the-catching-test",
-    "agents/capstone-agent-loop",
-    "workflow/pull-requests",
-    "workflow/reviewing-diffs",
-    "workflow/vague-request-ticket",
-    "workflow/decision-records",
-    "security/agent-guardrails",
-    "security/xss",
-    "security/sqli",
-    "security/csrf-auth",
-    "security/cors-headers",
-    "security/rate-limit-secrets",
-    "security/data-boundaries",
-    "typescript/annotations",
-    "typescript/narrowing",
-    "typescript/generics",
-    "typescript/interfaces-types",
-    "typescript/unknown-errors",
-    "typescript/capstone-type-layer",
-    "backend/node-event-loop",
-    "backend/express-middleware",
-    "backend/rest-auth",
-    "backend/databases",
-    "backend/api-security",
-    "react/jsx-vdom",
-    "react/props-state",
-    "react/hooks-effect",
-    "react/react-styling-routing",
-    "api/http-verbs",
-    "api/fetch-async",
-    "api/loading-errors",
-    "api/abort-races",
-    "api/optimistic",
-    "api/capstone-api-client",
-    "dsa/big-o",
-    "dsa/hash-maps",
-    "dsa/linked-lists-stacks-queues",
-    "dsa/trees-recursion",
-    "dsa/sorting",
-    "dsa/patterns-two-pointer",
-    "dsa/graphs-bfs-dfs",
-    "dsa/dp-intro",
-    "python/python-syntax",
-    "python/python-oop",
-    "python/pandas-numpy",
-    "devops/bash-basics",
-    "devops/bash-scripting",
-    "devops/file-permissions",
-    "devops/processes-services",
-    "devops/docker-dockerfile",
-    "devops/nginx-ssl-ci",
-    "architecture/monolith-vs-microservices",
-    "architecture/caching-and-redis",
-    "architecture/load-balancing",
-    "architecture/websockets-realtime",
-    "architecture/sharding-and-queues",
-    "architecture/capstone-system-design",
-    "tailwind/utility-first",
-    "tailwind/layout-flex-grid",
-    "tailwind/responsive-dark",
-    "tailwind/states-motion",
-    "tailwind/design-tokens",
-    "tailwind/capstone-ui-kit",
-    "state/state-shapes",
-    "state/usereducer",
-    "state/context",
-    "state/external-stores",
-    "state/server-state",
-    "state/capstone-state-machine",
-    "performance/web-vitals",
-    "performance/layout-shift",
-    "performance/contrast",
-    "performance/keyboard-focus",
-    "performance/critical-rendering",
-    "performance/capstone-audit",
-    "agent-internals/request-loop",
-    "agent-internals/tool-schemas-mcp",
-    "agent-internals/context-budgets",
-    "agent-internals/retrieval-rag",
-    "agent-internals/evals",
-    "agent-internals/python-llm-api",
-    "field-reports/first-fault-report",
-    "field-reports/secret-incident-report",
-    "field-reports/invented-api-report",
-    "field-reports/missing-test-report",
-    "field-reports/edge-case-report",
-    "field-reports/own-session-report"
-  ],
-  "titles": [
-    "Semantic HTML: Pages That Mean Something",
-    "The Box Model, Margins & Collapsing",
-    "Responsive Design: Mobile-First in Practice",
-    "Flexbox, Grid & Responsive Strategy",
-    "Execution Context & Scope: let, const, var",
-    "ES6+ Power Syntax: Arrows & Destructuring",
-    "DOM Traversal & Event Delegation",
-    "Promises & async/await",
-    "Fetching Real APIs (with a Mock Server)",
-    "Capstone: Build Your Utility Belt",
-    "Git Foundations: Staging & Commits",
-    "Branches & Resolving Conflicts",
-    "The Git Workflow Lab",
-    "CI/CD: Shipping Automatically",
-    "Why Test? The Test Pyramid & First Assertions",
-    "Debugging: A Scientific Method",
-    "TDD, Mocks & Testing Async Code",
-    "Debug the Bug: Fix Three Broken Programs",
-    "Production Stack Traces",
-    "Structured Logs: Reconstructing What Happened",
-    "The Incident Timeline Across Services",
-    "Vibe coding vs agentic engineering: the loop",
-    "Specs and Prompts: From Vague Task to Executable Spec",
-    "Codebase Archaeology: Finding Where Things Live",
-    "Managing Context: What Goes In, What Stays Out",
-    "Project Instruction Files: Teaching an Agent Your Conventions",
-    "Plan Before Code: The Cheapest Place to Catch a Misunderstanding",
-    "Enforceable Rules: Text Asks, Gates Enforce",
-    "Permissions & Sandbox Settings: Least Privilege for an Unattended Tool",
-    "Headless & Scheduled Agents: What May Run Without You",
-    "Verifying Agent Output: Tests Are the Review You Can't Skip",
-    "Knowing When Not to Use an Agent",
-    "Write the test that catches the agent",
-    "Capstone: Run the Full Agent Loop",
-    "Pull Requests: Intent and Tradeoffs",
-    "Reviewing Someone Else's Diff",
-    "Turning a Vague Request into a Ticket",
-    "Explaining Your Decisions in Writing",
-    "Guardrails: prompt injection, dependencies and secrets",
-    "Cross-Site Scripting (XSS)",
-    "SQL Injection & Input Validation",
-    "CSRF & Broken Authentication",
-    "CORS, CSP & Security Headers",
-    "Rate Limiting & Secret Management",
-    "Data Boundaries: What Not to Paste Into AI Tools",
-    "Annotations, Inference & Structural Typing",
-    "Discriminated Unions & Narrowing",
-    "Generics That Pay Rent",
-    "Interfaces, Aliases & Object Shapes",
-    "unknown, Type Guards & Safe Boundaries",
-    "Capstone: A Type-Safe Data Layer",
-    "Node.js & the Event Loop",
-    "Express & the Middleware Pipeline",
-    "REST Design, Hashing & JWT",
-    "Databases: SQL, Documents & ORMs",
-    "API Security: CORS, Validation & Rate Limits",
-    "JSX & the Virtual DOM",
-    "Props vs State: The Data Contracts",
-    "Hooks in Depth: useEffect & Friends",
-    "Tailwind, Routing & App Architecture",
-    "HTTP, REST & Status Codes",
-    "Errors, Ordering & the Missing Await",
-    "The Four States of Every Request",
-    "Races, Aborts & Debounce",
-    "Optimistic Updates & Cache Invalidation",
-    "Capstone: A Retrying, Resilient API Client",
-    "Big-O: Measuring Growth, Not Seconds",
-    "Hash Maps: The O(1) Cheat Code",
-    "Linked Lists, Stacks & Queues",
-    "Trees & Recursion",
-    "Sorting: Merge & Quick Sort",
-    "Patterns: Two Pointers & Sliding Window",
-    "Graphs: BFS & DFS",
-    "Dynamic Programming: Overlapping Subproblems",
-    "Python Syntax & Core Collections",
-    "OOP: Classes, Inheritance & Exceptions",
-    "Data Wrangling: NumPy & pandas",
-    "The Linux Filesystem & Essential Bash",
-    "Bash Scripting: Automate Everything Twice",
-    "File Permissions: chmod & chown",
-    "Processes, systemd & Server Hygiene",
-    "Docker: Package It Once, Run It Anywhere",
-    "Nginx, HTTPS & CI/CD Pipelines",
-    "Monoliths vs. Microservices",
-    "Caching & Redis (with an LRU exercise)",
-    "Load Balancing & Horizontal Scaling",
-    "WebSockets & Real-Time Systems",
-    "Database Sharding & Message Queues",
-    "Capstone: Design a URL Shortener (in code)",
-    "Utility-First: The Mental Model",
-    "Layout: Flexbox & Grid in Utilities",
-    "Responsive & Dark Mode Systems",
-    "States, Variants & Motion",
-    "Tokens, Theme Config & Custom Scales",
-    "Capstone: Build a Component Kit",
-    "Choosing a State Shape",
-    "useReducer: State Machines in Disguise",
-    "Context Without the Re-Render Tax",
-    "External Stores & useSyncExternalStore",
-    "Server State ≠ Client State",
-    "Capstone: A Guarded Checkout State Machine",
-    "Core Web Vitals: What Users Actually Feel",
-    "Fixing CLS: Reserve the Space",
-    "Contrast: Reading Is a Feature",
-    "Keyboard & Semantics: Real Elements Win",
-    "The Rendering Path: Reflow, Repaint, Restyle",
-    "Capstone: The Performance & A11y Audit",
-    "The Request Loop: Messages, Tools, Stop Reasons",
-    "Tool Schemas and MCP Servers",
-    "Context and Token Budgets",
-    "Retrieval (RAG) and Its Failure Modes",
-    "Evals: Measuring an Agent Without Trusting It",
-    "Calling LLM APIs from Python",
-    "Write the First-Fault Field Report",
-    "Write the Secret-Exposure Field Report",
-    "Field report: Calls a method that does not exist",
-    "Field report: Claims success without running anything",
-    "Field report: Divides by an empty collection",
-    "Report on Your Own Agent Session"
   ]
 }

@@ -5,7 +5,7 @@
 > self-checking exercises — no videos, no paywall, and no build setup. Everything
 > runs client-side in the learner's browser.
 
-Codextor covers 17 tracks and 108 hands-on lessons spanning web
+Codextor covers 17 tracks and 118 hands-on lessons spanning web
 fundamentals, TypeScript, React, back-end and APIs, Python, data structures and
 algorithms, Git, testing, DevOps, security, architecture, performance, and AI
 agents. Progress, streaks, and badges sync to a free account, and learners can
@@ -22,7 +22,7 @@ compare scores on weekly leaderboards or form guilds.
 - [Web Development Foundations](https://codextorcybo4.freebuff.app/syllabus/web/): 10 lessons. HTML5, CSS3, and modern JavaScript — the bedrock every frontend stands on.
 - [Git, GitHub & Workflows](https://codextorcybo4.freebuff.app/syllabus/git/): 4 lessons. Version control, branches, PRs, and shipping pipelines — how teams actually work.
 - [Testing & Debugging](https://codextorcybo4.freebuff.app/syllabus/testing/): 7 lessons. Write tests that catch bugs, hunt down the ones that slip through, and read production incidents. Watch after DevOps — its logs and containers vocabulary carries over.
-- [Working with Coding Agents](https://codextorcybo4.freebuff.app/syllabus/agents/): 13 lessons. Operate the tool: write specs an agent can execute, read unfamiliar code, manage context, approve plans, choose permissions, and verify what ships.
+- [Working with Coding Agents](https://codextorcybo4.freebuff.app/syllabus/agents/): 23 lessons. Operate the tool: write specs an agent can execute, read unfamiliar code, manage context, approve plans, choose permissions, and verify what ships.
 - [Professional Workflow](https://codextorcybo4.freebuff.app/syllabus/workflow/): 4 lessons. PRs, review, tickets and decision records — the written work that decides whether code ships.
 - [Web Security & OWASP](https://codextorcybo4.freebuff.app/syllabus/security/): 7 lessons. Think like an attacker: XSS, SQL injection, CSRF, CORS, and the habits that keep apps safe.
 - [TypeScript for Real Projects](https://codextorcybo4.freebuff.app/syllabus/typescript/): 6 lessons. The real compiler runs in your editor: write types, watch diagnostics with line and column, and ship code the compiler has already argued with.

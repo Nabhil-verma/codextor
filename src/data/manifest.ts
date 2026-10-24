@@ -91,6 +91,16 @@ export const MANIFEST_TRACKS: ManifestTrack[] = [
     { id: "headless-and-scheduled-agents", title: "Headless & Scheduled Agents: What May Run Without You", minutes: 12, interaction: "reading", quizCount: 2, hasPredict: false, hasDebug: false },
     { id: "verifying-agent-output", title: "Verifying Agent Output: Tests Are the Review You Can't Skip", minutes: 13, interaction: "reading", quizCount: 3, hasPredict: false, hasDebug: true, debugCode: "TG" },
     { id: "when-not-to-use-agents", title: "Knowing When Not to Use an Agent", minutes: 10, interaction: "reading", quizCount: 8, hasPredict: false, hasDebug: false },
+    { id: "characterization-tests", title: "Characterization Tests Before the Refactor", minutes: 12, interaction: "reading", quizCount: 3, hasPredict: false, hasDebug: false },
+    { id: "review-generated-migration", title: "Reading a Generated Migration", minutes: 12, interaction: "reading", quizCount: 3, hasPredict: false, hasDebug: false },
+    { id: "rollback-drills", title: "Rollback Drills: Revert, Bisect, Kill Switch", minutes: 12, interaction: "reading", quizCount: 3, hasPredict: false, hasDebug: false },
+    { id: "lockfile-is-an-artifact", title: "The Lockfile Is a Security Artifact", minutes: 12, interaction: "reading", quizCount: 3, hasPredict: false, hasDebug: false },
+    { id: "runtime-evidence", title: "Runtime Evidence: Logs, Traces and Metrics", minutes: 12, interaction: "reading", quizCount: 3, hasPredict: false, hasDebug: false },
+    { id: "version-reality", title: "Version Reality: Checking the Agent's API Claims", minutes: 12, interaction: "reading", quizCount: 3, hasPredict: false, hasDebug: false },
+    { id: "decomposition-contracts", title: "Decomposition Contracts: Slicing Work for Agents", minutes: 12, interaction: "reading", quizCount: 3, hasPredict: false, hasDebug: false },
+    { id: "approval-gates", title: "Placing Approval Gates on Irreversible Actions", minutes: 12, interaction: "reading", quizCount: 3, hasPredict: false, hasDebug: false },
+    { id: "failing-test-loop", title: "The Failing-Test Loop", minutes: 12, interaction: "reading", quizCount: 3, hasPredict: false, hasDebug: false },
+    { id: "definition-of-done", title: "Definition of Done: The Evidence Packet", minutes: 12, interaction: "reading", quizCount: 3, hasPredict: false, hasDebug: false },
     { id: "write-the-catching-test", title: "Write the test that catches the agent", minutes: 12, interaction: "reading", quizCount: 2, hasPredict: false, hasDebug: false },
     { id: "capstone-agent-loop", title: "Capstone: Run the Full Agent Loop", minutes: 22, interaction: "reading", quizCount: 3, hasPredict: false, hasDebug: true, debugCode: "RC" },
     ],
@@ -290,7 +300,7 @@ export const MANIFEST_TRACKS: ManifestTrack[] = [
 ];
 
 export const TRACK_COUNT = 17;
-export const TOTAL_LESSONS = 108;
+export const TOTAL_LESSONS = 118;
 
 /** Stable progress-map key for one lesson. */
 export function lessonKey(trackId: string, lessonId: string): string {

@@ -1,3 +1,4 @@
+import { AGENTIC_CORE_LESSONS } from "./agentic-core-lessons";
 import { catchAgentLesson } from "./catch-agent";
 import { TRANSCRIPT_CASES } from "./transcripts";
 import { PLAN_APPROVAL, PERMISSION_SIM, DELEGATION_REPLAY, ENFORCEMENT_RULES, UNATTENDED_RUNS } from "./decision-artifacts";
@@ -867,6 +868,11 @@ The signals: *Can I state the acceptance criterion as something a machine can ch
         },
       ],
     },
+    // The operation-side lessons: characterization, migrations, rollback,
+    // dependency provenance, run evidence, version reality, decomposition,
+    // approval gates, the failing-test loop and the evidence packet. They sit
+    // before the capstone so the loop is practised with every part in place.
+    ...AGENTIC_CORE_LESSONS,
     catchAgentLesson,
     {
       id: "capstone-agent-loop",
