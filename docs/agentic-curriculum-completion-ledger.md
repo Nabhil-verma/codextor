@@ -158,4 +158,12 @@ Dropped features remain dropped. Baseline and final targets recomputed rather th
 2. **Hosted CI:** authorize a commit/push or connect GitHub and run the workflow; local runs are not hosted run evidence.
 3. **Interactive acceptance:** check both visual styles/light-dark/reduced motion and real sign-in in the preview; configure BYOK through Settings → AI and try a provider request. Those cannot be established by HTTP or mocked provider tests. The Igloo reference returns only a JS shell to the available reader; no direct rendered comparison is claimed.
 
-All work is uncommitted. Imported restoration shows widespread pre-existing CRLF changes and unrelated modified skill files; do not stage them blindly. Structural field-report checks are transparent about their limits. No live effectiveness, guaranteed human identity, external anti-cheat, measured learner speedup, or production release claim is made.
+## Merge with `origin/main` (2026-10-24)
+
+`main` had moved on without this branch: `3c4251e` (atlas learning paths, adds `three`) and `a6620e2` (rotated Convex secret in CI). The branch merged it in `e5505e3` and resolved the three conflicts in favour of the newer toolchain kept here (`react-router-dom` 7, Vite 6, Tailwind 4) plus the atlas additions (`three` 0.186.1, `@types/three` 0.186.0).
+
+Checks after the merge: `npx tsc -b --noEmit` exit 0; `npm test` 107 files / 903 tests pass; `npm run build` exit 0. The 616-test figure above is the pre-merge state.
+
+## Repo state
+
+The work is committed, not an uncommitted worktree: `c5a84b6`, `4dceeca`, `b469c92`, then the merge `e5505e3`. Imported restoration showed widespread pre-existing CRLF changes and unrelated modified skill files, which were not staged. Hosted CI, the Convex deployment and interactive browser checks remain unverified for the reasons above.
