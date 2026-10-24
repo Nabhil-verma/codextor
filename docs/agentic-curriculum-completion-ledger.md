@@ -2,7 +2,7 @@
 
 Verified against restored repository state on **2026-10-23**. This replaces earlier completion claims; historical receipts remain historical, not proof of the current code.
 
-**Local implementation and acceptance checks pass. This is not a fully verified hosted release.** Convex deployment is blocked because `CONVEX_DEPLOY_KEY` is not set. Interactive browser/sign-in, a real BYOK provider request, and a hosted GitHub Actions run are unverified. No commit, push, production-data change or deployment was performed.
+**Local implementation and acceptance checks pass. This is not a fully verified hosted release.** Convex deployment is blocked because `CONVEX_DEPLOY_KEY` is not set. Interactive browser/sign-in, a real BYOK provider request, and a hosted GitHub Actions run are unverified. Commit and deployment are recorded under *Release and push status*; the push to `main` is still outstanding, so none of this is hosted-release proof.
 
 ## Final checks
 
@@ -164,6 +164,24 @@ Dropped features remain dropped. Baseline and final targets recomputed rather th
 
 Checks after the merge: `npx tsc -b --noEmit` exit 0; `npm test` 107 files / 903 tests pass; `npm run build` exit 0. The 616-test figure above is the pre-merge state.
 
+## Release and push status (2026-10-24)
+
+**Production site.** `https://codextor.freebuff.page` (Sites production environment; subdomain attached 09:17). The 08:50 deploy carries the merge described above.
+
+**Reported symptom.** With JavaScript disabled for the site, the homepage rendered as a long plain page. Cause: `index.html` held a complete second copy of the landing copy inside `<noscript>`, with its own inline `.nojs` styles. Nothing had been deleted, and `/assets/index-*.js` still returned 200 `text/javascript` with the stylesheet at 200 `text/css`; the app never booted, so the fallback copy was all the browser had to show.
+
+**Fix.** That duplicate was replaced by one short notice: "Codextor needs JavaScript — every lesson runs real code in your browser. Turn JavaScript on for this site, then reload." The generated `counts:hero` markers were left intact, so `scripts/gen-site.mjs` and `tests/site-gen.test.ts` are unaffected (`d3e6614`).
+
+**Verified after redeploy,** on both the `site-a79080c5….freebuff.page` URL and the custom domain: `/` 200 serving the notice and bundle `index-D80MAKod.js`, `/manifest.json` 200, `/syllabus/` 200. Chromium on this VM lacks the font libraries it needs, so no screenshot was taken; the owner confirmed the rendered page in their own browser.
+
+**Push outstanding.** `main` is 7 commits behind this branch and 0 ahead, so the push from the branch tip is a plain fast-forward. Two credential attempts failed the same way: `GH_TOKEN` and `GH_TOKEN_2` were added under Sites → Secrets, which are Worker runtime secrets for the deployed site. The cloud shell sees 13 system variables and no injected secret, and Sites secret values are never exposed to tools. No site code reads `GH_TOKEN`; both entries only consume the 25-variable allowance.
+
+**Fallback.** `artifacts/codextor-main-full.bundle` (3.2 MB, untracked, packed from the branch tip at export — `git bundle list-heads` prints the commit it carries) was verified by cloning it and fast-forwarding a `main` at `a6620e2` to that tip:
+
+    git checkout main && git pull --ff-only
+    git fetch ~/Downloads/codextor-main-full.bundle HEAD:codextor-work
+    git merge --ff-only codextor-work && git push origin main
+
 ## Repo state
 
-The work is committed, not an uncommitted worktree: `c5a84b6`, `4dceeca`, `b469c92`, then the merge `e5505e3`. Imported restoration showed widespread pre-existing CRLF changes and unrelated modified skill files, which were not staged. Hosted CI, the Convex deployment and interactive browser checks remain unverified for the reasons above.
+The work is committed, not an uncommitted worktree: `c5a84b6`, `4dceeca`, the merge `b469c92`, the merge `e5505e3`, `d3e6614`, `c2de005` and this ledger update — 7 commits ahead of `origin/main`, 0 behind. Imported restoration showed widespread pre-existing CRLF changes and unrelated modified skill files, which were not staged. Hosted CI, the Convex deployment and interactive browser checks remain unverified for the reasons above.
