@@ -1,0 +1,72 @@
+
+> codextor@0.1.0 build
+> node scripts/sync-pyodide.mjs && node scripts/sync-typescript.mjs && node scripts/gen-site.mjs && vite build
+
+sync-pyodide: already up to date
+sync-typescript: already up to date
+gen-site: 17 tracks, 118 lessons — syllabus pages, sitemap, llms.txt, manifest and images written (17 tracks · 118 hands-on lessons).
+vite v6.4.4 building for production...
+transforming...
+✓ 2625 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/assets/pythonWorker-DC5qNcIO.js             0.98 kB
+dist/offline-packs.json                          3.78 kB │ gzip:   0.85 kB
+dist/index.html                                  5.49 kB │ gzip:   1.99 kB
+dist/assets/jsWorker-DtQJ43nF.js                10.78 kB
+dist/assets/index-CM-muC8c.css                 136.58 kB │ gzip:  20.90 kB
+dist/assets/flags-BQjAgA_2.js                    0.43 kB │ gzip:   0.33 kB
+dist/assets/crown-B1Gsxfpp.js                    0.57 kB │ gzip:   0.38 kB
+dist/assets/pythonRunner-DOGYoTRG.js             1.74 kB │ gzip:   0.93 kB
+dist/assets/Verify-BWQQpID0.js                   1.76 kB │ gzip:   0.76 kB
+dist/assets/Replay-Cu-JE0kr.js                   1.99 kB │ gzip:   0.98 kB
+dist/assets/PublicProfile-AscGwqQ2.js            2.75 kB │ gzip:   1.09 kB
+dist/assets/Ascent-BwcxQ7xn.js                   5.51 kB │ gzip:   2.07 kB
+dist/assets/ReviewerAssessment-D6VTduZH.js       5.69 kB │ gzip:   2.00 kB
+dist/assets/Certificate-B8SO6dvV.js              6.13 kB │ gzip:   2.34 kB
+dist/assets/transcripts-FMW-paLw.js              6.21 kB │ gzip:   2.39 kB
+dist/assets/replayShare-D3syNrqY.js              6.73 kB │ gzip:   2.52 kB
+dist/assets/loadTrack-Co7mNDQY.js                8.26 kB │ gzip:   3.57 kB
+dist/assets/DebugLab-B6VsCiAs.js                 8.46 kB │ gzip:   2.91 kB
+dist/assets/PlaygroundPage-NFueiwYS.js           9.08 kB │ gzip:   3.27 kB
+dist/assets/ProofRunner-ByLRpb7t.js             10.00 kB │ gzip:   3.83 kB
+dist/assets/track-agent-internals-BDGmOC_J.js   10.63 kB │ gzip:   4.28 kB
+dist/assets/track-field-reports-BblMuciu.js     11.85 kB │ gzip:   4.27 kB
+dist/assets/track-react-BQuNm_ld.js             12.37 kB │ gzip:   5.25 kB
+dist/assets/track-git-D-LC1Nat.js               12.59 kB │ gzip:   5.12 kB
+dist/assets/Atlas-Ca-Uo6AV.js                   12.96 kB │ gzip:   4.89 kB
+dist/assets/Projects-DfYg7lF3.js                12.97 kB │ gzip:   4.10 kB
+dist/assets/repo-snapshots-CT9hJ3Wj.js          14.77 kB │ gzip:   4.84 kB
+dist/assets/Leaderboard-GHS4OtXD.js             15.52 kB │ gzip:   4.69 kB
+dist/assets/Portfolio-Do_MqPw0.js               16.44 kB │ gzip:   5.02 kB
+dist/assets/diff-challenges-47ifX1wU.js         16.89 kB │ gzip:   5.11 kB
+dist/assets/track-backend-DUnUtqPj.js           17.88 kB │ gzip:   7.28 kB
+dist/assets/Playground-CFEoh02n.js              19.18 kB │ gzip:   7.49 kB
+dist/assets/track-workflow-40taxNN6.js          19.30 kB │ gzip:   7.29 kB
+dist/assets/track-python-Dhngc9HK.js            20.01 kB │ gzip:   8.25 kB
+dist/assets/track-tailwind-BPfnz8EU.js          23.26 kB │ gzip:   9.11 kB
+dist/assets/track-devops-Dur2b1Q0.js            25.20 kB │ gzip:  10.48 kB
+dist/assets/track-api-NVw95qzW.js               25.63 kB │ gzip:  10.20 kB
+dist/assets/Clans-C6Fb2xWh.js                   26.96 kB │ gzip:   7.19 kB
+dist/assets/track-testing-B7G_lDIk.js           27.27 kB │ gzip:  11.00 kB
+dist/assets/track-state-CF303ckf.js             27.56 kB │ gzip:  10.45 kB
+dist/assets/track-architecture-DqhN3AvA.js      27.69 kB │ gzip:  11.23 kB
+dist/assets/track-dsa-D6OO_pMT.js               28.00 kB │ gzip:  10.22 kB
+dist/assets/track-performance-BUGcAa2B.js       29.81 kB │ gzip:  12.02 kB
+dist/assets/track-security-B7de_Bhc.js          34.79 kB │ gzip:  13.20 kB
+dist/assets/track-typescript-DsjoIdfq.js        36.62 kB │ gzip:  13.39 kB
+dist/assets/track-web-D18a3yDT.js               38.42 kB │ gzip:  14.76 kB
+dist/assets/debug-challenges-r_itS3iY.js        49.86 kB │ gzip:  16.88 kB
+dist/assets/Learn-DhePcQfi.js                   51.21 kB │ gzip:  15.62 kB
+dist/assets/track-agents-ZANAjMlO.js           102.77 kB │ gzip:  34.07 kB
+dist/assets/Lesson-Cbfnt0Y2.js                 108.35 kB │ gzip:  34.03 kB
+dist/assets/tsRunner-B1lJjCSt.js               440.76 kB │ gzip:  48.49 kB
+dist/assets/CodeMirrorEditor-BL7mOPES.js       454.71 kB │ gzip: 159.41 kB
+dist/assets/AtlasScene-RB0dhfdN.js             524.73 kB │ gzip: 132.29 kB
+dist/assets/index-BlsE7mn2.js                  617.22 kB │ gzip: 195.63 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 8.60s

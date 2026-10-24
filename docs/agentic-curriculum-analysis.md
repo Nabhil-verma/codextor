@@ -229,7 +229,7 @@ Final check results and every remaining task are recorded in [the completion led
 
 ## Final-state addendum — 2026-10-23
 
-The original build OOM is resolved with `scripts/compiler-asset.mjs`: the same installed TypeScript compiler is emitted separately and tested with a real type error. Current receipts are in `docs/verification/final/`; the exhaustive [completion ledger](agentic-curriculum-completion-ledger.md) supersedes historical completion claims.
+The original build OOM is resolved with `scripts/compiler-asset.mjs`: the same installed TypeScript compiler is emitted separately and tested with a real type error. Current receipts are in `docs/verification/2026-10-24/` (a log per check plus `results.json`); `docs/verification/final/` keeps the original 2026-10-23 run. The exhaustive [completion ledger](agentic-curriculum-completion-ledger.md) supersedes historical completion claims.
 
 | Profile | Default | All five experimental flags on |
 | --- | --- | --- |

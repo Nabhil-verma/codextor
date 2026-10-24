@@ -6,7 +6,7 @@ Verified against restored repository state on **2026-10-23**. This replaces earl
 
 ## Final checks
 
-Receipts: `docs/verification/final/` holds the original run logs; the test rows below were re-measured on 2026-10-24 and are not backed by those logs.
+Receipts: `docs/verification/2026-10-24/` holds a log per check below plus `results.json` (command, exit code, log path). `docs/verification/final/` keeps the original 2026-10-23 run.
 
 | Command / configuration | Result |
 | --- | --- |
@@ -199,7 +199,9 @@ Checks after the merge: `npx tsc -b --noEmit` exit 0; `npm test` 107 files / 903
 
 **Verified after redeploy,** on both the `site-a79080c5….freebuff.page` URL and the custom domain: `/` 200 serving the notice and bundle `index-D80MAKod.js`, `/manifest.json` 200, `/syllabus/` 200. Chromium on this VM lacks the font libraries it needs, so no screenshot was taken; the owner confirmed the rendered page in their own browser.
 
-**Push outstanding.** `main` is 10 commits behind this branch and 0 ahead, so the push from the branch tip is a plain fast-forward. Two credential attempts failed the same way: `GH_TOKEN` and `GH_TOKEN_2` were added under Sites → Secrets, which are Worker runtime secrets for the deployed site. The cloud shell sees 13 system variables and no injected secret, and Sites secret values are never exposed to tools. No site code reads `GH_TOKEN`; both entries only consume the 25-variable allowance.
+**Redeployed 2026-10-24 12:10 UTC** with the 118-lesson build (payload `sites/build-nopy/`, 7.0 MB without Pyodide; operation `5f5e20ca` succeeded). Live re-verification after the deploy: `/` 200 showing "17 tracks · 118 hands-on lessons", `/syllabus/` 200, `/syllabus/agents/` 200 listing the operation lessons, `/manifest.json` 200, and the entry bundle 200 `text/javascript`.
+
+**Push outstanding.** `main` is 11 commits behind this branch and 0 ahead, so the push from the branch tip is a plain fast-forward. Two credential attempts failed the same way: `GH_TOKEN` and `GH_TOKEN_2` were added under Sites → Secrets, which are Worker runtime secrets for the deployed site. The cloud shell sees 13 system variables and no injected secret, and Sites secret values are never exposed to tools. No site code reads `GH_TOKEN`; both entries only consume the 25-variable allowance.
 
 **Fallback.** `artifacts/codextor-main-full.bundle` (3.2 MB, untracked, packed from the branch tip at export — `git bundle list-heads` prints the commit it carries) was verified by cloning it and fast-forwarding a `main` at `a6620e2` to that tip:
 
@@ -209,4 +211,4 @@ Checks after the merge: `npx tsc -b --noEmit` exit 0; `npm test` 107 files / 903
 
 ## Repo state
 
-The work is committed, not an uncommitted worktree: `c5a84b6`, `4dceeca`, the merge `b469c92`, the merge `e5505e3`, `d3e6614`, `c2de005`, the ledger updates and the operation-lessons commit that adds `src/data/agentic-core-lessons.ts` — 10 commits ahead of `origin/main`, 0 behind. Imported restoration showed widespread pre-existing CRLF changes and unrelated modified skill files, which were not staged. Hosted CI, the Convex deployment and interactive browser checks remain unverified for the reasons above.
+The work is committed, not an uncommitted worktree: `c5a84b6`, `4dceeca`, the merge `b469c92`, the merge `e5505e3`, `d3e6614`, `c2de005`, the ledger updates and the operation-lessons commit that adds `src/data/agentic-core-lessons.ts` — 11 commits ahead of `origin/main`, 0 behind. Imported restoration showed widespread pre-existing CRLF changes and unrelated modified skill files, which were not staged. Hosted CI, the Convex deployment and interactive browser checks remain unverified for the reasons above.

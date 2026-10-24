@@ -1,0 +1,38 @@
+[
+  {
+    "command": "npm run typecheck",
+    "exitCode": 0,
+    "signal": null,
+    "log": "docs/verification/2026-10-24/typecheck.log"
+  },
+  {
+    "command": "npm test (default flags)",
+    "exitCode": 0,
+    "signal": null,
+    "log": "docs/verification/2026-10-24/test.log"
+  },
+  {
+    "command": "npm test (all five flags)",
+    "exitCode": 0,
+    "signal": null,
+    "log": "docs/verification/2026-10-24/test-all-on.log"
+  },
+  {
+    "command": "npm run build",
+    "exitCode": 0,
+    "signal": null,
+    "log": "docs/verification/2026-10-24/build.log"
+  },
+  {
+    "command": "node scripts/check-features.mjs",
+    "exitCode": 0,
+    "signal": null,
+    "log": "docs/verification/2026-10-24/features.log"
+  },
+  {
+    "command": "node scripts/review-freshness.mjs",
+    "exitCode": 0,
+    "signal": null,
+    "log": "docs/verification/2026-10-24/freshness.log"
+  }
+]
