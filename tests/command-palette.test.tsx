@@ -110,6 +110,15 @@ describe("searching", () => {
 });
 
 describe("running an item", () => {
+  it("opens Atlas from its command-palette destination", async () => {
+    renderPalette();
+    fireEvent.keyDown(window, { key: "k", ctrlKey: true });
+    fireEvent.change(input(), { target: { value: "atlas" } });
+    expect(screen.getByRole("option", { name: /Atlas/ })).toBeTruthy();
+    fireEvent.keyDown(input(), { key: "Enter" });
+    await waitFor(() => expect(screen.getByTestId("path").textContent).toBe("/atlas"));
+  });
+
   it("navigates to the lesson and remembers it", async () => {
     renderPalette();
     fireEvent.keyDown(window, { key: "k", metaKey: true });
@@ -147,6 +156,38 @@ describe("running an item", () => {
     const option = screen.getByRole("option", { name: /Continue where I left off/ });
     // The first lesson of the first track is the default resume point.
     expect(option.textContent).toContain(MANIFEST_TRACKS[0].title);
+  });
+});
+
+describe("next node", () => {
+  it("is hidden when the learner is not on a lesson", () => {
+    renderPalette();
+    fireEvent.keyDown(window, { key: "k", metaKey: true });
+    fireEvent.change(input(), { target: { value: "next node" } });
+    expect(screen.queryByRole("option", { name: /Next node/ })).toBeNull();
+  });
+
+  it("opens the next unfinished lesson in the same track", async () => {
+    const track = MANIFEST_TRACKS[0];
+    const [first, second] = track.lessons;
+    // Finish the first lesson so the next unfinished one is the second.
+    localStorage.setItem(
+      "clr-progress-v2",
+      JSON.stringify({ completed: { [`${track.id}/${first.id}!2026-10-23`]: 1 } }),
+    );
+    render(
+      <MemoryRouter initialEntries={[`/learn/${track.id}/${first.id}`]}>
+        <CommandPalette />
+        <Routes>
+          <Route path="*" element={<ShowPath />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    fireEvent.keyDown(window, { key: "k", metaKey: true });
+    fireEvent.change(input(), { target: { value: "next node" } });
+    fireEvent.keyDown(input(), { key: "Enter" });
+
+    await waitFor(() => expect(screen.getByTestId("path").textContent).toBe(`/learn/${track.id}/${second.id}`));
   });
 });
 

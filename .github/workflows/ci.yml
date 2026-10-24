@@ -109,10 +109,10 @@ jobs:
       # must not fail CI just because it can't reach production.
       - name: Deploy
         env:
-          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY_2 }}
         run: |
           if [ -z "$CONVEX_DEPLOY_KEY" ]; then
-            echo "::notice title=Backend deploy skipped::Set a CONVEX_DEPLOY_KEY repository secret (Convex dashboard → Project Settings → Production Deploy Key) to push schema and functions to production."
+            echo "::notice title=Backend deploy skipped::Set the CONVEX_DEPLOY_KEY_2 repository secret with a deploy key for the intended Convex deployment to push schema and functions."
             exit 0
           fi
           bunx convex deploy

@@ -32,6 +32,7 @@ const PlaygroundPage = lazy(() => import("./pages/PlaygroundPage"));
 const Certificate = lazy(() => import("./pages/Certificate"));
 const Portfolio = lazy(() => import("./pages/Portfolio"));
 const Projects = lazy(() => import("./pages/Projects"));
+const Atlas = lazy(() => import("./pages/Atlas"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard"));
 const Clans = lazy(() => import("./pages/Clans"));
 
@@ -205,6 +206,8 @@ export default function App() {
                 </RequireAuth>
               }
             />
+            {/* Public: the plan works with no account, so the interview does too. */}
+            <Route path="/atlas" element={<Atlas />} />
             <Route path="/ascent" element={<Ascent />} />
             {/* Public: a replay is self-contained and reads no account data. */}
             <Route path="/replay" element={<Replay />} />
