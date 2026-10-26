@@ -32,3 +32,6 @@ public/typescript/
 
 # Local D1 + KV state from `wrangler dev` — disposable, never committed.
 /.wrangler/
+
+# Playtest screenshots captured with headless Chromium — regenerable, not source.
+/artifacts/

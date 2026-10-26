@@ -142,22 +142,10 @@ export default function App() {
         <Suspense fallback={<RouteLoading />}>
           <Routes>
             <Route path="/" element={<Landing />} />
-            <Route
-              path="/learn"
-              element={
-                <RequireAuth>
-                  <Learn />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/learn/:trackId/:lessonId"
-              element={
-                <RequireAuth>
-                  <Lesson />
-                </RequireAuth>
-              }
-            />
+            {/* Lessons are the product: they run on local progress and must
+                never be gated. An account only adds sync — /auth says so. */}
+            <Route path="/learn" element={<Learn />} />
+            <Route path="/learn/:trackId/:lessonId" element={<Lesson />} />
             <Route
               path="/playground"
               element={

@@ -437,8 +437,11 @@ tests/                        # 104 suites, 855 tests
 
 ## Accounts, progress & cloud sync
 
-The app works **fully without a backend** — progress lives in `localStorage`.
-That's deliberate: the product is free and should never be gated on an account.
+Lessons, the atlas, replays and certificate checks work with **no account and no
+backend at all** — progress lives in `localStorage`. That's deliberate: the
+course is free and is never gated on signing up. An account adds sync (progress,
+milestones, certificates across devices) and the surfaces that need an identity:
+the leaderboard and guilds.
 
 Accounts are **Freebuff accounts**: the site uses Sign in with Freebuff (OIDC),
 so there is no password to store, reset or leak, and the project holds no auth
