@@ -5,15 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "node scripts/sync-pyodide.mjs && node scripts/sync-typescript.mjs && node scripts/gen-site.mjs && vite --host 0.0.0.0",
-    "build": "node scripts/sync-pyodide.mjs && node scripts/sync-typescript.mjs && node scripts/gen-site.mjs && vite build",
+    "build": "node scripts/sync-pyodide.mjs && node scripts/sync-typescript.mjs && node scripts/gen-site.mjs && vite build && node scripts/build-worker.mjs",
     "sync:pyodide": "node scripts/sync-pyodide.mjs",
     "gen:site": "node scripts/gen-site.mjs",
     "build:analyze": "vite build --mode analyze",
     "preview": "vite preview --host 0.0.0.0",
     "typecheck": "tsc -b --noEmit",
     "test": "vitest run",
-    "lint": "eslint src tests",
-    "sync:typescript": "node scripts/sync-typescript.mjs"
+    "lint": "eslint src tests sites/api",
+    "sync:typescript": "node scripts/sync-typescript.mjs",
+    "build:worker": "node scripts/build-worker.mjs"
   },
   "dependencies": {
     "@codemirror/commands": "^6.11.1",
@@ -23,9 +24,8 @@
     "@codemirror/search": "^6.7.2",
     "@codemirror/state": "^6.7.6",
     "@codemirror/view": "^6.43.14",
-    "@convex-dev/auth": "^0.0.95",
+    "@freebuff/auth": "^0.1.0",
     "@lezer/highlight": "^1.2.5",
-    "convex": "^1.45.0",
     "framer-motion": "^13.3.0",
     "lucide-react": "^1.47.0",
     "react": "^18.3.1",
@@ -44,7 +44,6 @@
     "@types/three": "0.186.0",
     "@vitejs/plugin-react": "4.7.0",
     "autoprefixer": "^10.4.20",
-    "convex-test": "0.0.59",
     "eslint": "^9.39.5",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.13.0",

@@ -7,8 +7,8 @@ import { MANIFEST_TRACKS as tracks } from "../data/manifest";
 import { certificateLessonKeys } from "../lib/progressKeys";
 import { scoreFor, useProgressState } from "../lib/progress";
 import { useAccount } from "../AccountProvider";
-import { useMutation } from "convex/react";
-import { api } from "../convex/_generated/api";
+import { useMutation } from "../lib/cloud";
+import { api } from "../lib/api";
 
 /** Long date like "September 13, 2026" for the certificate line. */
 function longDate(iso: string): string {

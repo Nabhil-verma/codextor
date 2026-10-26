@@ -1,32 +1,9 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import Nav from "../components/Nav";
 import { Orb } from "../components/motion";
 import { useAccount } from "../AccountProvider";
-
-type Mode = "signin" | "signup" | "forgot" | "reset";
-
-const inputCls =
-  "w-full rounded-xl border border-paper-300 bg-paper-50 px-4 py-2.5 text-sm text-ink-950 outline-hidden transition placeholder:text-ink-400 focus:border-gold-400 focus:ring-2 focus:ring-gold-400/25";
-
-const PERKS = [
-  {
-    icon: "☁",
-    title: "Sync across devices",
-    text: "Quiz scores, completed lessons, and badges follow your account — phone, tablet, laptop.",
-  },
-  {
-    icon: "🎓",
-    title: "Certificates with your name",
-    text: "Finish a track and your printable certificate is pre-filled with your display name.",
-  },
-  {
-    icon: "🔥",
-    title: "Streaks that survive",
-    text: "Your daily streak and XP are safe even if you clear this browser or switch devices.",
-  },
-];
 
 const APP_PREFIXES = [
   "/learn",
@@ -50,24 +27,36 @@ function sanitizeReturnTo(raw: string | null): string {
   return "/learn";
 }
 
+const PERKS = [
+  {
+    icon: "☁",
+    title: "Sync across devices",
+    text: "Quiz scores, completed lessons, and badges follow your account — phone, tablet, laptop.",
+  },
+  {
+    icon: "🎓",
+    title: "Certificates with your name",
+    text: "Finish a track and your printable certificate is pre-filled with your display name.",
+  },
+  {
+    icon: "🔥",
+    title: "Streaks that survive",
+    text: "Your daily streak and XP are safe even if you clear this browser or switch devices.",
+  },
+];
+
+/*
+ * Sign in with Freebuff.
+ *
+ * Accounts are Freebuff accounts: the site asks Freebuff who the visitor is and
+ * stores their rows under that account id. There is no password here to forget,
+ * reset or leak, so the old username/password and reset-code flows are gone.
+ */
 export default function AuthPage() {
-  const { user, authReady, signIn, signUp, requestPasswordReset, completePasswordReset } =
-    useAccount();
+  const { user, authReady, signIn } = useAccount();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const returnTo = sanitizeReturnTo(searchParams.get("returnTo"));
-
-  const [mode, setMode] = useState<Mode>("signin");
-  const [name, setName] = useState("");
-  const [username, setUsername] = useState("");
-  const [recovery, setRecovery] = useState("");
-  const [password, setPassword] = useState("");
-  const [code, setCode] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [notice, setNotice] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const firstInput = useRef<HTMLInputElement>(null);
 
   // Already signed in? Straight to where you were headed.
   useEffect(() => {
@@ -77,67 +66,6 @@ export default function AuthPage() {
       navigate(returnTo, { replace: true });
     }
   }, [user, authReady, navigate, returnTo, searchParams, setSearchParams]);
-
-  // Focus the first field whenever the mode changes.
-  useEffect(() => {
-    firstInput.current?.focus();
-  }, [mode]);
-
-  function switchMode(next: Mode) {
-    setMode(next);
-    setError(null); // stale "wrong password" shouldn't bleed into sign-up
-    setNotice(null);
-  }
-
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setBusy(true);
-    try {
-      if (mode === "signin") {
-        await signIn(username.trim(), password);
-        // The session usually settles inside signIn/signUp; navigate now —
-        // the effect above covers any residual delay.
-        navigate(returnTo, { replace: true });
-      } else if (mode === "signup") {
-        await signUp(name.trim(), username.trim(), password, recovery.trim() || undefined);
-        navigate(returnTo, { replace: true });
-      } else if (mode === "forgot") {
-        await requestPasswordReset(username.trim());
-        // Same reply whether or not the account exists or has an address on file.
-        setNotice(
-          "If that account has a recovery email, a code is on its way. It expires in 15 minutes.",
-        );
-        setCode("");
-        setNewPassword("");
-        setMode("reset");
-      } else {
-        await completePasswordReset(username.trim(), code, newPassword);
-        navigate(returnTo, { replace: true });
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  const title =
-    mode === "signin"
-      ? "Welcome back"
-      : mode === "signup"
-        ? "Create your account"
-        : mode === "forgot"
-          ? "Reset your password"
-          : "Enter your reset code";
-  const sub =
-    mode === "signin"
-      ? "Sign in to sync your progress across devices."
-      : mode === "signup"
-        ? "Free forever. Your quiz scores and completed lessons follow you anywhere."
-        : mode === "forgot"
-          ? "Enter your username. If a recovery email is set on the account, we'll send a code there."
-          : "Check your recovery email for the 8-digit code.";
 
   return (
     <div className="min-h-screen">
@@ -154,12 +82,11 @@ export default function AuthPage() {
             >
               <p className="eyebrow">why sign in?</p>
               <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight text-ink-950">
-                Progress worth{" "}
-                <span className="gradient-text">keeping</span>
+                Progress worth <span className="gradient-text">keeping</span>
               </h1>
               <p className="mt-3 max-w-md leading-relaxed text-ink-600">
-                Create a free account to save every lesson you finish — your work
-                follows you to any device.
+                Sign in with your Freebuff account to save every lesson you finish —
+                your work follows you to any device.
               </p>
             </motion.div>
 
@@ -204,31 +131,29 @@ export default function AuthPage() {
                   inside every lesson
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {["live editor", "console", "quizzes", "badges", "certificates"].map(
-                    (t, i) => (
-                      <motion.span
-                        key={t}
-                        className="rounded-full border border-paper-100/15 px-3 py-1 font-mono text-[11px] text-paper-300/90"
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.7 + i * 0.08, type: "spring", stiffness: 300, damping: 20 }}
-                      >
-                        {t}
-                      </motion.span>
-                    )
-                  )}
+                  {["live editor", "console", "quizzes", "badges", "certificates"].map((t, i) => (
+                    <motion.span
+                      key={t}
+                      className="rounded-full border border-paper-100/15 px-3 py-1 font-mono text-[11px] text-paper-300/90"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.7 + i * 0.08, type: "spring", stiffness: 300, damping: 20 }}
+                    >
+                      {t}
+                    </motion.span>
+                  ))}
                 </div>
               </div>
             </motion.div>
 
             <p className="mt-10 font-mono text-xs text-ink-600">
-              no spam · no ads · delete your account data anytime
+              no spam · no ads · no password to remember
             </p>
           </section>
 
-          {/* Form card */}
+          {/* Sign-in card */}
           <section className="order-1 lg:order-2" style={{ perspective: "1200px" }}>
-            {!authReady && !error ? (
+            {!authReady ? (
               <div className="card p-10 text-center">
                 <p className="font-mono text-sm text-ink-600">Checking your session…</p>
               </div>
@@ -241,184 +166,47 @@ export default function AuthPage() {
               >
                 <p className="eyebrow">Codextor</p>
                 <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight text-ink-950">
-                  {title}
+                  Sign in with Freebuff
                 </h2>
-                <p className="mt-2 text-sm leading-relaxed text-ink-600">{sub}</p>
+                <p className="mt-2 text-sm leading-relaxed text-ink-600">
+                  One click with the Freebuff account you already have — Google, GitHub
+                  or Apple. No new password, and we never see your credentials.
+                </p>
 
-                <form onSubmit={handleSubmit} className="mt-6 space-y-3">
-                  <AnimatePresence initial={false}>
-                    {mode === "signup" && (
-                      <motion.div
-                        key="name-field"
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                        className="overflow-hidden"
-                      >
-                        <input
-                          ref={firstInput}
-                          className={inputCls}
-                          aria-label="Your name"
-                          placeholder="Your name"
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          autoComplete="name"
-                        />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                  {mode !== "reset" && (
-                    <input
-                      ref={mode === "signin" || mode === "forgot" ? firstInput : undefined}
-                      className={inputCls}
-                      required
-                      aria-label={mode === "signin" ? "Username or email" : "Username"}
-                      placeholder={mode === "signin" ? "Username" : "Choose a username"}
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      autoComplete="username"
-                      autoCapitalize="none"
-                      autoCorrect="off"
-                      spellCheck={false}
-                      {...(mode === "signup"
-                        ? {
-                            pattern: "[A-Za-z0-9_]{3,24}",
-                            title: "3–24 letters, numbers or underscores",
-                            minLength: 3,
-                          }
-                        : {})}
-                    />
-                  )}
-                  {mode === "signup" && (
-                    <>
-                      <input
-                        className={inputCls}
-                        type="email"
-                        aria-label="Recovery email (optional)"
-                        placeholder="Recovery email (optional)"
-                        value={recovery}
-                        onChange={(e) => setRecovery(e.target.value)}
-                        autoComplete="email"
-                      />
-                      <p className="text-xs leading-relaxed text-ink-500">
-                        Optional. Used only to send a password-reset code. It is never shown publicly.
-                      </p>
-                    </>
-                  )}
-                  {(mode === "signin" || mode === "signup") && (
-                    <input
-                      className={inputCls}
-                      type="password"
-                      required
-                      minLength={8}
-                      aria-label="Password (at least 8 characters)"
-                      placeholder="Password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                    />
-                  )}
-                  {mode === "signin" && (
-                    <div className="text-right">
-                      <button
-                        type="button"
-                        className="text-xs font-semibold text-gold-600 hover:underline"
-                        onClick={() => switchMode("forgot")}
-                      >
-                        Forgot password?
-                      </button>
-                    </div>
-                  )}
-                  {mode === "reset" && (
-                    <>
-                      {notice && (
-                        <p role="status" className="text-sm leading-relaxed text-ink-600">
-                          {notice}
-                        </p>
-                      )}
-                      <input
-                        ref={firstInput}
-                        className={inputCls}
-                        required
-                        inputMode="numeric"
-                        pattern="[0-9]{8}"
-                        aria-label="Reset code (8 digits)"
-                        placeholder="8-digit code"
-                        value={code}
-                        onChange={(e) => setCode(e.target.value)}
-                        autoComplete="one-time-code"
-                      />
-                      <input
-                        className={inputCls}
-                        type="password"
-                        required
-                        minLength={8}
-                        aria-label="New password (at least 8 characters)"
-                        placeholder="New password"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        autoComplete="new-password"
-                      />
-                    </>
-                  )}
-                  <AnimatePresence>
-                    {error && (
-                      <motion.p
-                        role="alert"
-                        className="text-sm text-red-600"
-                        initial={{ opacity: 0, y: -6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                      >
-                        {error}
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
-                  <motion.button
-                    type="submit"
-                    disabled={busy}
-                    className="btn-gold w-full !justify-center disabled:opacity-60"
-                    whileHover={busy ? undefined : { scale: 1.02 }}
-                    whileTap={busy ? undefined : { scale: 0.97 }}
-                  >
-                    {busy
-                      ? "One moment…"
-                      : mode === "signin"
-                        ? "Sign in"
-                        : mode === "signup"
-                          ? "Create account"
-                          : mode === "forgot"
-                            ? "Send reset code"
-                            : "Reset password"}
-                  </motion.button>
-                </form>
+                <motion.button
+                  type="button"
+                  onClick={() => signIn(returnTo)}
+                  className="btn-gold mt-6 w-full !justify-center"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  Continue with Freebuff
+                </motion.button>
 
-                <div className="mt-5 space-y-1.5 text-center text-sm">
-                  {mode === "signin" && (
-                    <p className="text-ink-600">
-                      New here?{" "}
-                      <button
-                        type="button"
-                        className="font-semibold text-gold-600 hover:underline"
-                        onClick={() => switchMode("signup")}
-                      >
-                        Create a free account
-                      </button>
-                    </p>
-                  )}
-                  {mode !== "signin" && (
-                    <p className="text-ink-600">
-                      <button
-                        type="button"
-                        className="font-semibold text-gold-600 hover:underline"
-                        onClick={() => switchMode("signin")}
-                      >
-                        ← Back to sign in
-                      </button>
-                    </p>
-                  )}
-                </div>
+                <ul className="mt-6 space-y-2 text-sm leading-relaxed text-ink-600">
+                  <li>
+                    <strong className="text-ink-900">What we store:</strong> your lesson
+                    scores, streaks, guild membership and certificates, keyed to your
+                    Freebuff account.
+                  </li>
+                  <li>
+                    <strong className="text-ink-900">What we never store:</strong> your
+                    password, your Freebuff tokens, or your sign-in session off this
+                    server.
+                  </li>
+                  <li>
+                    You can reset your progress or sign out at any time from the account
+                    menu.
+                  </li>
+                </ul>
+
+                <p className="mt-6 text-center text-sm text-ink-600">
+                  Prefer to stay local?{" "}
+                  <a href="/#/learn" className="font-semibold text-gold-600 hover:underline">
+                    Keep learning without an account
+                  </a>{" "}
+                  — progress stays in this browser.
+                </p>
               </motion.div>
             )}
           </section>

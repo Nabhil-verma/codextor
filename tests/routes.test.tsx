@@ -45,8 +45,8 @@ window.scrollTo = (() => {}) as typeof window.scrollTo;
 /** Flipped per test: the signed-out state is a route state of its own. */
 const auth = vi.hoisted(() => ({ signedIn: true }));
 
-vi.mock("convex/react", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("convex/react")>();
+vi.mock("../src/lib/cloud", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../src/lib/cloud")>();
   return {
     ...actual,
     // undefined = "still loading" is the cold-backend state every panel must
@@ -104,9 +104,11 @@ describe("every route renders", () => {
   it("/auth — the signed-out sign-in page", async () => {
     auth.signedIn = false;
     open("#/auth");
-    expect(await screen.findByRole("heading", { name: /Welcome back/ }, CHUNK)).toBeTruthy();
-    expect(screen.getByLabelText("Username or email")).toBeTruthy();
-    expect(screen.getByLabelText(/Password/)).toBeTruthy();
+    expect(
+      await screen.findByRole("heading", { name: "Sign in with Freebuff" }, CHUNK),
+    ).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Continue with Freebuff" })).toBeTruthy();
+    expect(screen.queryByLabelText(/Password/)).toBeNull();
   });
 
   it("/auth — signed in, it forwards to the app instead of looping", async () => {

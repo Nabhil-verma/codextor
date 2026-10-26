@@ -11,8 +11,8 @@ import { encodeReplay, decodeReplay } from "../src/lib/replayShare";
  * see the code, run the trace; or make a link from the code on screen.
  */
 
-vi.mock("convex/react", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("convex/react")>();
+vi.mock("../src/lib/cloud", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../src/lib/cloud")>();
   return { ...actual, useQuery: () => undefined, useMutation: () => vi.fn(() => Promise.resolve()) };
 });
 

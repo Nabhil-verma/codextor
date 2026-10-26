@@ -13,7 +13,7 @@
  * `progress.save` scores can still be forged, and the real fix is
  * server-verified grading (out of scope).
  */
-import { TOTAL_LESSONS } from "./curriculum";
+import { TOTAL_LESSONS } from "./curriculum.generated";
 
 /** 250 XP ≈ 4 lessons — one level. */
 export const XP_PER_LEVEL = 250;

@@ -53,8 +53,8 @@ const CHUNK_ERROR = vi.hoisted(
   () => "Failed to fetch dynamically imported module: https://codexter.test/assets/Learn-8f3c1a.js"
 );
 
-vi.mock("convex/react", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("convex/react")>();
+vi.mock("../src/lib/cloud", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../src/lib/cloud")>();
   return {
     ...actual,
     useQuery: () => undefined,

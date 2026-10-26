@@ -59,8 +59,8 @@ A few consequences worth calling out, because they're unusual for a learning app
 - **The real TypeScript compiler runs in the page.** Not a regex, not a
   hand-rolled checker — the `tsc` front end against an in-memory host holding the
   ES2020 libs, reporting genuine diagnostics with line and column.
-- **Everything degrades instead of breaking.** A dead backend, a missing Convex
-  function, a corrupt `localStorage` entry — each one costs you exactly one
+- **Everything degrades instead of breaking.** A dead backend, a missing API
+  endpoint, a corrupt `localStorage` entry — each one costs you exactly one
   panel, with a plain-English explanation, instead of the whole app.
 
 ## Feature overview
@@ -114,8 +114,8 @@ A few consequences worth calling out, because they're unusual for a learning app
 - **Printable certificates** — finish every lesson in a track to unlock a
   gold-sealed certificate
 - **Progress that follows you** — lesson scores and project milestone claims are
-  saved locally by default; optional Convex Auth email sign-in syncs both across
-  devices
+  saved locally by default; optional **Sign in with Freebuff** syncs both across
+  devices, into this app's own Freebuff-hosted database
 - **Light & night mode, two design languages** — one `class="dark"` on `<html>`
   rethemes everything, because every color in the Tailwind config resolves
   through the CSS variables in `src/index.css`. Settings also swaps the whole
@@ -360,13 +360,14 @@ Worth a section, because this is the part most learning apps fake.
 | Styling | Tailwind CSS 4.3 + PostCSS (existing token config) |
 | Animation | Framer Motion 13 |
 | Icons | lucide-react |
-| Backend | Convex 1.45 (queries, mutations, HTTP routes) |
-| Auth | Convex Auth (`@convex-dev/auth`) — username/password, optional recovery email (Resend for reset codes) |
-| Tests | Vitest 4.1 + convex-test + Testing Library + jsdom |
+| Backend | A Cloudflare Worker on Freebuff Sites (`sites/api/`) + a D1 database — one JSON endpoint, validation and merge rules on the server |
+| Auth | Sign in with Freebuff (OIDC, `@freebuff/auth`) — no passwords, no secrets in the project |
+| Tests | Vitest 4.1 + `node:sqlite` (the real schema and handlers in memory) + Testing Library + jsdom |
 | CI | GitHub Actions |
 
 No runtime API keys ship in the frontend. The only network calls the app makes
-are to Convex, and to an AI provider *if you supply your own key*.
+are to its own Worker (`/api/rpc`, `/auth/freebuff/*`), and to an AI provider
+*if you supply your own key*.
 
 ## Getting started
 
@@ -391,23 +392,16 @@ push to `main`, every pull request, and the weekly schedule.
 src/
 ├── main.tsx                  # entry: providers + global CSS
 ├── App.tsx                   # router, RequireAuth, route boundary, lazy routes
-├── AccountProvider.tsx       # Convex client, auth state, progress merge/push
+├── AccountProvider.tsx       # Freebuff session, progress merge/push, sign-out
 ├── index.css                 # every colour token, light + dark
-├── convex/
-│   ├── schema.ts             # progress, profiles, clans, quests, preferences
-│   ├── auth.ts / auth.config.ts
-│   ├── progress.ts           # scores + milestone claims (separate mutations)
-│   ├── profiles.ts           # public player card for the leaderboard
-│   ├── leaderboard.ts        # bracketed top-N + your true rank
-│   ├── clans.ts              # membership, board, feed, quests
-│   ├── preferences.ts        # account display preferences (appearance style)
-│   ├── users.ts
-│   └── http.ts               # auth HTTP routes
 ├── data/
 │   ├── index.ts              # the track registry + findTrack/findLesson
 │   ├── types.ts              # Lesson, Check, DebugChallenge, PreviewSpec, …
 │   └── track-*.ts            # <!-- counts:tail -->17 tracks, 118 lessons of content<!-- /counts:tail -->
 ├── lib/
+│   ├── api.ts                # every endpoint, typed (the client's contract)
+│   ├── cloud.ts              # fetch + query cache + useQuery/useMutation
+│   ├── xpRules.ts            # XP curve and the server's plausibility clamps
 │   ├── localStore.ts         # the shared localStorage store + pub/sub primitive
 │   ├── progress.ts           # progress store on top of it, v1→v2 migration
 │   ├── gamification.ts       # XP, quests, streaks, ascension, titles, badges
@@ -415,8 +409,8 @@ src/
 │   ├── runner.ts             # JS sandbox, loop guard, mock REST server
 │   ├── tsRunner.ts           # in-browser TypeScript compiler host
 │   ├── stepper.ts            # per-line trace for the visualizer
-│   ├── guild.ts / guildState.ts / clanRewards.ts  │   ├── theme.ts              # theme + style persistence (mirrors index.html)
-│   ├── url.ts                # absolute-URL guard for the Convex client
+│   ├── guild.ts / guildState.ts / clanRewards.ts
+│   ├── theme.ts              # theme + style persistence (mirrors index.html)
 │   ├── errors.ts / friendlyError.ts
 │   └── ai.ts                 # BYOK Gemini/Claude client
 ├── components/               # lesson UI, sandboxes, tutor, error boundaries
@@ -424,7 +418,21 @@ src/
 │   └── clan/                 # guild feed + quest panel
 └── pages/                    # Landing, Learn, Lesson, Playground, Certificate,
                              # Projects, Portfolio, Leaderboard, Clans, Auth
-tests/                        # 34 suites, 329 tests
+
+sites/
+├── api/                      # the Worker: schema, handlers, auth, /api/rpc router
+│   ├── schema.ts             # D1 tables, applied idempotently on first request
+│   ├── accounts.ts           # users, profiles, display name, delete-my-data
+│   ├── progress.ts           # scores, milestone claims, attempt aggregates
+│   ├── clans.ts              # membership, board, feed, quests
+│   ├── leaderboard.ts        # bracketed top-N + your true rank
+│   ├── preferences.ts        # appearance style
+│   ├── certificates.ts       # verified certificate issue + public verify
+│   └── worker.ts             # routing, session, same-origin check, assets
+├── worker.js                 # bundled output — built, never edited
+└── README.md                 # deploy payload rules and the asset budget
+
+tests/                        # 104 suites, 855 tests
 ```
 
 ## Accounts, progress & cloud sync
@@ -432,24 +440,23 @@ tests/                        # 34 suites, 329 tests
 The app works **fully without a backend** — progress lives in `localStorage`.
 That's deliberate: the product is free and should never be gated on an account.
 
-Accounts are built on **Convex Auth** (username/password, zero API keys in the
-frontend) and add cross-device sync on top. A username is the sign-in key (3–24
-letters, numbers or underscores). A **recovery email** is optional and receives
-only password-reset codes; it is never shown publicly. Reset codes are sent with
-Resend and need two deployment variables: `RESEND_API_KEY` and `RESEND_FROM` (an
-address on a domain verified in Resend). Without them, no reset email is sent.
-Accounts created before usernames still sign in with their email, which doubles
-as their recovery address.
+Accounts are **Freebuff accounts**: the site uses Sign in with Freebuff (OIDC),
+so there is no password to store, reset or leak, and the project holds no auth
+secrets at all. The Worker verifies the session cookie and keys every SQL row on
+the verified `user.sub` — the stable account id — never on anything the browser
+sends. The display name is seeded from the Freebuff profile once and can be
+changed from the account menu; it is what the leaderboard, guild and
+certificates show. Everything lives in **this app's own D1 database on
+Freebuff**, not a third-party backend.
 
 - On sign-in the cloud copy is merged with local, **best score per key wins**;
   local changes debounce-push to the cloud while signed in.
-- One `progress` row per user holds both maps: the numeric score map in `data`
-  and the milestone claims in `claims`. They merge by different rules — best
-  score per key, best claim per milestone — so they live in **separate fields**
-  and are written by **separate mutations** (`progress.save` /
-  `progress.saveClaims`) rather than one blob that both would clobber. The
-  `claims` field is optional, so rows written before the project layer keep
-  working with no migration.
+- One `progress` row per account holds all three maps: lesson scores in `data`,
+  milestone claims in `claims` and attempt aggregates in `attempts`. They merge
+  by different rules — best score per key, best claim per milestone, earliest
+  first attempt — so they live in **separate columns** and are written by
+  **separate endpoints** (`progress.save` / `progress.saveClaims` /
+  `progress.saveAttempts`) rather than one blob that all three would clobber.
 - `profiles` is the **public player card**: XP totals per bracket, level,
   ascension tier, streak and guild. The client recomputes it from the progress
   map and pushes it, so leaderboard queries sort server-side without reading
@@ -469,18 +476,17 @@ The leaderboard, guild and milestone-claims panels each sit behind their own
 error boundary, so if a query fails they render an inline explanation with a
 Try-again button instead of breaking the page.
 
-The app ships pointed at a public Convex deployment
-(`accomplished-hyena-726`), so accounts, sync, and the leaderboard work with no
-environment setup. The client URL is built from the `CONVEX_DEPLOYMENT`
-constant in `src/AccountProvider.tsx` — change it there to target a different
-deployment. A `VITE_CONVEX_URL` env var is deliberately **not** consulted, so a
-`convex dev` localhost URL can never leak into a production build.
+There is no backend address to configure: the client calls `/api/rpc` on its
+own origin, and Sign in with Freebuff is injected by Sites on deploy
+(`FREEBUFF_CLIENT_ID`, `FREEBUFF_ISSUER`, `APP_ORIGIN`). A local
+`wrangler dev` run uses the project's **development** Freebuff client instead
+(see [Deployment](#deployment)).
 
 ### What the server trusts (and what it doesn't)
 
 Grading happens in the browser, so the client computes XP, level, streak and
 lesson counts and pushes them with `profiles.sync`. The server bounds that
-payload against what the curriculum can plausibly produce (`src/convex/xpRules.ts`):
+payload against what the curriculum can plausibly produce (`src/lib/xpRules.ts`):
 lessons never exceed the registry size, XP never exceeds
 `lessonsDone × 75 + quest/milestone ceiling`, `xpWeek ≤ xpMonth ≤ xp`, the level
 must sit on the shared curve, a streak can't outlive the account, gains are
@@ -488,17 +494,15 @@ capped per hour, and each user may push only a limited number of times per
 minute. Violations are **clamped, never rejected**, so a legitimate merge from a
 second device is bounded rather than dropped.
 
-The clamps are **enforced by default**: an implausible value is stored clamped,
-and the violation is recorded on the row (`clampedAt`, `clampLog`). To go back
-to **log-only** (violations recorded, client numbers stored unchanged), set
-`CODEXTOR_XP_CLAMPS=log` on the deployment. The `clampLog` rows show how often
-a real multi-device merge trips a clamp, so use log mode if that looks common.
+The clamps are **enforced**: an implausible value is stored clamped, and the
+violation is recorded on the row (`clamped_at`, `clamp_log`) so a real
+multi-device merge that looks odd can be audited afterwards.
 
 **Known limit:** because scoring happens in the browser, a determined learner
 can still forge `progress.save` scores through the API, and those forged scores
 feed the same XP math. The clamps bound the *shape* of a forged card, not its
 existence. The real fix is server-verified grading — running the check
-expressions in Convex against submitted code — which is deliberately out of
+expressions in the Worker against submitted code — which is deliberately out of
 scope here.
 
 ## AI tutor (BYOK)
@@ -522,7 +526,7 @@ you run the code to find out.
 npm test        # or: bun x vitest run
 ```
 
-**329 tests across 34 files.** The content tests are the interesting ones,
+**855 tests across 104 files.** The content tests are the interesting ones,
 because content is where bugs hide:
 
 - Every broken debug program fails its own check, every reference fix passes it,
@@ -547,7 +551,7 @@ because content is where bugs hide:
 - The incident labs: every single-answer select carries exactly one correct
   option, every log-dump answer is reachable, and the deploy review plants its
   defect inside the diff it blames
-- The first cohort's bug list, pinned: real Convex errors render as explanations
+- The first cohort's bug list, pinned: real backend errors render as explanations
   while the rest of the page keeps working, an assembly answer only verifies in
   *runnable* order, the theme toggle flips `.dark` and remembers it, and the
   settings style switch flips `.style-minimal` and remembers that too
@@ -564,32 +568,31 @@ because content is where bugs hide:
 
 ## Deployment
 
-The client is a static Vite build (`dist/`). The backend is a Convex deployment
-holding the auth tables plus progress, profiles, clans and clan quests.
+Everything — the static SPA, the API and the database — is one Freebuff Sites
+project. The worker that ships with it is built from `sites/api/`:
 
-`.github/workflows/ci.yml` runs `bunx convex deploy` on every push to `main`
-once a `CONVEX_DEPLOY_KEY` repository secret is set (GitHub → Settings →
-Secrets and variables → Actions → New repository secret, using a deploy key for
-`accomplished-hyena-726`). Without the secret the job reports why and exits
-clean, so forks never fail. To deploy by hand instead: `bunx convex deploy`.
+```bash
+npm run build      # dist/ (SPA) + sites/worker.js (API), asset budget checked
+npm run dev        # http://localhost:5173, proxying /api and /auth to wrangler
+npx wrangler dev   # the Worker alone, at http://localhost:8787
+```
 
-> **Deploy key status (re-verified 2026-10-03).** The functions and schema are live on
-> `accomplished-hyena-726` — `clans:mine`, `progress:get`, `progress:getClaims`
-> and `clans:list` all answer on the deployment today. The workspace credential
-> is accepted again: the earlier `401 AuthenticationFailed: Invalid Convex
-> deploy key` is no longer reproducible, and `bun convex dev --once` pushes to
-> the deployment. What is still
-> owner-managed is the GitHub Actions secret, so CI can run `bunx convex deploy`
-> on push (repository → Settings → Secrets and variables → Actions →
-> `CONVEX_DEPLOY_KEY`). Until it is set, that job explains why and exits clean,
-> and nothing is broken at runtime: the app keeps running against the live
-> deployment.
+- The Worker answers `/api/rpc` (one endpoint, `{ fn, args }`), the
+  `/auth/freebuff/*` OIDC routes, and everything else from the `ASSETS`
+  binding, so a deep link like `/learn/...` still serves the SPA.
+- The `DB` D1 binding holds every table: accounts, progress, profiles, clans,
+  clan quests and feed, preferences and certificates. `sites/api/schema.ts` is
+  applied lazily and idempotently on the first request, so a fresh environment
+  needs no migration step.
+- Sign in with Freebuff is enabled per environment; the platform injects
+  `FREEBUFF_CLIENT_ID`, `FREEBUFF_ISSUER` and `APP_ORIGIN` at deploy. There are
+  no secrets to set, no passwords to reset, and no email service to configure.
+- `wrangler.toml` is for local work only: it points at a local D1 file and the
+  project's **development** Freebuff client.
 
-One deliberate consequence of the hard-coded deployment constant: **this app has
-one cloud deployment, not a dev/prod pair.** Convex labels it "Development"
-because it was created as the project's dev deployment. Moving to a separate
-production deployment is a code change plus a data migration — a new deployment
-starts empty — not just a deploy.
+CI (`.github/workflows/ci.yml`) runs typecheck, the full suite and the asset
+build — including the Worker bundle — on every push and pull request. There is
+no separate backend deploy job: the Worker ships with the site.
 
 ## Design system
 
@@ -612,9 +615,9 @@ Motion is transform-and-opacity only, spring-smoothed, and skipped entirely unde
 expression over your program's actual `output`. If it compares text, spacing and
 labels matter. Use the hint ladder — tier 3 is close to a skeleton.
 
-**"This feature needs a newer server."** A Convex function the panel needs isn't
+**"This feature needs a newer server."** An endpoint the panel needs isn't
 reachable. The panel is degraded on purpose, so the rest of the app keeps
-working. Press **Try again**; if it persists, the backend needs a deploy.
+working. Press **Try again**; if it persists, the Worker needs a deploy.
 
 **My progress vanished.** Progress lives in `localStorage` under a versioned
 key. Private-mode browsers and "clear site data" both wipe it. Sign in to sync
@@ -623,9 +626,9 @@ it to your account.
 **The rapid-fire run won't complete the lesson.** By design — only a 100% run
 completes it. Speed feeds your combo score, not your mastery.
 
-**`bun convex dev --once` fails with `Invalid Convex deploy key`.** See
-[Deployment](#deployment). The local dev deployment and the whole test suite are
-unaffected.
+**Sign-in says it is not configured for this environment.** The deployed
+environment is missing its Freebuff variables — redeploy it from Sites so they
+are injected. Locally, `wrangler dev` reads them from `wrangler.toml`.
 
 ## Further documentation
 

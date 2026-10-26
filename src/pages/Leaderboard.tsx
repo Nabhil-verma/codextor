@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
-import { useQuery } from "convex/react";
-import { api } from "../convex/_generated/api";
+import { useQuery } from "../lib/cloud";
+import { api } from "../lib/api";
 import Nav from "../components/Nav";
 import { Reveal } from "../components/motion";
 import { Crown } from "lucide-react";
@@ -24,7 +24,7 @@ import {
 } from "../lib/gamification";
 import { useProgressState } from "../lib/progress";
 import { useReviewDays } from "../lib/reviewStore";
-import type { LeaderboardRow } from "../convex/leaderboard";
+import type { LeaderboardRow } from "../lib/apiTypes";
 
 type PodiumRow = LeaderboardRow;
 

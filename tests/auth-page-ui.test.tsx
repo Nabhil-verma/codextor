@@ -1,17 +1,23 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
+
+/*
+ * Sign in with Freebuff: the page has one action and never collects a
+ * password. The account is the visitor's Freebuff account, so there is no
+ * sign-up form, no reset-code flow and nothing secret on this device.
+ */
 
 const spies = vi.hoisted(() => ({
-  signIn: vi.fn(async () => undefined),
-  signUp: vi.fn(async () => undefined),
-  requestPasswordReset: vi.fn(async () => undefined),
-  completePasswordReset: vi.fn(async () => undefined),
+  signIn: vi.fn(),
+  user: null as
+    | null
+    | { displayName: string; handle: string; email: string | null; picture: string | null },
 }));
 
-vi.mock("convex/react", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("convex/react")>();
+vi.mock("../src/lib/cloud", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../src/lib/cloud")>();
   return {
     ...actual,
     useQuery: () => undefined,
@@ -24,13 +30,13 @@ vi.mock("../src/AccountProvider", async (importOriginal) => {
   return {
     ...actual,
     useAccount: () => ({
-      user: null,
+      user: spies.user,
       authReady: true,
       sync: "idle",
-      ...spies,
+      signIn: spies.signIn,
+      setDisplayName: async () => {},
       signOutUser: async () => {},
       resetEverything: async () => {},
-      setRecoveryEmail: async () => {},
     }),
   };
 });
@@ -38,121 +44,57 @@ vi.mock("../src/AccountProvider", async (importOriginal) => {
 import AuthPage from "../src/pages/AuthPage";
 
 beforeEach(() => {
-  for (const spy of Object.values(spies)) spy.mockClear();
-  spies.signIn.mockImplementation(async () => undefined);
-  spies.signUp.mockImplementation(async () => undefined);
-  spies.requestPasswordReset.mockImplementation(async () => undefined);
-  spies.completePasswordReset.mockImplementation(async () => undefined);
+  spies.signIn.mockClear();
+  spies.user = null;
 });
 
 afterEach(() => {
   cleanup();
 });
 
-function renderPage() {
-  const { container } = render(
-    <MemoryRouter>
-      <AuthPage />
+function renderPage(path = "/auth") {
+  return render(
+    <MemoryRouter initialEntries={[path]}>
+      <Routes>
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/learn" element={<p>learn page</p>} />
+        <Route path="/clans" element={<p>clans page</p>} />
+      </Routes>
     </MemoryRouter>,
   );
-  return container.querySelector("form") as HTMLFormElement;
 }
 
-function type(label: string, value: string) {
-  fireEvent.change(screen.getByLabelText(label), { target: { value } });
-}
-
-describe("sign up with a username", () => {
-  it("asks for a username and an optional recovery email, not an email login", async () => {
+describe("sign in with Freebuff", () => {
+  it("offers one button and collects no credential", () => {
     renderPage();
-    fireEvent.click(screen.getByRole("button", { name: "Create a free account" }));
-
-    expect(screen.getByLabelText("Username")).toBeTruthy();
-    expect(screen.getByLabelText("Recovery email (optional)")).toBeTruthy();
-    expect(screen.queryByLabelText("Email address")).toBeNull();
+    expect(screen.getByRole("button", { name: "Continue with Freebuff" })).toBeTruthy();
+    expect(screen.queryByLabelText(/username/i)).toBeNull();
+    expect(screen.queryByLabelText(/password/i)).toBeNull();
+    expect(screen.queryByRole("button", { name: "Create a free account" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Forgot password?" })).toBeNull();
   });
 
-  it("submits the username and recovery address, and the recovery field may be blank", async () => {
-    const form = renderPage();
-    fireEvent.click(screen.getByRole("button", { name: "Create a free account" }));
-    type("Your name", "Ada");
-    type("Username", "Ada_01");
-    type("Password (at least 8 characters)", "correct horse");
-    fireEvent.submit(form);
-
-    await waitFor(() => expect(spies.signUp).toHaveBeenCalledTimes(1));
-    expect(spies.signUp).toHaveBeenCalledWith("Ada", "Ada_01", "correct horse", undefined);
-
-    spies.signUp.mockClear();
-    type("Recovery email (optional)", "ada.backup@example.com");
-    fireEvent.submit(form);
-    await waitFor(() => expect(spies.signUp).toHaveBeenCalledTimes(1));
-    expect(spies.signUp).toHaveBeenCalledWith(
-      "Ada",
-      "Ada_01",
-      "correct horse",
-      "ada.backup@example.com",
-    );
-  });
-});
-
-describe("sign in", () => {
-  it("takes a username, and still accepts a legacy email", async () => {
-    const form = renderPage();
-    expect(screen.getByLabelText("Username or email")).toBeTruthy();
-    type("Username or email", "Ada_01");
-    type("Password (at least 8 characters)", "correct horse");
-    fireEvent.submit(form);
-
-    await waitFor(() => expect(spies.signIn).toHaveBeenCalledWith("Ada_01", "correct horse"));
+  it("starts sign-in and returns to the lessons by default", () => {
+    renderPage();
+    fireEvent.click(screen.getByRole("button", { name: "Continue with Freebuff" }));
+    expect(spies.signIn).toHaveBeenCalledWith("/learn");
   });
 
-  it("shows the provider's plain message when sign-in fails", async () => {
-    spies.signIn.mockRejectedValueOnce(new Error("Wrong username or password."));
-    const form = renderPage();
-    type("Username or email", "ada");
-    type("Password (at least 8 characters)", "wrong-pass");
-    fireEvent.submit(form);
-
-    expect((await screen.findByRole("alert")).textContent).toContain("Wrong username or password.");
-  });
-});
-
-describe("forgot password", () => {
-  it("asks for the username, then the emailed code and a new password", async () => {
-    const form = renderPage();
-    fireEvent.click(screen.getByRole("button", { name: "Forgot password?" }));
-    type("Username", "Ada_01");
-    fireEvent.submit(form);
-
-    await waitFor(() => expect(spies.requestPasswordReset).toHaveBeenCalledWith("Ada_01"));
-    // The reply is the same whether or not the account has an address on file.
-    expect(await screen.findByText(/If that account has a recovery email/)).toBeTruthy();
-    expect(screen.getByLabelText("Reset code (8 digits)")).toBeTruthy();
-
-    type("Reset code (8 digits)", "12345678");
-    type("New password (at least 8 characters)", "a brand new pass");
-    fireEvent.submit(form);
-
-    await waitFor(() =>
-      expect(spies.completePasswordReset).toHaveBeenCalledWith("Ada_01", "12345678", "a brand new pass"),
-    );
+  it("returns to the requested in-app page", () => {
+    renderPage("/auth?returnTo=/clans");
+    fireEvent.click(screen.getByRole("button", { name: "Continue with Freebuff" }));
+    expect(spies.signIn).toHaveBeenCalledWith("/clans");
   });
 
-  it("shows a clear message for a wrong or expired code", async () => {
-    spies.completePasswordReset.mockRejectedValueOnce(
-      new Error("That code is wrong or has expired. Request a new one."),
-    );
-    const form = renderPage();
-    fireEvent.click(screen.getByRole("button", { name: "Forgot password?" }));
-    type("Username", "Ada_01");
-    fireEvent.submit(form);
-    await screen.findByLabelText("Reset code (8 digits)");
+  it("never bounces back to a path outside the app", () => {
+    renderPage("/auth?returnTo=" + encodeURIComponent("//evil.example/steal"));
+    fireEvent.click(screen.getByRole("button", { name: "Continue with Freebuff" }));
+    expect(spies.signIn).toHaveBeenCalledWith("/learn");
+  });
 
-    type("Reset code (8 digits)", "00000000");
-    type("New password (at least 8 characters)", "a brand new pass");
-    fireEvent.submit(form);
-
-    expect((await screen.findByRole("alert")).textContent).toMatch(/wrong or has expired/);
+  it("sends an already signed-in visitor straight on", () => {
+    spies.user = { displayName: "Ada", handle: "user-1", email: "ada@example.com", picture: null };
+    renderPage("/auth?returnTo=/clans");
+    expect(screen.getByText("clans page")).toBeTruthy();
   });
 });

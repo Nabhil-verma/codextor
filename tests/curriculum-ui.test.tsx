@@ -47,8 +47,8 @@ if (typeof window.matchMedia !== "function") {
 
 // Optional course panels read live data. Stub the hooks rather than standing up
 // a whole backend — the lesson engine is what's under test here.
-vi.mock("convex/react", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("convex/react")>();
+vi.mock("../src/lib/cloud", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../src/lib/cloud")>();
   return {
     ...actual,
     useQuery: () => undefined,

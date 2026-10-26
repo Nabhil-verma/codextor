@@ -1,7 +1,7 @@
-import { useQuery } from "convex/react";
+import { useQuery } from "../lib/cloud";
 import { Link, useParams } from "react-router-dom";
 import Nav from "../components/Nav";
-import { api } from "../convex/_generated/api";
+import { api } from "../lib/api";
 
 /*
  * Public certificate check. Shows what the certificate certifies and who it was

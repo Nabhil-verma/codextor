@@ -1,18 +1,15 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { convexTest } from "convex-test";
-import schema from "../src/convex/schema";
-import { api } from "../src/convex/_generated/api";
-import { clampProfile, levelForXp, maxXpFor } from "../src/convex/xpRules";
-import { TOTAL_LESSONS } from "../src/convex/curriculum";
+import { describe, expect, it } from "vitest";
+import { createBackend } from "./helpers/backend";
+import { api } from "../src/lib/api";
+import { clampProfile, levelForXp, maxXpFor } from "../src/lib/xpRules";
+import { TOTAL_LESSONS } from "../src/lib/curriculum.generated";
 
 /*
- * #5: the player card is recomputed on the client and pushed, so the server
- * bounds what a forged payload can claim. Clamps are ENFORCED by default.
- * CODEXTOR_XP_CLAMPS=log turns them back to log-only (violations recorded,
- * values untouched).
+ * The player card is recomputed on the client and pushed, so the server bounds
+ * what a forged payload can claim. Clamps are enforced: a card that claims more
+ * XP than the curriculum can produce is stored at the ceiling with an audit
+ * trail instead of being rejected.
  */
-
-const modules = import.meta.glob("../src/convex/**/*.ts");
 
 const forged = {
   xp: 9_999_999,
@@ -25,18 +22,25 @@ const forged = {
   lessonsDone: 100_000,
 };
 
-async function makeUser(t: ReturnType<typeof convexTest>) {
-  return await t.run((ctx) =>
-    ctx.db.insert("users", { name: "Ada", email: "ada@example.com" }),
-  );
+async function makeUser(t: ReturnType<typeof createBackend>) {
+  return t.seedUser({ name: "Ada", email: "ada@example.com" });
 }
 
-const readCard = async (t: ReturnType<typeof convexTest>) =>
-  await t.run((ctx) => ctx.db.query("profiles").collect());
+type CardRow = {
+  id: string;
+  xp: number;
+  level: number;
+  lessons_done: number;
+  xp_week: number;
+  xp_month: number;
+  streak_current: number;
+  last_active_day: string | null;
+  clamped_at: number | null;
+  clamp_log: string | null;
+};
 
-afterEach(() => {
-  delete process.env.CODEXTOR_XP_CLAMPS;
-});
+const readCard = async (t: ReturnType<typeof createBackend>) =>
+  await t.rows<CardRow>("SELECT * FROM profiles");
 
 describe("clampProfile (pure)", () => {
   it("leaves a plausible card alone", () => {
@@ -141,103 +145,38 @@ describe("clampProfile (pure)", () => {
   });
 });
 
-describe("profiles.sync in log-only mode (CODEXTOR_XP_CLAMPS=log)", () => {
-  beforeEach(() => {
-    process.env.CODEXTOR_XP_CLAMPS = "log";
-  });
-
-  it("records the violation but stores what the client sent", async () => {
-    const t = convexTest(schema, modules);
+describe("profiles.sync bounds a forged payload", () => {
+  it("clamps a forged payload to what the curriculum allows", async () => {
+    const t = createBackend();
     const userId = await makeUser(t);
-    await t.withIdentity({ subject: userId }).mutation(api.profiles.sync, forged);
+    await t.as(userId).mutation(api.profiles.sync, forged);
 
     const [card] = await readCard(t);
-    expect(card.xp).toBe(forged.xp);
-    expect(card.level).toBe(999);
-    expect(card.lessonsDone).toBe(forged.lessonsDone);
-    expect(card.clampedAt).toBeTypeOf("number");
-    expect(card.clampLog).toContain("xp>curriculum");
-    expect(card.clampLog).toContain("streak>account-age");
-  });
-
-  it("a legitimate multi-device merge is stored in full", async () => {
-    const t = convexTest(schema, modules);
-    const userId = await makeUser(t);
-    const as = t.withIdentity({ subject: userId });
-
-    await as.mutation(api.profiles.sync, {
-      ...forged,
-      xp: 350,
-      xpWeek: 350,
-      xpMonth: 350,
-      level: 2,
-      streakCurrent: 1,
-      streakLongest: 1,
-      lessonsDone: 5,
-      ascension: "initiate",
-    });
-    // The phone was offline for two days; it pushes the merged total.
-    const [first] = await readCard(t);
-    await t.run((ctx) =>
-      ctx.db.patch(first._id, { updatedAt: Date.now() - 48 * 3_600_000 }),
-    );
-
-    await as.mutation(api.profiles.sync, {
-      ...forged,
-      xp: 1_500,
-      xpWeek: 900,
-      xpMonth: 1_500,
-      level: levelForXp(1_500),
-      streakCurrent: 1,
-      streakLongest: 3,
-      lessonsDone: 20,
-      ascension: "initiate",
-    });
-
-    const [card] = await readCard(t);
-    expect(card.xp).toBe(1_500);
-    expect(card.lessonsDone).toBe(20);
-    expect(card.level).toBe(levelForXp(1_500));
-    expect(card.clampLog).toBeUndefined();
-  });
-});
-
-describe("profiles.sync with the default (enforce)", () => {
-  it("clamps a forged payload when the variable is unset", async () => {
-    delete process.env.CODEXTOR_XP_CLAMPS;
-    const t = convexTest(schema, modules);
-    const userId = await makeUser(t);
-    await t.withIdentity({ subject: userId }).mutation(api.profiles.sync, forged);
-
-    const [card] = await readCard(t);
+    expect(card.lessons_done).toBe(TOTAL_LESSONS);
     expect(card.xp).toBeLessThanOrEqual(maxXpFor(TOTAL_LESSONS));
     expect(card.level).toBe(levelForXp(card.xp));
-  });
-});
-
-describe("profiles.sync with CODEXTOR_XP_CLAMPS=enforce", () => {
-  it("bounds a forged payload to what the curriculum allows", async () => {
-    process.env.CODEXTOR_XP_CLAMPS = "enforce";
-    const t = convexTest(schema, modules);
-    const userId = await makeUser(t);
-    await t.withIdentity({ subject: userId }).mutation(api.profiles.sync, forged);
-
-    const [card] = await readCard(t);
-    expect(card.lessonsDone).toBe(TOTAL_LESSONS);
-    expect(card.xp).toBeLessThanOrEqual(maxXpFor(TOTAL_LESSONS));
-    expect(card.level).toBe(levelForXp(card.xp));
-    expect(card.xpWeek).toBeLessThanOrEqual(card.xpMonth);
-    expect(card.xpMonth).toBeLessThanOrEqual(card.xp);
+    expect(card.xp_week).toBeLessThanOrEqual(card.xp_month);
+    expect(card.xp_month).toBeLessThanOrEqual(card.xp);
     // The account is minutes old, so a 5,000-day streak is impossible.
-    expect(card.streakCurrent).toBe(1);
-    expect(card.clampLog).toContain("lessons>total");
+    expect(card.streak_current).toBe(1);
+    expect(card.clamp_log).toContain("lessons>total");
+    expect(card.clamped_at).toBeTypeOf("number");
+  });
+
+  it("records the violation it clamped", async () => {
+    const t = createBackend();
+    const userId = await makeUser(t);
+    await t.as(userId).mutation(api.profiles.sync, forged);
+
+    const [card] = await readCard(t);
+    expect(card.clamp_log).toContain("xp>curriculum");
+    expect(card.clamp_log).toContain("streak>account-age");
   });
 
   it("still accepts a real merge from another device", async () => {
-    process.env.CODEXTOR_XP_CLAMPS = "enforce";
-    const t = convexTest(schema, modules);
+    const t = createBackend();
     const userId = await makeUser(t);
-    const as = t.withIdentity({ subject: userId });
+    const as = t.as(userId);
 
     await as.mutation(api.profiles.sync, {
       ...forged,
@@ -251,9 +190,11 @@ describe("profiles.sync with CODEXTOR_XP_CLAMPS=enforce", () => {
       ascension: "initiate",
     });
     const [first] = await readCard(t);
-    await t.run((ctx) =>
-      ctx.db.patch(first._id, { updatedAt: Date.now() - 12 * 3_600_000 }),
-    );
+    // The phone was offline for half a day; it pushes the merged total.
+    await t.sql("UPDATE profiles SET updated_at = ? WHERE id = ?", [
+      Date.now() - 12 * 3_600_000,
+      first.id,
+    ]);
 
     await as.mutation(api.profiles.sync, {
       ...forged,
@@ -269,15 +210,14 @@ describe("profiles.sync with CODEXTOR_XP_CLAMPS=enforce", () => {
 
     const [card] = await readCard(t);
     expect(card.xp).toBe(2_250);
-    expect(card.lessonsDone).toBe(30);
-    expect(card.clampLog).toBeUndefined();
+    expect(card.lessons_done).toBe(30);
+    expect(card.clamp_log).toBeNull();
   });
 
   it("drops a runaway sync loop instead of overwriting the card", async () => {
-    process.env.CODEXTOR_XP_CLAMPS = "enforce";
-    const t = convexTest(schema, modules);
+    const t = createBackend();
     const userId = await makeUser(t);
-    const as = t.withIdentity({ subject: userId });
+    const as = t.as(userId);
 
     for (let i = 0; i < 25; i++) {
       await as.mutation(api.profiles.sync, {
@@ -294,8 +234,16 @@ describe("profiles.sync with CODEXTOR_XP_CLAMPS=enforce", () => {
     }
 
     const [card] = await readCard(t);
-    expect(card.clampLog).toContain("rate-limit");
+    expect(card.clamp_log).toContain("rate-limit");
     // The push that tripped the limit did not land.
     expect(card.xp).toBeLessThan(124);
+  });
+});
+
+describe("profiles.sync is a no-op when signed out", () => {
+  it("writes no card", async () => {
+    const t = createBackend();
+    expect(await t.mutation(api.profiles.sync, forged)).toBeNull();
+    expect(await readCard(t)).toHaveLength(0);
   });
 });

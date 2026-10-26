@@ -29,3 +29,6 @@ public/typescript/
 # Sites deploy payload: a copy of dist/ in a directory that is neither hidden
 # nor gitignored, because the deployer skips those. Regenerate per sites/README.md.
 /sites/build-nopy/
+
+# Local D1 + KV state from `wrangler dev` — disposable, never committed.
+/.wrangler/

@@ -22,8 +22,8 @@ const h = vi.hoisted(() => ({
   user: null as { displayName: string; username: string; recoveryEmail: string | null } | null,
 }));
 
-vi.mock("convex/react", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("convex/react")>();
+vi.mock("../src/lib/cloud", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../src/lib/cloud")>();
   return {
     ...actual,
     useQuery: () => h.query,

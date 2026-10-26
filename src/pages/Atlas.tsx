@@ -22,11 +22,11 @@ const startQuestions = INTERVIEW_QUESTIONS.filter((q) => q.group === "start");
 
 export default function Atlas() {
   const { user } = useAccount();
-  return <AtlasPage key={user?.username ?? "guest"} username={user?.username} />;
+  return <AtlasPage key={user?.handle ?? "guest"} handle={user?.handle} />;
 }
 
-function AtlasPage({ username }: { username?: string }) {
-  const saved = useLocalStore(atlasStoreFor(username));
+function AtlasPage({ handle }: { handle?: string }) {
+  const saved = useLocalStore(atlasStoreFor(handle));
   const [edits, setEdits] = useState<InterviewAnswers | null>(null);
   const draft = edits ?? saved.answers;
   const plan = useMemo(() => generatePlan(saved.answers), [saved]);
@@ -50,7 +50,7 @@ function AtlasPage({ username }: { username?: string }) {
         className="mt-8 space-y-8"
         onSubmit={(e) => {
           e.preventDefault();
-          saveAtlasAnswers(username, draft);
+          saveAtlasAnswers(handle, draft);
           setEdits(null);
         }}
       >
@@ -96,7 +96,7 @@ function AtlasPage({ username }: { username?: string }) {
             type="button"
             className="rounded-full border border-ink-300 px-5 py-2 focus-visible:ring-2 focus-visible:ring-gold-500"
             onClick={() => {
-              saveAtlasAnswers(username, {});
+              saveAtlasAnswers(handle, {});
               setEdits(null);
             }}
           >

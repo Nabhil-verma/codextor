@@ -4,8 +4,8 @@ export { mergeAtlasState } from "./atlasInterview";
 
 const stores = new Map<string, ReturnType<typeof createLocalStore<AtlasState>>>();
 
-export function atlasStoreFor(username?: string) {
-  const key = username ? `clr-atlas-answers-v1:${encodeURIComponent(username)}` : "clr-atlas-answers-v1";
+export function atlasStoreFor(handle?: string) {
+  const key = handle ? `clr-atlas-answers-v1:${encodeURIComponent(handle)}` : "clr-atlas-answers-v1";
   let store = stores.get(key);
   if (!store) {
     store = createLocalStore<AtlasState>(key, (raw) => {
@@ -27,7 +27,7 @@ export function atlasStoreFor(username?: string) {
   return store;
 }
 
-export function saveAtlasAnswers(username: string | undefined, answers: AtlasState["answers"]) {
-  const store = atlasStoreFor(username);
+export function saveAtlasAnswers(handle: string | undefined, answers: AtlasState["answers"]) {
+  const store = atlasStoreFor(handle);
   store.set({ answers: sanitizeAtlasAnswers(answers), revision: Math.max(Date.now(), store.get().revision + 1) });
 }

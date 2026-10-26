@@ -1,15 +1,15 @@
 import { useRef, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useMutation, useQuery } from "convex/react";
-import { api } from "../convex/_generated/api";
+import { useMutation, useQuery } from "../lib/cloud";
+import { api } from "../lib/api";
 import Nav from "../components/Nav";
 import { Orb, Reveal, Tilt } from "../components/motion";
 import { PanelBoundary, RankFrame } from "../components/gamification/Pieces";
 import { Crown, ShieldHalf, UserCog } from "lucide-react";
 import { GUILD_TIERS, guildTierFor } from "../lib/guild";
 import { friendly } from "../lib/friendlyError";
-import type { ClanView } from "../convex/clans";
+import type { ClanView } from "../lib/apiTypes";
 import ClanQuestPanel from "../components/clan/ClanQuestPanel";
 import ClanFeed from "../components/clan/ClanFeed";
 

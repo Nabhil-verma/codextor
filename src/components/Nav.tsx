@@ -48,7 +48,7 @@ export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
-  const { user, authReady, sync, signOutUser, resetEverything } = useAccount();
+  const { user, authReady, sync, signOutUser, resetEverything, setDisplayName } = useAccount();
   // Keeps `.style-minimal` on <html> in sync on every page (Nav is global).
   const { style: themeStyle, setStyle: setThemeStyle } = useThemeStyle();
 
@@ -126,10 +126,10 @@ export default function Nav() {
                   aria-label="Account menu"
                 >
                   <span className="hidden max-w-[140px] truncate text-xs font-medium text-ink-800 md:block">
-                    {user.displayName || user.username}
+                    {user.displayName}
                   </span>
                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 to-violet-500 font-display text-xs font-bold text-[#030305]">
-                    {(user.displayName || user.username || "?").charAt(0).toUpperCase()}
+                    {(user.displayName || "?").charAt(0).toUpperCase()}
                   </span>
                 </button>
                 <AnimatePresence>
@@ -146,13 +146,31 @@ export default function Nav() {
                         <p className="truncate text-sm font-semibold text-ink-950">
                           {user.displayName || "Learner"}
                         </p>
-                        <p className="truncate font-mono text-xs text-ink-600">{user.username}</p>
+                        <p className="truncate font-mono text-xs text-ink-600">
+                          {user.email ?? "Freebuff account"}
+                        </p>
                         <p className="mt-2 flex items-center gap-1.5 font-mono text-[11px] text-ink-600">
                           <span className={"h-1.5 w-1.5 rounded-full " + syncDot[sync]} />
                           {syncLabel[sync]}
                         </p>
                       </div>
                       <div className="my-1 h-px bg-white/[0.06]" />
+                      <button
+                        type="button"
+                        className="w-full rounded-xl px-3 py-2 text-left text-sm text-ink-800 transition hover:bg-white/[0.06]"
+                        onClick={async () => {
+                          setMenuOpen(false);
+                          const next = prompt(
+                            "Display name — shown on the leaderboard, guild and certificates.",
+                            user.displayName,
+                          );
+                          if (next && next.trim()) {
+                            await setDisplayName(next.trim()).catch(() => {});
+                          }
+                        }}
+                      >
+                        Change display name
+                      </button>
                       <button
                         type="button"
                         className="w-full rounded-xl px-3 py-2 text-left text-sm text-ink-800 transition hover:bg-white/[0.06]"

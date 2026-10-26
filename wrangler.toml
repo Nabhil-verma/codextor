@@ -1,0 +1,28 @@
+# Local development for the Codextor Worker (Sign in with Freebuff + D1).
+#
+# `sites.deploy.json` is what deploys; this file only exists so the Worker can
+# be run in workerd locally with the same compatibility date and bindings:
+#
+#   wrangler dev --port 8787
+#
+# The client ID below is the project's **development** client (public, no
+# secret). It accepts any port on localhost, so sign-in works at
+# http://localhost:8787/auth/freebuff/callback. Production uses the deployed
+# client injected by Sites; never point this at it.
+name = "codextor"
+main = "sites/worker.js"
+compatibility_date = "2026-10-01"
+
+[assets]
+directory = "./sites/build-nopy"
+binding = "ASSETS"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "codextor-local"
+database_id = "00000000-0000-0000-0000-000000000000"
+
+[vars]
+FREEBUFF_CLIENT_ID = "13ba711d-5f61-4bf2-b64d-1426142fb553"
+FREEBUFF_ISSUER = "https://freebuff.com/oidc"
+APP_ORIGIN = "http://localhost:8787"

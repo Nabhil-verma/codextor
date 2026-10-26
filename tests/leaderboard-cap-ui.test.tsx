@@ -1,17 +1,16 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import { getFunctionName } from "convex/server";
 import { MemoryRouter } from "react-router-dom";
 
 const board = vi.hoisted(() => ({ data: undefined as unknown }));
 
-vi.mock("convex/react", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("convex/react")>();
+vi.mock("../src/lib/cloud", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../src/lib/cloud")>();
   return {
     ...actual,
     useQuery: (ref: unknown) =>
-      getFunctionName(ref as Parameters<typeof getFunctionName>[0]) === "leaderboard:top"
+      (ref as { name: string }).name === "leaderboard.top"
         ? board.data
         : undefined,
     useMutation: () => vi.fn(() => Promise.resolve()),

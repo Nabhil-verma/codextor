@@ -7,8 +7,8 @@ import { generatePlan } from "../src/lib/atlasPlan";
 import { findTrackMeta } from "../src/data/manifest";
 
 // Signed out: the Atlas bridge stays inert, so the page is tested on its own.
-vi.mock("convex/react", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("convex/react")>();
+vi.mock("../src/lib/cloud", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../src/lib/cloud")>();
   return { ...actual, useQuery: () => undefined, useMutation: () => () => Promise.resolve() };
 });
 

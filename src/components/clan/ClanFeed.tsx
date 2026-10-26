@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useQuery } from "convex/react";
+import { useQuery } from "../../lib/cloud";
 import {
   LogOut,
   ShieldHalf,
@@ -8,9 +8,9 @@ import {
   UserMinus,
   UserPlus,
 } from "lucide-react";
-import { api } from "../../convex/_generated/api";
+import { api } from "../../lib/api";
 import { RankFrame } from "../gamification/Pieces";
-import type { FeedEvent } from "../../convex/clans";
+import type { FeedEvent } from "../../lib/apiTypes";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 

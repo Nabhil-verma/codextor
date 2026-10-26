@@ -4,12 +4,12 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-libra
 import { MemoryRouter } from "react-router-dom";
 
 const h = vi.hoisted(() => ({
-  user: null as { displayName: string; username: string; recoveryEmail: null } | null,
+  user: null as { displayName: string; handle: string; email: null; picture: null } | null,
   cloud: undefined as { answers: Record<string, string>; revision: number } | null | undefined,
   save: vi.fn(async (_input: unknown) => {}),
 }));
-vi.mock("convex/react", async (original) => ({
-  ...await original<typeof import("convex/react")>(),
+vi.mock("../src/lib/cloud", async (original) => ({
+  ...await original<typeof import("../src/lib/cloud")>(),
   useQuery: (_ref: unknown, args: unknown) => args === "skip" ? undefined : h.cloud,
   useMutation: () => h.save,
 }));
@@ -32,7 +32,7 @@ describe("Atlas answer sync", () => {
   });
 
   it("updates both the form and generated plan when account answers arrive", async () => {
-    h.user = { displayName: "Ada", username: "ada", recoveryEmail: null };
+    h.user = { displayName: "Ada", handle: "ada", email: null, picture: null };
     h.cloud = { answers: { goal: "interview-prep", hours: "1-3" }, revision: 2 };
     render(page());
     await waitFor(() => expect((screen.getByRole("radio", { name: "Interview prep" }) as HTMLInputElement).checked).toBe(true));
@@ -43,7 +43,7 @@ describe("Atlas answer sync", () => {
   });
 
   it("pushes form edits and an explicit empty skip snapshot", async () => {
-    h.user = { displayName: "Ada", username: "ada", recoveryEmail: null };
+    h.user = { displayName: "Ada", handle: "ada", email: null, picture: null };
     h.cloud = { answers: {}, revision: 0 };
     render(page());
     fireEvent.click(screen.getByRole("radio", { name: "Interview prep" }));
@@ -60,7 +60,7 @@ describe("Atlas answer sync", () => {
   });
 
   it("retains local answers and reports a failed account write", async () => {
-    h.user = { displayName: "Ada", username: "ada", recoveryEmail: null };
+    h.user = { displayName: "Ada", handle: "ada", email: null, picture: null };
     h.cloud = { answers: {}, revision: 0 };
     h.save.mockRejectedValue(new Error("offline"));
     render(page());
@@ -71,11 +71,11 @@ describe("Atlas answer sync", () => {
   });
 
   it("does not write a previous account's answers after switching accounts", async () => {
-    h.user = { displayName: "Ada", username: "ada", recoveryEmail: null };
+    h.user = { displayName: "Ada", handle: "ada", email: null, picture: null };
     h.cloud = { answers: {}, revision: 0 };
     const view = render(page());
     act(() => atlasStoreFor("ada").set({ answers: { goal: "interview-prep" }, revision: 1 }));
-    h.user = { displayName: "Bob", username: "bob", recoveryEmail: null };
+    h.user = { displayName: "Bob", handle: "bob", email: null, picture: null };
     view.rerender(page());
     await new Promise(r => setTimeout(r, 450));
     expect(h.save).not.toHaveBeenCalled();

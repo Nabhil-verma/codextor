@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { useMutation } from "convex/react";
-import { api } from "../../convex/_generated/api";
+import { useMutation } from "../../lib/cloud";
+import { api } from "../../lib/api";
 import { isoWeekKey, questDefForWeek } from "../../lib/guild";
 import { useProgressState } from "../../lib/progress";
 import {

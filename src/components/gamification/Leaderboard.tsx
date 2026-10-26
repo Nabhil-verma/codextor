@@ -2,8 +2,8 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { Trophy } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
+import { useQuery } from "../../lib/cloud";
+import { api } from "../../lib/api";
 import {
   ascensionFor,
   computeStreak,

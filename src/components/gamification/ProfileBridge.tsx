@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { useQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
+import { useQuery } from "../../lib/cloud";
+import { api } from "../../lib/api";
 import { setClanRole } from "../../lib/guildState";
 import { PanelBoundary } from "./Pieces";
 

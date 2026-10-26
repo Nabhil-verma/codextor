@@ -2,8 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { makeFunctionReference } from "convex/server";
-import type { ClanView } from "../src/convex/clans";
+import type { ClanView } from "../src/lib/apiTypes";
 
 /*
  * The three shared surfaces Feature 1 adds, rendered for real:
@@ -47,25 +46,24 @@ if (typeof window.matchMedia !== "function") {
   })) as typeof window.matchMedia;
 }
 
-// `api` is Convex's `anyApi`: every property access builds a fresh reference,
-// so queries are keyed by their function path ("clans:questView") instead.
-const PATH = Object.getOwnPropertySymbols(makeFunctionReference("probe:probe"))[0];
+// Every endpoint reference carries its own name ("clans.questView"), which is
+// what the mocked hooks key their answers on.
 const pathOf = (ref: unknown): string => {
-  const path = (ref as Record<symbol, unknown>)[PATH];
-  return typeof path === "string" ? path : "";
+  const name = (ref as { name?: unknown }).name;
+  return typeof name === "string" ? name : "";
 };
 
 const Q = {
-  questView: "clans:questView",
-  questClaims: "clans:questClaims",
-  feed: "clans:feed",
-  me: "profiles:me",
+  questView: "clans.questView",
+  questClaims: "clans.questClaims",
+  feed: "clans.feed",
+  me: "profiles.me",
 } as const;
 
 const M = {
-  claimQuestReward: "clans:claimQuestReward",
-  setRole: "clans:setRole",
-  kick: "clans:kick",
+  claimQuestReward: "clans.claimQuestReward",
+  setRole: "clans.setRole",
+  kick: "clans.kick",
 } as const;
 
 const h = vi.hoisted(() => ({
@@ -74,8 +72,8 @@ const h = vi.hoisted(() => ({
 }));
 
 // Keep every real export and swap only the two live-data hooks.
-vi.mock("convex/react", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("convex/react")>();
+vi.mock("../src/lib/cloud", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../src/lib/cloud")>();
   return {
     ...actual,
     useQuery: (ref: unknown) => h.queries.get(pathOf(ref)),

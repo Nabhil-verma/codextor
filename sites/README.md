@@ -21,9 +21,11 @@ rm -rf sites/build-nopy/pyodide
    here, so the payload is copied to `sites/build-nopy/` (also gitignored, but
    only so it is not committed — it is still uploaded).
 2. **`spa` and `compatibilityFlags` are rejected** by the current deploy
-   schema even though older documentation lists them. Leave both out. Without
-   `spa`, unknown paths return 404; that is harmless because routing is
-   hash-based (`/#/lesson/...`) and the static pages are real files.
+   schema even though older documentation lists them, so leave both out and do
+   the fallback in the Worker: a missing asset whose path has no file extension
+   is served `index.html` (see `serveAsset` in `sites/api/worker.ts`). Routing
+   is hash-based (`/#/verify/CODE`), but people paste path-style URLs and
+   reload them, and a hard 404 for those looks like the site is broken.
 3. **The total asset budget is ~10 MiB.** A 9.2 MB single asset passes, a 16 MB
    set does not. Pyodide is 13 MB (`pyodide.asm.wasm` alone is 9.2 MB), so the
    payload above deletes `pyodide/` and the deployed build is 6.3 MB.
@@ -33,5 +35,13 @@ rm -rf sites/build-nopy/pyodide
    any host with room for 13 MB keep using the self-hosted copy, so no
    third-party request is made there.
 
-The Worker itself only forwards to `env.ASSETS`; Convex is called from the
-browser, not proxied.
+## The Worker now does more than forward
+
+`sites/worker.js` is bundled from `sites/api/` by `scripts/build-worker.mjs`,
+which `npm run build` runs last. It serves `POST /api/rpc` (every backend call),
+the `/auth/freebuff/*` sign-in routes via `@freebuff/auth`, and everything else
+from `env.ASSETS` — including SPA deep links, which fall back to `index.html`.
+
+The database is a D1 binding named `DB`; `sites/api/schema.ts` creates its
+tables idempotently on the first request after a deploy, so a new environment
+needs no migration step.

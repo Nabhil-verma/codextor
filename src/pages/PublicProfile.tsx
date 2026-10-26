@@ -1,8 +1,8 @@
-import { useQuery } from "convex/react";
+import { useQuery } from "../lib/cloud";
 import { Link, useParams } from "react-router-dom";
 import Nav from "../components/Nav";
-import { api } from "../convex/_generated/api";
-import type { Id } from "../convex/_generated/dataModel";
+import { api } from "../lib/api";
+import type { Id } from "../lib/apiTypes";
 import { resolveAscension } from "../lib/gamification";
 
 /*

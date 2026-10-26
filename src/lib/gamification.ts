@@ -6,7 +6,7 @@
 import { certificateLessonKeys } from "./progressKeys";
 import { MANIFEST_TRACKS as tracks } from "../data/manifest";
 /* The level curve lives with the backend rules so client and server agree. */
-import { XP_PER_LEVEL, levelForXp } from "../convex/xpRules";
+import { XP_PER_LEVEL, levelForXp } from "./xpRules";
 import { lessonIdOf, scoreFor, type Progress } from "./progress";
 import { reviewXp, type ReviewDays } from "./review";
 

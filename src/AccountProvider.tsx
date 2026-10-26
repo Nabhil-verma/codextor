@@ -8,10 +8,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { ConvexProvider, ConvexReactClient, useMutation, useQuery } from "convex/react";
-import { ConvexAuthProvider, useAuthActions } from "@convex-dev/auth/react";
-import { useConvexAuth } from "convex/react";
-import { api } from "./convex/_generated/api";
+import { signInUrl, useFreebuffUser } from "@freebuff/auth/react";
+import { api } from "./lib/api";
+import { resetCloudCache, useMutation, useQuery } from "./lib/cloud";
 import {
   lessonIdOf,
   loadProgress,
@@ -39,8 +38,6 @@ import {
 } from "./lib/telemetry";
 import { mergeClaims, type Claims } from "./lib/milestones";
 import { loadReviewDays } from "./lib/reviewStore";
-import { toAbsoluteUrl } from "./lib/url";
-import { authMessage } from "./lib/friendlyError";
 import {
   ascensionFor,
   computeStreak,
@@ -56,36 +53,27 @@ import {
 
 type SyncState = "idle" | "syncing" | "synced" | "error";
 
-/** Minimal user shape the UI needs — no vendor types leak into components. */
+/**
+ * The signed-in learner, as the UI needs them. Nothing vendor-specific leaks
+ * into components, and `handle` is the stable account id used to key anything
+ * that belongs to this account on this device.
+ */
 type AccountUser = {
   displayName: string;
-  /** The sign-in key (lowercase). For legacy accounts, their email. */
-  username: string;
-  /** Private to the signed-in user; receives reset codes only. */
-  recoveryEmail: string | null;
+  /** Stable account id. Safe as a local store key; never shown publicly. */
+  handle: string;
+  email: string | null;
+  picture: string | null;
 };
 
 type AccountCtx = {
   user: AccountUser | null;
-  /** False until the initial auth state is known. */
+  /** False until the initial session read has answered. */
   authReady: boolean;
   sync: SyncState;
-  /** `identifier` is a username (or, for legacy accounts, their email). */
-  signIn: (identifier: string, password: string) => Promise<void>;
-  signUp: (
-    name: string,
-    username: string,
-    password: string,
-    recoveryEmail?: string,
-  ) => Promise<void>;
-  /** Emails a reset code to the account's recovery address, if it has one. */
-  requestPasswordReset: (identifier: string) => Promise<void>;
-  completePasswordReset: (
-    identifier: string,
-    code: string,
-    newPassword: string,
-  ) => Promise<void>;
-  setRecoveryEmail: (email: string) => Promise<void>;
+  /** Starts Sign in with Freebuff; returns to `returnTo` (a same-site path). */
+  signIn: (returnTo?: string) => void;
+  setDisplayName: (name: string) => Promise<void>;
   signOutUser: () => Promise<void>;
   /** Wipe local progress AND the signed-in account's cloud progress. */
   resetEverything: () => Promise<void>;
@@ -93,14 +81,16 @@ type AccountCtx = {
 
 const Ctx = createContext<AccountCtx | null>(null);
 
-/* ------------------------------------------------------------------ */
-/* Cloud account store (Convex Auth)                                   */
-/* ------------------------------------------------------------------ */
+/** Where to come back to: the current hash route, since the app is hash-routed. */
+function currentPath(): string {
+  return `/${window.location.hash || "#/"}`;
+}
 
-function ConvexAccount({ children }: { children: ReactNode }) {
-  const act = useAuthActions();
-  const { isLoading } = useConvexAuth();
-  const me = useQuery(api.users.me); // undefined=loading · null=signed out
+function AccountStore({ children }: { children: ReactNode }) {
+  // The session is read from the site's own /auth/freebuff/session route; the
+  // server decides access, this is for display and for knowing when to sync.
+  const { user: session, isLoading, refresh } = useFreebuffUser();
+  const me = useQuery(api.users.me);
   const cloud = useQuery(api.progress.get);
   const cloudClaims = useQuery(api.progress.getClaims);
   const cloudAttempts = useQuery(api.progress.getAttempts);
@@ -109,7 +99,7 @@ function ConvexAccount({ children }: { children: ReactNode }) {
   const saveAttemptsRow = useMutation(api.progress.saveAttempts);
   const wipeRow = useMutation(api.progress.wipe);
   const saveProfile = useMutation(api.profiles.sync);
-  const setRecoveryRow = useMutation(api.users.setRecoveryEmail);
+  const saveName = useMutation(api.users.setName);
 
   const [sync, setSync] = useState<SyncState>("idle");
   const lastPulled = useRef("");
@@ -121,22 +111,24 @@ function ConvexAccount({ children }: { children: ReactNode }) {
   const lastPulledClaims = useRef("");
   const lastPushedClaims = useRef("");
   const claimsPushTimer = useRef<number | null>(null);
-  /** Resolve handles for `waitForUser` — called when a user actually appears. */
-  const waiters = useRef<(() => void)[]>([]);
 
-  const signedIn = me != null;
-  // `users.me` briefly returns undefined while the token propagates after
-  // sign-in — "ready" means Convex finished loading AND we have an answer.
-  const authReady = !isLoading && me !== undefined;
+  const signedIn = session != null;
+  const authReady = !isLoading;
 
-  // Release waiters the moment a real session materializes (`me` non-null).
+  /*
+   * A different account (or none) must never see the previous account's
+   * cached rows, so the query cache is keyed per session and reset here.
+   */
   useEffect(() => {
-    if (me) {
-      const ws = waiters.current;
-      waiters.current = [];
-      for (const w of ws) w();
-    }
-  }, [me]);
+    resetCloudCache();
+    lastPulled.current = "";
+    lastPushed.current = "";
+    lastPulledClaims.current = "";
+    lastPushedClaims.current = "";
+    lastPulledAttempts.current = "";
+    lastPushedAttempts.current = "";
+    setSync("idle");
+  }, [session?.sub]);
 
   /* Pull: merge cloud progress into local whenever the cloud row changes. */
   useEffect(() => {
@@ -184,8 +176,6 @@ function ConvexAccount({ children }: { children: ReactNode }) {
     const local = loadClaims();
     const merged = mergeClaims(local, cloudClaims as Claims);
     const mergedSerial = JSON.stringify(merged);
-    // Only write when the union actually differs — otherwise every cloud
-    // re-delivery would emit and bounce a pointless push back.
     if (mergedSerial !== JSON.stringify(local)) applyCloudClaims(cloudClaims as Claims);
     lastPushedClaims.current = mergedSerial;
   }, [signedIn, cloudClaims]);
@@ -224,8 +214,7 @@ function ConvexAccount({ children }: { children: ReactNode }) {
   /*
    * Attempt aggregates. The push sends a *summary* per lesson (first / best /
    * count), not the raw log: the server keeps the earliest first and the
-   * highest best, so a second device can only add information. The cloud
-   * aggregate map is also what the gate readouts use once signed in.
+   * highest best, so a second device can only add information.
    */
   useEffect(() => {
     if (!signedIn) return;
@@ -264,7 +253,7 @@ function ConvexAccount({ children }: { children: ReactNode }) {
       const lessonsDone = new Set(
         Object.entries(p.completed)
           .filter(([, score]) => score >= 1)
-          .map(([key]) => lessonIdOf(key))
+          .map(([key]) => lessonIdOf(key)),
       ).size;
       void saveProfile({
         xp: playerXp(p, clanRewardXp() + currentMilestoneXp(), reviewDays),
@@ -286,8 +275,7 @@ function ConvexAccount({ children }: { children: ReactNode }) {
     push();
     // A milestone claim moves this player's XP (and therefore their leaderboard
     // rank) without touching the progress map, so claims have to re-publish the
-    // card too — otherwise shipping the project wouldn't show up until the next
-    // lesson was completed.
+    // card too.
     const offProgress = subscribeProgress(push);
     const offClaims = subscribeClaims(push);
     return () => {
@@ -296,86 +284,31 @@ function ConvexAccount({ children }: { children: ReactNode }) {
     };
   }, [signedIn, saveProfile]);
 
-  // The Password provider reads `email` as the account's login key, so the
-  // username (or a legacy email) is passed in that field.
-  const signIn = useCallback(
-    async (identifier: string, password: string) => {
-      try {
-        await act.signIn("password", { email: identifier, password, flow: "signIn" });
-        await waitForUser(waiters);
-      } catch (err) {
-        throw new Error(authMessage(err));
-      }
-    },
-    [act]
-  );
+  const signIn = useCallback((returnTo?: string) => {
+    window.location.assign(signInUrl(returnTo ?? currentPath()));
+  }, []);
 
-  const signUp = useCallback(
-    async (name: string, username: string, password: string, recoveryEmail?: string) => {
-      try {
-        const recovery = recoveryEmail?.trim();
-        await act.signIn("password", {
-          name,
-          email: username,
-          password,
-          ...(recovery ? { recoveryEmail: recovery } : {}),
-          flow: "signUp",
-        });
-        await waitForUser(waiters);
-      } catch (err) {
-        throw new Error(authMessage(err));
-      }
+  const setDisplayName = useCallback(
+    async (name: string) => {
+      await saveName({ name });
+      await refresh();
     },
-    [act]
-  );
-
-  // Whatever the cause (unknown account, no recovery address, mail not
-  // configured), the reply is the same, so the form never reveals which.
-  const requestPasswordReset = useCallback(
-    async (identifier: string) => {
-      try {
-        await act.signIn("password", { email: identifier, flow: "reset" });
-      } catch {
-        throw new Error("We couldn't start a reset just now. Try again shortly.");
-      }
-    },
-    [act]
-  );
-
-  const completePasswordReset = useCallback(
-    async (identifier: string, code: string, newPassword: string) => {
-      try {
-        await act.signIn("password", {
-          email: identifier,
-          code: code.trim(),
-          newPassword,
-          flow: "reset-verification",
-        });
-        await waitForUser(waiters);
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : "";
-        if (/invalid code|could not verify|expired/i.test(msg)) {
-          throw new Error("That code is wrong or has expired. Request a new one.");
-        }
-        throw new Error(authMessage(err));
-      }
-    },
-    [act]
-  );
-
-  const setRecoveryEmail = useCallback(
-    async (email: string) => {
-      await setRecoveryRow({ email: email.trim() || undefined });
-    },
-    [setRecoveryRow]
+    [saveName, refresh],
   );
 
   const signOutUser = useCallback(async () => {
-    await act.signOut();
+    try {
+      // Sign-out must be a same-site POST; a link would let other sites do it.
+      await fetch("/auth/freebuff/signout", {
+        method: "POST",
+        credentials: "same-origin",
+      });
+    } catch {
+      // Already gone, or offline: the local cleanup below still runs.
+    }
     // Signing out wipes everything that belonged to the account on this device:
     // lesson scores, milestone claims and banked guild rewards. Leaving any of
-    // the three behind would show rewards the next (signed-out) learner never
-    // earned — and the profile push would keep publishing them.
+    // them behind would show rewards the next learner never earned.
     resetLocalProgress();
     resetClaims();
     resetClanRewards();
@@ -387,13 +320,14 @@ function ConvexAccount({ children }: { children: ReactNode }) {
     lastPulledAttempts.current = "";
     lastPushedAttempts.current = "";
     setSync("idle");
-  }, [act]);
+    resetCloudCache();
+    await refresh();
+  }, [refresh]);
 
   const resetEverything = useCallback(async () => {
     resetLocalProgress();
     // Claims and banked guild rewards are progress too — leaving them local
-    // would let a reset device push the wiped milestones and rewards straight
-    // back into the account's XP.
+    // would let a reset device push the wiped milestones back.
     resetClaims();
     resetClanRewards();
     resetTelemetry();
@@ -411,86 +345,47 @@ function ConvexAccount({ children }: { children: ReactNode }) {
     }
   }, [signedIn, wipeRow]);
 
-  const value = useMemo<AccountCtx>(
-    () => ({
+  const value = useMemo<AccountCtx>(() => {
+    const displayName = me?.name || session?.name || "Learner";
+    return {
       user: me
-        ? { displayName: me.name, username: me.username, recoveryEmail: me.recoveryEmail }
-        : null,
+        ? {
+            displayName,
+            handle: me.handle,
+            email: me.email,
+            picture: me.picture,
+          }
+        : session
+          ? {
+              displayName,
+              handle: session.sub,
+              email: session.email ?? null,
+              picture: session.picture ?? null,
+            }
+          : null,
       authReady,
       sync,
       signIn,
-      signUp,
-      requestPasswordReset,
-      completePasswordReset,
-      setRecoveryEmail,
+      setDisplayName,
       signOutUser,
       resetEverything,
-    }),
-    [
-      me,
-      authReady,
-      sync,
-      signIn,
-      signUp,
-      requestPasswordReset,
-      completePasswordReset,
-      setRecoveryEmail,
-      signOutUser,
-      resetEverything,
-    ]
-  );
+    };
+  }, [
+    me,
+    session,
+    authReady,
+    sync,
+    signIn,
+    setDisplayName,
+    signOutUser,
+    resetEverything,
+  ]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
-/**
- * Resolve only when a real session materializes (a waiter fires), bounded so
- * a broken backend can't hang the flow forever — on timeout the caller sees
- * the session never arrived and surfaces an error instead of navigating.
- */
-function waitForUser(waiters: { current: (() => void)[] }): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const timer = window.setTimeout(() => {
-      const i = waiters.current.indexOf(done);
-      if (i >= 0) waiters.current.splice(i, 1);
-      reject(new Error("Signed in, but the session didn't load in time — check your connection and try again."));
-    }, 8000);
-    function done() {
-      window.clearTimeout(timer);
-      const i = waiters.current.indexOf(done);
-      if (i >= 0) waiters.current.splice(i, 1);
-      resolve();
-    }
-    waiters.current.push(done);
-  });
-}
-
-/* ------------------------------------------------------------------ */
-/* Provider shell                                                      */
-/* ------------------------------------------------------------------ */
-
-const CONVEX_DEPLOYMENT = "accomplished-hyena-726";
-/** Last known-good cloud address — used if the constant above ever breaks. */
-const DEFAULT_CONVEX_URL = "https://accomplished-hyena-726.convex.cloud";
-/**
- * Always the production Convex cloud URL (the env var from `convex dev` points
- * at localhost and must never leak into a production build, so it is not read
- * here). The address is validated anyway: `new ConvexReactClient()` throws
- * "Provided address was not an absolute URL" for anything without a scheme, and
- * that throw happens inside a constructor, so it takes the whole app with it.
- */
-const CONVEX_URL = toAbsoluteUrl(`https://${CONVEX_DEPLOYMENT}.convex.cloud`, DEFAULT_CONVEX_URL);
-
 export function AccountProvider({ children }: { children: ReactNode }) {
-  const client = useMemo(() => new ConvexReactClient(CONVEX_URL), []);
-
-  return (
-    <ConvexProvider client={client}>
-      <ConvexAuthProvider client={client}>
-        <ConvexAccount>{children}</ConvexAccount>
-      </ConvexAuthProvider>
-    </ConvexProvider>
-  );
+  return <AccountStore>{children}</AccountStore>;
 }
 
 export function useAccount(): AccountCtx {

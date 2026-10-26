@@ -55,11 +55,10 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      # The Convex bindings in src/convex/_generated are committed, so the
-      # typecheck needs no deployment, no account and no secrets. Tests exercise
-      # the real Convex functions in-process through convex-test for the same
-      # reason — the leaderboard, guild and claim-sync code is covered without
-      # touching a live backend.
+      # The Worker's API is plain source in sites/api, so the typecheck needs no
+      # account and no secrets. The backend tests apply the real D1 schema to
+      # Node's built-in SQLite and call the same handlers in-process, so the
+      # leaderboard, guild and claim-sync code is covered without a deployment.
       - name: Typecheck
         run: bun run typecheck
 
@@ -81,38 +80,5 @@ jobs:
       - name: Review freshness
         run: node scripts/review-freshness.mjs
 
-  # The frontend is hosted statically; the Convex functions are a separate
-  # deployment. The leaderboard, guilds and milestone-claim sync only work in
-  # production once these functions are pushed, so this job is what keeps the
-  # backend in step with main instead of relying on someone remembering
-  # `npx convex deploy`.
-  deploy-backend:
-    name: deploy convex functions
-    needs: verify
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: "1.3.14"
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
-
-      # `convex deploy` reads the key from the environment, so it stays a
-      # repository secret and never touches the workflow file. Without the
-      # secret the job reports why and exits clean — a fork or a fresh clone
-      # must not fail CI just because it can't reach production.
-      - name: Deploy
-        env:
-          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY_2 }}
-        run: |
-          if [ -z "$CONVEX_DEPLOY_KEY" ]; then
-            echo "::notice title=Backend deploy skipped::Set the CONVEX_DEPLOY_KEY_2 repository secret with a deploy key for the intended Convex deployment to push schema and functions."
-            exit 0
-          fi
-          bunx convex deploy
+  # There is no backend deploy job: the Worker and the SPA ship together from
+  # sites/ (see README → Deployment). A push to main still only verifies.

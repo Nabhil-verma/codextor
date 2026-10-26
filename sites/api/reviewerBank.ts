@@ -1,6 +1,6 @@
 /** Server-only answer bank. Never imported by learner components or manifests. */
 export const REVIEW_BANK_VERSION = 1;
-import type { TaxonomyCode } from "../data/bug-taxonomy";
+import type { TaxonomyCode } from "../../src/data/bug-taxonomy";
 export type ReviewItem = { category: TaxonomyCode; prompt: string; code: string; options: string[]; answer: number; defective: boolean };
 export const REVIEW_BANK: { id: string; items: ReviewItem[] }[] = [
   { id: "review-v1-a", items: [

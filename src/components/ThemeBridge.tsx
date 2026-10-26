@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
-import { useMutation, useQuery } from "convex/react";
-import { api } from "../convex/_generated/api";
+import { useMutation, useQuery } from "../lib/cloud";
+import { api } from "../lib/api";
 import { useAccount } from "../AccountProvider";
 import { themeStyleStore, useThemeStyle, type ThemeStyle } from "../lib/theme";
 import { PanelBoundary } from "./gamification/Pieces";

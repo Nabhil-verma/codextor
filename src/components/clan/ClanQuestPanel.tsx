@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useMutation, useQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
+import { useMutation, useQuery } from "../../lib/cloud";
+import { api } from "../../lib/api";
 import { Crown, Flame, Gift, Trophy, Users } from "lucide-react";
 import { isoWeekKey } from "../../lib/guild";
 import { RankFrame } from "../gamification/Pieces";

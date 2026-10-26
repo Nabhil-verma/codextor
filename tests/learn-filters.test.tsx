@@ -23,8 +23,8 @@ if (!("ResizeObserver" in globalThis)) {
 
 // The catalog mounts <Nav/>, which reads the account context. Stub the live
 // data (same pattern as the other page tests) so the filters are what's tested.
-vi.mock("convex/react", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("convex/react")>();
+vi.mock("../src/lib/cloud", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../src/lib/cloud")>();
   return {
     ...actual,
     useQuery: () => undefined,

@@ -1,6 +1,6 @@
-// Flat ESLint config. Scope: application code and tests. Build output, the
-// Convex backend (generated and owned separately) and build scripts are not
-// linted here.
+// Flat ESLint config. Scope: application code, the Sites Worker backend and
+// tests. Build output (including the bundled `sites/worker.js`) and build
+// scripts are not linted here.
 //
 // Severity decisions, kept deliberately narrow:
 // - Correctness rules (rules-of-hooks, no-fallthrough, prefer-const, ...) are
@@ -19,9 +19,9 @@ import tseslint from "typescript-eslint";
 import reactHooks from "eslint-plugin-react-hooks";
 
 export default tseslint.config(
-  { ignores: ["dist", "node_modules", "public", "convex", "scripts", "src/convex/_generated"] },
+  { ignores: ["dist", "node_modules", "public", "scripts", "sites/worker.js"] },
   {
-    files: ["src/**/*.{ts,tsx}", "tests/**/*.{ts,tsx}"],
+    files: ["src/**/*.{ts,tsx}", "tests/**/*.{ts,tsx}", "sites/api/**/*.ts"],
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },

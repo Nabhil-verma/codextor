@@ -1,9 +1,9 @@
 import { useAccount } from "../AccountProvider";
 import { useState, useSyncExternalStore } from "react";
 import { loadTelemetry, practiceReviewerMetrics, subscribeTelemetry } from "../lib/telemetry";
-import { useMutation, useQuery } from "convex/react";
-import { api } from "../convex/_generated/api";
-import type { Id } from "../convex/_generated/dataModel";
+import { useMutation, useQuery } from "../lib/cloud";
+import { api } from "../lib/api";
+import type { Id } from "../lib/apiTypes";
 
 type Item = { prompt: string; code: string; options: string[]; index: number; total: number };
 

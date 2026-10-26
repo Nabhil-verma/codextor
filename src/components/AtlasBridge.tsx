@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
-import { useMutation, useQuery } from "convex/react";
-import { api } from "../convex/_generated/api";
+import { useMutation, useQuery } from "../lib/cloud";
+import { api } from "../lib/api";
 import { useAccount } from "../AccountProvider";
 import { atlasStoreFor, mergeAtlasState } from "../lib/atlasStore";
 import { useLocalStore } from "../lib/localStore";
 import { PanelBoundary } from "./gamification/Pieces";
 
-function Bridge({ username }: { username: string }) {
+function Bridge({ handle }: { handle: string }) {
   const cloud = useQuery(api.atlas.get);
   const save = useMutation(api.atlas.save);
-  const store = atlasStoreFor(username);
+  const store = atlasStoreFor(handle);
   const local = useLocalStore(store);
   const [state, setState] = useState("Loading account plan…");
   const [retry, setRetry] = useState(0);
@@ -53,11 +53,11 @@ export default function AtlasBridge() {
   const { user } = useAccount();
   if (!user) return <p className="mt-3 text-sm text-ink-600">Plan saved on this device. Sign in to sync.</p>;
   return (
-    <PanelBoundary key={user.username} fallback={(_, reset) => <p role="status" className="mt-3 text-sm text-ink-600">
+    <PanelBoundary key={user.handle} fallback={(_, reset) => <p role="status" className="mt-3 text-sm text-ink-600">
       Account sync is unavailable. Your plan is saved on this device.{" "}
       <button type="button" className="underline" onClick={reset}>Try again</button>
     </p>}>
-      <Bridge username={user.username} />
+      <Bridge handle={user.handle} />
     </PanelBoundary>
   );
 }

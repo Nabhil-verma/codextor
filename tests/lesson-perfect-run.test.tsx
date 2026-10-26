@@ -42,8 +42,8 @@ if (typeof window.matchMedia !== "function") {
   })) as typeof window.matchMedia;
 }
 
-vi.mock("convex/react", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("convex/react")>();
+vi.mock("../src/lib/cloud", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../src/lib/cloud")>();
   return {
     ...actual,
     useQuery: () => undefined,
